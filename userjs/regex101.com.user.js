@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://*regex101.com/*
 // @grant       none
-// @version     2023.01.01
+// @version     2023.02.01
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -18,10 +18,22 @@
 
 const main = () => {
   addStyle();
-  const result = document.querySelector('[style="width:nullpx"] button + div') ?? document.body;
-  result.textContent = '';
-  result.style.overflow = 'auto';
+  let result = document.querySelector('[style="width:nullpx"] button + div');
+  if (result) {
+    result.textContent = '';
+    result.style.overflow = 'auto';
+  } else {
+    result = document.createElement('div');
+    document.body.appendChild(result);
+  }
   addJson(result);
+
+  const panel = document.querySelector('header + div + div > div + div[style="display:none"] > div');
+  if (panel) {
+    panel.onclick = e => {
+      panel.hidden = true;
+    };
+  }
 }
 
 const addJson = (result) => {
@@ -38,9 +50,20 @@ const addJson = (result) => {
 
 const addRendered = (json) => {
   const [r, t] = document.querySelectorAll('.CodeMirror-show-whitespace > textarea');
-  const {regex, testString} =  json.regexEditor;
-  r.value = regex;
-  t.value = testString;
+  if (t) {
+    const {regex, testString} =  json.regexEditor;
+    r.value = regex;
+    t.value = testString;
+    return;
+  }
+
+  const desc = document.querySelector('h2 + div > div > div[aria-label="Loading..."] + div');
+  if (desc && desc.textContent === 'Loading markdown...') {
+    desc.style.textAlign = 'initial';
+    const details = json.regexLibrary?.details;
+    desc.textContent = `${details?.description}\n${details?.dateModified}`;
+    return;
+  }
 };
 
 const readJson = () => {
@@ -55,10 +78,12 @@ const readJson = () => {
     return `${r}\nnot found`;
   }
 
+  const us = unescape(s.replaceAll("\\'", "'").replaceAll('\\\\', '\\'));
+
   try {
-    return JSON.parse(unescape(s));
+    return JSON.parse(us);
   } catch (e) {
-    return `${e}\n${s}`;
+    return `${e}\n${us}`;
   }
 };
 
@@ -67,24 +92,48 @@ const addStyle = () => {
   style.textContent = `
     html {
       overflow-wrap: break-word;
+      overflow: initial;
+    }
+
+    body {
+      overflow: initial !important;
     }
 
     pre {
       white-space: pre-wrap;
-      overflow-x: auto;
       font-family: monospace;
     }
 
-    /* reveal textbox contents */
+    /* reveal textbox contents on /r/ */
     .CodeMirror-show-whitespace > textarea {
       display: initial !important;
       min-width: 100%;
       min-height: 100%;
     }
 
+    header + div + div > div + div[style="display:none"] {
+      /* reveal textbox on /library/ */
+      display: initial !important;
+      /* show a bit more teaser in the background on /library/ */
+      --bg-1: initial;
+    }
+
     /* hide loader */
     #regex-app > :first-child {
       display: none;
+    }
+
+    /* hide loader on /library/ */
+    div[aria-label="Loading..."] {
+      display: none;
+    }
+
+    #regex-app header + div > div + div > div + div + div > div::before {
+      content: initial;
+    }
+
+    #regex-app header + div > div + div > div + div + div > div + div > div::before {
+      content: initial;
     }
 
     /* expand JSON on the side */
