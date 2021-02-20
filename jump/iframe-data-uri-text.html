@@ -6,22 +6,26 @@
   <link rel="shortcut icon" type=image/x-icon href=data:image/x-icon;,>
 </head>
 <body>
-  <textarea maxlength=2048 id=t>JavaScript?</textarea>
-  <br>
-  <textarea rows=20 cols=64 id=d readonly></textarea>
-  <br>
-  <label onclick=s()>update html</label>
-  <br>
+  <details>
+    <summary>JavaScript?</summary>
+    <p><label onclick=updateHash()><strong>Update HTML</strong></label></p>
+    <p><textarea rows=5 cols=64 id=t maxlength=2048 oninput=updateDecoded()></textarea></p>
+    <p><textarea rows=20 cols=64 id=d readonly></textarea></p>
+  </details>
+
   <iframe id=i width=100% height=200px></iframe>
   <script>
-    function s() {
-      b = document.getElementById('t').value;
-      h = escape(b);
-      if (!b.startsWith('data:'))
-        h = h + 'data:text/html;charset=UTF-8,';
-      window.location.hash = h;
+    function updateDecoded() {
+      v = document.getElementById('t').value;
+      v = unescape(v);
+      v = v.replaceAll('><', '>\n<');
+      v = v.replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&quot;', '"').replaceAll('&amp;', '&');
+      v = v.replaceAll('{', '\n{').replace(/([;{}])/g, '$1\n');
+      v = v.replace(/\n*(\b(if|foreach|while)\b)/g, '\n$1');
+      document.getElementById('d').value = v;
     }
-    function c() {
+
+    function updateIframe() {
       v = window.location.hash.substring(1);
       i = v.indexOf('#');
       if (i > 0)
@@ -29,13 +33,20 @@
       v = unescape(v);
       document.getElementById('i').src = v;
       document.getElementById('t').value = v;
-      v = v.replaceAll('><', '>\n<');
-      v = v.replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&quot;', '"').replaceAll('&amp;', '&');
-      v = v.replaceAll('{', '\n{').replace(/([;{}])/g, '$1\n');
-      document.getElementById('d').value = v;
+      updateDecoded();
     }
-    c();
-    window.addEventListener('hashchange', c);
+
+    function updateHash() {
+      b = document.getElementById('t').value;
+      h = escape(b);
+      if (!b.startsWith('data:'))
+        h = h + 'data:text/html;charset=UTF-8,';
+      window.location.hash = h;
+    }
+
+    updateIframe();
+    window.addEventListener('hashchange', updateIframe);
+    document.getElementsByTagName('summary')[0].innerHTML = 'Click to edit frontend';
   </script>
 </body>
 </html>
