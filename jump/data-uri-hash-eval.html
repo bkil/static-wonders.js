@@ -1,0 +1,26 @@
+<html>
+<head>
+  <title>data URI</title>
+</head>
+<body>
+  <div id=d>JavaScript?</div>
+  <input type=hidden id=f>
+  <script>
+    f = document.getElementById("f");
+    f.type = "file";
+    f.addEventListener("change", function() {
+      r = new FileReader();
+      r.onload = function (e) {
+        img = '<img src=' + e.target.result + ' height=90%>';
+        window.location.hash = escape(img);
+      };
+      r.readAsDataURL(this.files[0]);
+    }, false);
+    function h() {
+      document.getElementById("d").innerHTML = unescape(window.location.hash.substring(1));
+    }
+    window.addEventListener('hashchange', h);
+    h();
+  </script>
+</body>
+</html>

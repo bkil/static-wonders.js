@@ -1,0 +1,29 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <title>Redirecting without unfurling</title>
+
+  <script type="text/javascript">
+    const paramString = window.location.search.substr(1);
+    const params = paramString.split('&').reduce((obj, param) => {
+      const [key, value] = param.split('=');
+      obj[key] = decodeURIComponent(value);
+      return obj;
+    }, {});
+    const url = params.url;
+    if ((url != undefined) && (url != '')) {
+      window.location.replace(url);
+    }
+  </script>
+
+</head>
+<body>
+  You have been sent here simply to avoid unfurling by redirecting.
+  <noscript>
+    JavaScript missing. Simply copy &amp; paste the destination URL from the parameter.
+  </noscript>
+
+</body>
+</html>
