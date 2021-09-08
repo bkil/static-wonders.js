@@ -15,7 +15,11 @@
   <iframe id=i width=100% height=200px></iframe>
   <script>
     function s() {
-      window.location.hash = 'data:text/html;charset=UTF-8,' + escape(document.getElementById('t').value);
+      b = document.getElementById('t').value;
+      h = escape(b);
+      if (!b.startsWith('data:'))
+        h = h + 'data:text/html;charset=UTF-8,';
+      window.location.hash = h;
     }
     function c() {
       v = window.location.hash.substring(1);
@@ -25,7 +29,9 @@
       v = unescape(v);
       document.getElementById('i').src = v;
       document.getElementById('t').value = v;
-      v = v.replace(/></g, '>\n<').replace(/([;{}])/g, '$1\n');
+      v = v.replaceAll('><', '>\n<');
+      v = v.replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&quot;', '"').replaceAll('&amp;', '&');
+      v = v.replaceAll('{', '\n{').replace(/([;{}])/g, '$1\n');
       document.getElementById('d').value = v;
     }
     c();
