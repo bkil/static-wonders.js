@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>UGC JS/noJS partial state sharing</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta name=viewport content='width=device-width, initial-scale=1.0'>
+
+<style>
+a {
+  text-decoration: none;
+}
+
+h2 {
+  font-size: xx-small;
+  font-family: emoji;
+}
+
+:target {
+  position: fixed;
+  top: 1em;
+  left: 3.5em;
+  display: inline-block;
+  background-color: #0ff;
+  padding: 1em;
+  font-size: xx-large;
+  min-width: 4em;
+  text-align: center;
+}
+</style>
+
+<body>
+
+<h2 id=00000><a href=#00000>🚀</a></h2>
+<h2 id=00001><a href=#00001>🚰</a></h2>
+<h2 id=00010><a href=#00010>💡</a></h2>
+<h2 id=00011><a href=#00011>🎓️</a></h2>
+<h2 id=00100><a href=#00100>🏫</a></h2>
+<h2 id=00101><a href=#00101>➕️</a></h2>
+<h2 id=00110><a href=#00110>🎨</a></h2>
+<h2 id=00111><a href=#00111>📊</a></h2>
+<h2 id=01000><a href=#01000>👌</a></h2>
+<h2 id=01001><a href=#01001>💪</a></h2>
+<h2 id=01010><a href=#01010>💯</a></h2>
+<h2 id=01011><a href=#01011>👋</a></h2>
+<h2 id=01100><a href=#01100>✅</a></h2>
+<h2 id=01101><a href=#01101>📌</a></h2>
+<h2 id=01110><a href=#01110>🎁</a></h2>
+<h2 id=01111><a href=#01111>🛡</a></h2>
+<h2 id=10000><a href=#10000>👍</a></h2>
+<h2 id=10001><a href=#10001>💜</a></h2>
+<h2 id=10010><a href=#10010>📉</a></h2>
+<h2 id=10011><a href=#10011>💅</a></h2>
+<h2 id=10100><a href=#10100>✍</a></h2>
+<h2 id=10101><a href=#10101>⛏️</a></h2>
+<h2 id=10110><a href=#10110>🆗</a></h2>
+<h2 id=10111><a href=#10111>🙆</a></h2>
+<h2 id=11000><a href=#11000>✔</a></h2>
+<h2 id=11001><a href=#11001>🏁</a></h2>
+<h2 id=11010><a href=#11010>✌</a></h2>
+<h2 id=11011><a href=#11011>👽</a></h2>
+<h2 id=11100><a href=#11100>👾</a></h2>
+<h2 id=11101><a href=#11101>💬</a></h2>
+<h2 id=11110><a href=#11110>🛌</a></h2>
+<h2 id=11111><a href=#11111>💤</a></h2>
+
+<p>This is a JavaScript vs. noJS tech demo to show how a visitor can customize filters on a page and share a link with another user.</p>
+<ul><li>If the recipient has JavaScript, the full state can be reconstructed: both chosen emoji appear in this comparison.
+<li>If the recipient has it disabled, the state will be reconstructed with reduced precision: only the first emoji will be shown.</ul>
+<p>Imagine a real word site where items can be products with description, imagery and properties and where selections could be various filters.</p>
+
+<script>
+'use strict';
+(function() {
+
+  function onHashChanged() {
+    var bits = getHashPercentileBits();
+    showSecondChoice(bits);
+    updatePermalink();
+  }
+
+  function getHashPercentileBits() {
+    var a = window.location.hash.substr(1);
+    var bits = '';
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] !== '%') {
+        bits += '0';
+      } else {
+        bits += '1';
+        if (a.length - i < 2) {
+          break
+        }
+        i += 2;
+      }
+    }
+
+    a = unescape(a);
+    var out = bits;
+    if (bits.indexOf('1') < 0) {
+      out = '';
+    } else if (bits === a) {
+      out = '0'
+    }
+    return out;
+  }
+
+  function showSecondChoice(bits) {
+    var secondContent = '';
+    if (bits !== '') {
+      var secondChoice;
+      if (bits === '0') {
+        secondChoice = document.links[1].parentElement;
+      } else {
+        secondChoice = document.getElementById(bits);
+      }
+      if (!secondChoice) {
+        return
+      }
+
+      var content = secondChoice.firstChild.innerText;
+      secondContent =
+        ':target:after{content:" ' + content + '"}' +
+        ':target > a[data-id]:after{content: " vs.";color:red}';
+    }
+
+    setStyle(
+      'a[data-id]:after{content: " vs. compare -> ";color:green}' +
+      ':target > a[data-id]:after{content: initial}' +
+      secondContent
+      );
+  }
+
+  function setStyle(text) {
+    var styleId = 'showcase';
+    var style = document.getElementById(styleId);
+    if (!style) {
+      style = document.createElement('style');
+      style.id = styleId;
+      document.head.append(style);
+    }
+    style.innerHTML = text;
+  }
+
+  function updatePermalink() {
+    var id = 'permalink';
+    var a = document.getElementById(id);
+    if (!a) {
+      a = document.createElement('a');
+      a.id = id;
+      document.body.prepend(a);
+    }
+    a.innerText = window.location.href;
+    a.href = window.location.hash;
+  }
+
+  function navigateToHash(hash) {
+    window.location.hash = '#' + hash;
+    updatePermalink();
+  }
+
+  function setClicks() {
+    var links = Array.from(document.links);
+    for (var i = 0; i < links.length; i++) {
+      var lnk = links[i];
+      lnk.onclick = onFirstClick;
+
+      var header = lnk.parentElement;
+      var a = document.createElement('a');
+      a.setAttribute('data-id', lnk.hash.substr(1));
+      a.onclick = onSecondClick;
+      a.href= '#';
+      header.appendChild(a);
+    }
+  }
+
+  function onFirstClick() {
+    updateChoices(this.hash.substr(1), getHashPercentileBits());
+    return false;
+  }
+
+  function onSecondClick() {
+    updateChoices(unescape(window.location.hash.substr(1)), this.getAttribute('data-id'));
+    return false;
+  }
+
+  function updateChoices(firstChoice, secondChoice) {
+    var newSecond = secondChoice;
+    if (firstChoice === '') {
+      firstChoice = secondChoice;
+      newSecond = '';
+    }
+
+    if (secondChoice !== '') {
+      if (firstChoice.length < secondChoice.length) {
+        console.log('error: updateChoices() needs more entropy in ' + firstChoice + ' to code ' + secondChoice);
+        return
+      }
+      if (newSecond.indexOf('1') < 0) {
+        newSecond = firstChoice;
+      } else if (newSecond === firstChoice) {
+        newSecond = '';
+      }
+    }
+    navigateToHash(combineBits(firstChoice, newSecond));
+  }
+
+  function combineBits(first, second) {
+    var out = '';
+    for (var i = 0; i < first.length; i++) {
+      if ((i >= second.length) || (second[i] === '0')) {
+        out += first[i];
+      } else {
+        out += hexEncodeIdChar(first[i]);
+      }
+    }
+    return out;
+  }
+
+  function hexEncodeIdChar(ch) {
+    return '%' + ch.codePointAt().toString(16);
+  }
+
+  setClicks();
+  window.onhashchange = onHashChanged;
+  onHashChanged();
+
+})();
+</script>
+</body>
+</html>
