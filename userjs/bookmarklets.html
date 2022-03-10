@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Bookmarklet versions of the shorter user.js</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta name=viewport content='width=device-width, initial-scale=1.0'>
+
+<style>
+a {
+  text-decoration: none;
+}
+
+h2 {
+  font-size: xx-small;
+  font-family: emoji;
+}
+
+:target {
+  position: fixed;
+  top: 1em;
+  left: 3.5em;
+  display: inline-block;
+  background-color: #0ff;
+  padding: 1em;
+  font-size: xx-large;
+  min-width: 4em;
+  text-align: center;
+}
+</style>
+
+<body>
+
+You can drag &amp; drop the following bookmarklets to your bookmark bar instead of using a userscript manager:
+
+<ul>
+<li>
+  <a href="javascript:document.getElementById('searchbox').parentElement.parentElement.innerHTML='<form action=Search class=c-search><input name=searchTerm placeholder=Search id=searchbox><input type=submit><input name=langID value=382 type=hidden><input name=Source value=true type=hidden><input name=productid value=undefined type=hidden></form>';document.getElementById('searchForm').action='Search';var s=document.createElement('style');s.innerText='.lnsearchgrid .m-table .c-table{display:initial}';document.body.appendChild(s);">microsoft.com terminology search noJS</a> (readable <a href='microsoft.com.terminology.user.js'>source</a>)
+</ul>
+
+</body>
+</html>

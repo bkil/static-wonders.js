@@ -19,7 +19,7 @@
 function fixSearchFormSubmit() {
   var form =
     '<form action=Search class=c-search>' +
-    '<input name=searchTerm placeholder="Search">' +
+    '<input name=searchTerm placeholder=Search>' +
     '<input type=submit>' +
     '<input name=langID value=382 type=hidden>' +
     '<input name=Source value=true type=hidden>' +
