@@ -6,7 +6,7 @@
   <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
   <meta name=viewport content='width=device-width, initial-scale=1.0'>
 <body>
-  <a href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures#creating_closures_in_loops_a_common_mistake' rel=noopener>https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures#creating_closures_in_loops_a_common_mistake</a>
+  <a href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures#creating_closures_in_loops_a_common_mistake' rel=noopener target=_blank>https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures#creating_closures_in_loops_a_common_mistake</a>
   <pre id=result></pre>
 
 <script>
@@ -14,6 +14,11 @@
 (function() {
 
   function main() {
+    document.getElementById('result').innerText += document.scripts[0].innerText;
+    tests();
+  }
+
+  function tests() {
     for (var i = 0; i < 4; i++) {
       printLater(function(){ return i; });
     }
