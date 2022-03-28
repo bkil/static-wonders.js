@@ -21,6 +21,15 @@
     for (let j = 0; j < 4; j++) {
       printLater(function(){ return j; });
     }
+
+    for (var k = 0; k < 4; k++) {
+      printLater(
+        (function(x) {
+          return function() {
+            return x;
+          }
+        })(k));
+    }
   }
 
   function printLater(f) {
