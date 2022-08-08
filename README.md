@@ -5,3 +5,4 @@ Demonstrating what you can achieve without mandatory usage of any kind custom of
 * https://bkil.gitlab.io/static-wonders.js/nojs-fallback/dblspeak.html
 * https://bkil.gitlab.io/static-wonders.js/toy/closure-for.html
 * https://bkil.gitlab.io/static-wonders.js/userjs/bookmarklets.html
+* https://bkil.gitlab.io/static-wonders.js/joke/js-nojs.html
