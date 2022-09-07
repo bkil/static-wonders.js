@@ -1,11 +1,15 @@
 // ==UserScript==
 // @name        videa lessJS
-// @namespace   Violentmonkey Scripts
+// @description Let it run even if you blocked a few trackers
+// @author      bkil
+// @namespace   bkil.hu
 // @match       https://videa.hu/*
 // @grant       none
-// @version     1.0
-// @author      bkil
-// @description Let it run even if you blocked a few trackers
+// @version     2022.9.1
+// @license     MIT
+// @homepageURL https://github.com/bkil/static-wonders.js
+// @supportURL  https://gitlab.com/bkil/static-wonders.js/issues
+// @noframes
 // ==/UserScript==
 
 (function() {
