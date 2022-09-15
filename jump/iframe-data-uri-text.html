@@ -4,44 +4,82 @@
   <meta charset=utf-8>
   <title>JS eval in iframe</title>
   <link rel="shortcut icon" type=image/x-icon href=data:image/x-icon;,>
+  <meta name=viewport content='width=device-width, initial-scale=1.0'>
+  <style>
+    html, body {
+      height: 100%;
+    }
+
+    html, body, details, iframe {
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    button, textarea {
+      display: block;
+    }
+
+    details {
+      height: 3em;
+    }
+
+    iframe {
+      width: 100%;
+      height: calc(100% - 3.5em);
+    }
+
+    textarea {
+      height: calc(50% - 3em);
+      width: calc(100% - 1em);
+    }
+
+    details {
+      overflow: auto;
+    }
+
+    [open] {
+      height: 50%;
+    }
+
+    [open] + * {
+      height: calc(50% - 0.5em);
+    }
+  </style>
 </head>
 <body>
   <details>
     <summary>JavaScript?</summary>
-    <p><label onclick=updateHash()><strong>Update HTML</strong></label></p>
-    <p><textarea rows=5 cols=64 id=t maxlength=2048 oninput=updateDecoded()></textarea></p>
-    <p><textarea rows=20 cols=64 id=d readonly></textarea></p>
+    <button onclick=updateHash() type=button>Update HTML</button>
+    <textarea id=t maxlength=4096 oninput=updateDecoded()></textarea>
+    <textarea id=d readonly></textarea>
   </details>
 
-  <iframe id=i width=100% height=200px></iframe>
+  <iframe id=i></iframe>
   <script>
+  'use strict';
     function updateDecoded() {
-      v = document.getElementById('t').value;
+      let v = document.getElementById('t').value;
       v = unescape(v);
       v = v.replaceAll('><', '>\n<');
       v = v.replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&quot;', '"').replaceAll('&amp;', '&');
-      v = v.replaceAll('{', '\n{').replace(/([;{}])/g, '$1\n');
-      v = v.replace(/\n*(\b(if|foreach|while)\b)/g, '\n$1');
+      v = v.replaceAll('{', '\n{').replaceAll('&&', ' &&\n').replaceAll('||', ' ||\n').replace(/(([;{}])|\b(else)([^a-z{\n]))/g, '$2$3\n$4');
+      v = v.replace(/\n*(\b(if|foreach|while)\b)/g, '\n$1 ');
       document.getElementById('d').value = v;
     }
 
     function updateIframe() {
-      v = window.location.hash.substring(1);
-      i = v.indexOf('#');
-      if (i > 0)
-        v = v.substring(0, i);
-      v = unescape(v);
-      document.getElementById('i').src = v;
+      let v = window.location.hash.substring(1);
+      document.getElementById('i').src = v + '##' + window.location.origin + window.location.pathname;
       document.getElementById('t').value = v;
       updateDecoded();
     }
 
     function updateHash() {
-      b = document.getElementById('t').value;
-      h = escape(b);
+      let b = document.getElementById('t').value;
       if (!b.startsWith('data:'))
-        h = h + 'data:text/html;charset=UTF-8,';
-      window.location.hash = h;
+        b += 'data:text/html;charset=UTF-8,';
+      window.location.hash = b;
     }
 
     updateIframe();
