@@ -1,0 +1,9 @@
+L,rotateBitsLeft
+S,sha1
+W,addChunk
+X,showHexadecimal
+g,getChar
+j,chunk
+l,len
+p,str
+v,chunks
