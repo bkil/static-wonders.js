@@ -16,7 +16,7 @@ sha1 = str => {
   }
   addChunk(x);
 
-  while (chunks.length % 16 - 14)
+  while (chunks.length & 15 ^ 14)
     addChunk(0);
 
   addChunk(len >>> 29);
