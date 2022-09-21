@@ -1,3 +1,4 @@
+// Copyright (c) 2022 bkil.hu
 sha1 = str => {
   rotateBitsLeft = (x, n = 8) => x << n | x >>> -n;
   showHexadecimal = x => (x >>> 0).toString(16).padStart(8, 0);
