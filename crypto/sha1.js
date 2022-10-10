@@ -80,5 +80,5 @@ sha1 = str => {
     E += e;
   }
 
-  return showHexadecimal(A) + showHexadecimal(B) + showHexadecimal(C) + showHexadecimal(D) + showHexadecimal(E);
+  return(showHexadecimal(A) + showHexadecimal(B) + showHexadecimal(C) + showHexadecimal(D) + showHexadecimal(E));
 };
