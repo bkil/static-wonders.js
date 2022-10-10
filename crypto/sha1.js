@@ -8,7 +8,18 @@ sha1 = str => {
   len = str.length;
   chunks = [];
   for (i = 0; len - 3 > i;)
-    addChunk(rotateBitsLeft(rotateBitsLeft(rotateBitsLeft(getChar()) | getChar()) | getChar()) | getChar());
+    addChunk(
+      rotateBitsLeft(
+        rotateBitsLeft(
+          rotateBitsLeft(
+            getChar()
+          ) |
+          getChar()
+        ) |
+        getChar()
+      ) |
+      getChar()
+    );
 
   x = 0;
   for (j = 4; j--;) {
@@ -37,21 +48,23 @@ sha1 = str => {
     e = E;
 
     for (i = 80; i--;) {
-      x = (
-        w[i] =
-          i > 63 ?
-            chunks[chunk++]
-          : rotateBitsLeft(w[i+3] ^ w[i+8] ^ w[i+14] ^ w[i+16], 1)
+      x =
+        (
+          w[i] =
+            i > 63 ?
+              chunks[chunk++]
+            : rotateBitsLeft(w[i+3] ^ w[i+8] ^ w[i+14] ^ w[i+16], 1)
         ) +
-        rotateBitsLeft(a, 5) + e + (
-        (i > 59) ?
-          (b & c | ~b & d) + 0x5A827999
-        : (i > 39) ?
-          (b ^ c ^ d) + 0x6ED9EBA1
-        : (i > 19) ?
-          (b&c | b&d | c&d) + 0x8F1BBCDC
-        : (b ^ c ^ d) + 0xCA62C1D6
-      );
+        rotateBitsLeft(a, 5) + e +
+        (
+          i > 59 ?
+            (b & c | ~b & d) + 0x5A827999
+          : i > 39 ?
+            (b ^ c ^ d) + 0x6ED9EBA1
+          : i > 19 ?
+            (b & c | b & d | c & d) + 0x8F1BBCDC
+          : (b ^ c ^ d) + 0xCA62C1D6
+        );
 
       e = d;
       d = c;
