@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://*.jofogas.hu/*
 // @grant       none
-// @version     2022.6.26
+// @version     2022.10.1
 // @license     MIT
 // @homepageURL https://github.com/bkil/static-wonders.js
 // @supportURL  https://gitlab.com/bkil/static-wonders.js/issues
@@ -22,13 +22,25 @@
     window.Didomi.getUserConsentStatusForVendor = function(x) { return false; };
   }
 
+  let mockStorage = {};
+  mockStorage.set = mockStorage.get = mockStorage.remove = mockStorage.register = mockStorage.getRegisteredKeys =
+    mockStorage.removeRegisteredKeys = mockStorage.clearRegister = mockStorage.cleanUp = function (v) {
+    return null;
+  }
+
   /* if you disable localStorage (cookies) in the browser, window.sessionStorage will throw otherwise */
   angular.module('jofogas').factory('sessionStorageService', [function() {
-    let e = {};
-    e.set = e.get = e.remove = e.register = e.getRegisteredKeys = e.removeRegisteredKeys = e.clearRegister = e.cleanUp = function (v) {
-      return null;
-    }
-    return e;
+    return mockStorage;
+  }]);
+  angular.module('jofogas').factory('localStorageService', [function() {
+    return mockStorage;
   }]);
 
+  if (typeof chrome === 'undefined') {
+    chrome = new Object();
+  }
+  if (typeof chrome.storage === 'undefined') {
+    chrome.storage = new Object();
+  }
+  chrome.storage.local = mockStorage;
 })();
