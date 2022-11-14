@@ -4,11 +4,12 @@
 // @description -
 // @namespace   bkil.hu
 // @match       https://diasp.org/*
+// @match       https://sysad.org/*
 // @match       https://despora.de/*
 // @match       https://diasp.eu/*
 // @match       https://diaspora.psyco.fr/*
 // @grant       none
-// @version     2022.4.6
+// @version     2022.11.1
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -38,7 +39,6 @@ function later() {
   changeStyle();
 
   const result = document.createElement('div');
-  addTitleDescription(result);
   addJson(result);
   document.body.appendChild(result);
 }
@@ -79,15 +79,35 @@ function changeStyle() {
   document.head.appendChild(style);
 }
 
+function renderMarkdown(text) {
+  return text
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replace(/!\[([^\[\]]+)\]\(([^)]+)\)/g, ' $1 ')
+    .replace(/\[([^\[\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+    .replace(/\\(.)/g, '$1')
+    .replaceAll('\n', '<br>')
+    ;
+}
+
 function addJson(result) {
   const code = document.createElement('pre');
   const json = getJson();
   if (typeof json === 'string') {
     code.innerText = json;
   } else {
+    if (json.post && json.post.text) {
+      const text = document.createElement('p');
+      text.innerHTML = renderMarkdown(json.post.text);
+      result.appendChild(text);
+    }
+
     code.innerText = JSON.stringify(json, null, 2);
   }
 
+  addTitleDescription(result);
   result.appendChild(code);
 }
 
@@ -106,7 +126,7 @@ function addTitleDescription(result) {
     result.appendChild(cite);
   }
 
-  const image = document.head.querySelector('meta[property="og:image"]');
+  const image = document.head.querySelector('meta[property="og:image"]:not([content="/assets/branding/logos/asterisk.png"])');
   if (image) {
     const img = document.createElement('img');
     img.src = image.content;
