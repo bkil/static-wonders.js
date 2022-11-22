@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://ubuntu.hu/blog*
 // @grant       none
-// @version     2022.3.8
+// @version     2022.11.1
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -50,25 +50,13 @@ function addStyle() {
 }
 
 function getJson() {
-  var scripts = document.getElementsByTagName('script');
-  var prefix = ' flarum.core.app.load(';
-
-  var script = '';
-  var prefixPos = -1;
-  for (var i = 0; (i < scripts.length) && (prefixPos < 0); i++) {
-    script = scripts[i].text;
-    prefixPos = script.indexOf(prefix);
+  const payload = document.getElementById('flarum-json-payload');
+  if (!payload) {
+    return "error: can't find element with ID 'flarum-json-payload'";
   }
-  if (prefixPos < 0) {
-    return '';
-  }
-
-  var line = script
-    .substr(prefixPos + prefix.length)
-    .replace(/\);\n(.|\n)*$/, '');
 
   try {
-    return JSON.parse(line);
+    return JSON.parse(payload.textContent);
   } catch (e) {
     return e + "\n" + line;
   }
