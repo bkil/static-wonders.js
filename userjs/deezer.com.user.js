@@ -1,0 +1,177 @@
+// ==UserScript==
+// @name        deezer.com noJS reveal + og:audio + JSON
+// @author      bkil
+// @description Support track preview without extra resources or round trips
+// @namespace   bkil.hu
+// @match       https://www.deezer.com/en/track/*
+// @match       https://www.deezer.com/en/album/*
+// @match       https://www.deezer.com/en/artist/*
+// @grant       none
+// @version     2022.11.19
+// @license     MIT
+// @homepageURL https://gitlab.com/bkil/static-wonders.js
+// @homepageURL https://github.com/bkil/static-wonders.js
+// @supportURL  https://gitlab.com/bkil/static-wonders.js/issues
+// @noframes
+// ==/UserScript==
+
+(function() {
+'use strict';
+main();
+
+function main() {
+  const result = document.createElement('div');
+  result.className = 'userscript';
+
+  const preview = document.head.querySelector('meta[property="og:audio"][content]');
+  if (preview) {
+    result.appendChild(createPlayer(preview.content));
+  }
+
+  addRenderedContent(result);
+
+  let container = document.querySelector('#naboo_track_head + *, #naboo_album_head + *, #naboo_artist_cover_classic + *');
+  if (container) {
+    container.parentNode.insertBefore(result, container);
+  } else {
+    document.body.prepend(result);
+  }
+
+  addStyle();
+}
+
+function addStyle() {
+  let style = document.createElement('style');
+  style.className = 'userscript';
+  style.textContent =
+    'pre { white-space: pre-wrap; overflow-x: auto; }' +
+    'summary { cursor: pointer; }' +
+    '.hidden, .invisible { visibility: initial !important; display: initial !important }' +
+    '.popularity::after { content: attr(title) }' +
+    '.userscript th, .userscript td { border-left: 1px solid; border-bottom: 1px solid; padding: 4px }' +
+    '.userscript { color: initial }'
+  ;
+  document.head.appendChild(style);
+}
+
+function getJson() {
+  const scripts = document.getElementsByTagName('script');
+  const prefix = "window.__DZR_APP_STATE__ = ";
+
+  let script = '';
+  let prefixPos = -1;
+  for (let i = 0; (i < scripts.length) && (prefixPos !== 0); i++) {
+    script = scripts[i].text;
+    prefixPos = script.indexOf(prefix);
+  }
+  if (prefixPos !== 0) {
+    return '';
+  }
+
+  const line = script
+    .substr(prefixPos + prefix.length);
+
+  try {
+    return JSON.parse(line);
+  } catch (e) {
+    return e + "\n" + line;
+  }
+}
+
+function addRenderedContent(result) {
+  const json = getJson();
+  if (typeof json === 'object') {
+    if (json.DATA) {
+      addAlbum(result, json.DATA, json);
+    }
+
+    if (json.ALBUMS && json.ALBUMS.data) {
+      Array.from(json.ALBUMS.data).forEach(album =>
+        addAlbum(result, album, album)
+      );
+    }
+  }
+
+  addDebugInfo(result, json);
+}
+
+function addAlbum(result, m, j) {
+  if (!m.ARTISTS || !m.ALB_TITLE || !m.ORIGINAL_RELEASE_DATE || !j.SONGS || !j.SONGS.data) {
+    return;
+  }
+
+  const details = document.createElement('details');
+  const summary = document.createElement('summary');
+
+  const label = m.LABEL_NAME ? ', ' + m.LABEL_NAME : m.PRODUCER_LINE ? ', ' + m.PRODUCER_LINE : '';
+  const artists = Array.from(m.ARTISTS).map(m => m.ART_NAME).join(', ')
+  summary.textContent = artists + ': ' + m.ALB_TITLE + ' (' + m.ORIGINAL_RELEASE_DATE + label + ')';
+  details.appendChild(summary);
+
+  const table = document.createElement('table');
+  const body = table.createTBody();
+
+  Array.from(j.SONGS.data).forEach(s => {
+    const row = body.insertRow();
+
+    row.insertCell().textContent = s.DISK_NUMBER ? s.DISK_NUMBER : '';
+    row.insertCell().textContent = s.TRACK_NUMBER ? s.TRACK_NUMBER : '';
+    row.insertCell().textContent = s.SNG_TITLE ? s.SNG_TITLE : '';
+    row.insertCell().textContent = s.ART_NAME ? s.ART_NAME : '';
+    const play = row.insertCell();
+
+    if (s.MEDIA && s.MEDIA[0] && s.MEDIA[0].HREF) {
+      const button = document.createElement('button');
+      button.textContent = 'play';
+      const url = s.MEDIA[0].HREF;
+      button.onclick = function() {
+        const player = createPlayer(url);
+        play.removeChild(button);
+        play.appendChild(player);
+        player.autoplay = true;
+      }
+      play.appendChild(button);
+    }
+  });
+
+  details.appendChild(table);
+  result.appendChild(details);
+}
+
+function createPlayer(url) {
+  const player = document.createElement('audio');
+  player.controls = true;
+  player.preload = 'none';
+  player.src = url;
+
+  player.onplay = function() {
+    Array.from(document.getElementsByTagName('audio')).forEach(audio => {
+      if (audio.src !== url) {
+        audio.pause();
+      }
+    });
+  }
+  return player;
+}
+
+function addDebugInfo(result, json) {
+  let details = document.createElement('details');
+  let summary = document.createElement('summary');
+  summary.textContent = '(click to see debug JSON)';
+  details.appendChild(summary);
+
+  addJson(details, json);
+  result.appendChild(details);
+}
+
+function addJson(result, json) {
+  const code = document.createElement('pre');
+  if (typeof json === 'string') {
+    code.textContent = json;
+  } else {
+    code.textContent = JSON.stringify(json, null, 2);
+  }
+  result.appendChild(code);
+}
+
+})();
