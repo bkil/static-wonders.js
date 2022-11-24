@@ -48,7 +48,7 @@ function addStyle() {
     'summary { cursor: pointer; }' +
     'blockquote { border-left-style: solid; padding-left: 1em; }' +
     '.userscript .post { border-bottom: 1px solid }' +
-    '.userscript .time { margin-left: 2em }' +
+    '.userscript .time, .userscript .user { margin-left: 2em }' +
     '#app { min-height: initial; padding-bottom: initial; }'
   ;
   document.body.appendChild(style);
@@ -74,26 +74,28 @@ function addRenderedContent(result, json) {
   const all = document.createElement('div');
 
   let posts = {};
-  var included = json.apiDocument.included;
-  for (var i = 0; i < included.length; i++) {
-    if (included[i].type === 'posts') {
-      posts[included[i].id] = included[i].attributes.contentHtml;
+  let users = {};
+  json.apiDocument.included.forEach(i => {
+    if (i.type === 'posts') {
+      posts[i.id] = i;
+    } else if (i.type === 'users') {
+      users[i.id] = i;
     }
-  }
+  });
 
   const doc = json.apiDocument.data;
   if (doc.length) {
     for (var i = 0; i < doc.length; i++) {
-      addPost(all, doc[i], posts);
+      addPost(all, doc[i], posts, users);
     }
   } else {
-    addPost(all, doc, posts);
+    addPost(all, doc, posts, users);
   }
 
   result.appendChild(all);
 }
 
-function addPost(result, post, posts) {
+function addPost(result, post, posts, users) {
   const entry = document.createElement('div');
   entry.className = 'post';
 
@@ -107,11 +109,15 @@ function addPost(result, post, posts) {
   time.innerText = post.attributes.lastPostedAt;
   entry.appendChild(time);
 
-  var body = document.createElement('div');
-  var id = post.relationships.firstPost.data.id;
-  body.innerHTML = posts[id];
-  entry.appendChild(body);
+  const user = document.createElement('span');
+  user.className = 'user';
+  user.textContent = users[post.relationships.user.data.id].attributes.username;
+  entry.appendChild(user);
 
+  const body = document.createElement('div');
+  const first = post.relationships.firstPost.data.id;
+  body.innerHTML = posts[first].attributes.contentHtml;
+  entry.appendChild(body);
   result.appendChild(entry);
 }
 
