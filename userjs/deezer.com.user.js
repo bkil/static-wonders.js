@@ -23,11 +23,6 @@ function main() {
   const result = document.createElement('div');
   result.className = 'userscript';
 
-  const preview = document.head.querySelector('meta[property="og:audio"][content]');
-  if (preview) {
-    result.appendChild(createPlayer(preview.content));
-  }
-
   addRenderedContent(result);
 
   let container = document.querySelector('#naboo_track_head + *, #naboo_album_head + *, #naboo_artist_cover_classic + *');
@@ -94,6 +89,13 @@ function addRenderedContent(result) {
 
     if (!added) {
       added |= addSongs(result, [json.DATA]);
+    }
+  }
+
+  if (!added) {
+    const preview = document.head.querySelector('meta[property="og:audio"][content]');
+    if (preview) {
+      result.appendChild(createPlaceholder(preview.content));
     }
   }
 
