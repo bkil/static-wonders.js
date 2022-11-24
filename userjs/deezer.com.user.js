@@ -7,7 +7,7 @@
 // @match       https://www.deezer.com/*/album/*
 // @match       https://www.deezer.com/*/artist/*
 // @grant       none
-// @version     2022.11.20
+// @version     2022.11.21
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -49,30 +49,6 @@ function addStyle() {
   document.head.appendChild(style);
 }
 
-function getJson() {
-  const scripts = document.getElementsByTagName('script');
-  const prefix = "window.__DZR_APP_STATE__ = ";
-
-  let script = '';
-  let prefixPos = -1;
-  for (let i = 0; (i < scripts.length) && (prefixPos !== 0); i++) {
-    script = scripts[i].text;
-    prefixPos = script.indexOf(prefix);
-  }
-  if (prefixPos !== 0) {
-    return '';
-  }
-
-  const line = script
-    .substr(prefixPos + prefix.length);
-
-  try {
-    return JSON.parse(line);
-  } catch (e) {
-    return e + "\n" + line;
-  }
-}
-
 function addRenderedContent(result) {
   const json = getJson();
   let added = false;
@@ -100,6 +76,30 @@ function addRenderedContent(result) {
   }
 
   addDebugInfo(result, json);
+}
+
+function getJson() {
+  const scripts = document.getElementsByTagName('script');
+  const prefix = "window.__DZR_APP_STATE__ = ";
+
+  let script = '';
+  let prefixPos = -1;
+  for (let i = 0; (i < scripts.length) && (prefixPos !== 0); i++) {
+    script = scripts[i].text;
+    prefixPos = script.indexOf(prefix);
+  }
+  if (prefixPos !== 0) {
+    return '';
+  }
+
+  const line = script
+    .substr(prefixPos + prefix.length);
+
+  try {
+    return JSON.parse(line);
+  } catch (e) {
+    return e + "\n" + line;
+  }
 }
 
 function addAlbum(result, m, j, open) {
