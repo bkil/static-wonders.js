@@ -18,10 +18,10 @@
 main();
 
 function main() {
-  var result = document.createElement('div');
+  const result = document.createElement('div');
   result.className = 'userscript';
 
-  var json = getJson();
+  const json = getJson();
   addRenderedContent(result, json);
 
   addDebugInfo(result, json);
@@ -36,7 +36,7 @@ function main() {
 }
 
 function addStyle() {
-  var style = document.createElement('style');
+  const style = document.createElement('style');
   style.className = 'userscript';
   style.innerText =
     'pre { white-space: pre-wrap; overflow-x: auto; }' +
@@ -66,17 +66,17 @@ function addRenderedContent(result, json) {
   if (typeof json === 'string') {
     return
   }
-  var all = document.createElement('div');
+  const all = document.createElement('div');
 
+  let posts = {};
   var included = json.apiDocument.included;
-  var posts = {};
   for (var i = 0; i < included.length; i++) {
     if (included[i].type === 'posts') {
       posts[included[i].id] = included[i].attributes.contentHtml;
     }
   }
 
-  var doc = json.apiDocument.data;
+  const doc = json.apiDocument.data;
   if (doc.length) {
     for (var i = 0; i < doc.length; i++) {
       addPost(all, doc[i], posts);
@@ -89,15 +89,15 @@ function addRenderedContent(result, json) {
 }
 
 function addPost(result, post, posts) {
-  var entry = document.createElement('div');
+  const entry = document.createElement('div');
   entry.className = 'post';
 
-  var a = document.createElement('a');
+  const a = document.createElement('a');
   a.href = 'blog/' + post.attributes.slug;
   a.innerText = post.attributes.title;
   entry.appendChild(a);
 
-  var time = document.createElement('span');
+  const time = document.createElement('span');
   time.className = 'time';
   time.innerText = post.attributes.lastPostedAt;
   entry.appendChild(time);
@@ -112,8 +112,8 @@ function addPost(result, post, posts) {
 
 
 function addDebugInfo(result, json) {
-  var details = document.createElement('details');
-  var summary = document.createElement('summary');
+  const details = document.createElement('details');
+  const summary = document.createElement('summary');
   summary.innerText = '(click to see debug JSON)';
   details.appendChild(summary);
 
@@ -123,23 +123,23 @@ function addDebugInfo(result, json) {
 }
 
 function addTitleDescription(result) {
-  var title = document.head.getElementsByTagName('title')[0];
+  const title = document.head.getElementsByTagName('title')[0];
   if (title) {
     var h1 = document.createElement('h1');
     h1.innerText = title.innerText;
     result.appendChild(h1);
   }
 
-  var meta = document.head.querySelector('meta[name="description"]');
+  const meta = document.head.querySelector('meta[name="description"]');
   if (meta) {
-    var cite = document.createElement('blockquote');
+    const cite = document.createElement('blockquote');
     cite.innerText = meta.content;
     result.appendChild(cite);
   }
 }
 
 function addJson(result, json) {
-  var code = document.createElement('pre');
+  const code = document.createElement('pre');
   if (typeof json === 'string') {
     code.innerText = json;
   } else {
