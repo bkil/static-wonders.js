@@ -80,22 +80,27 @@ function getJson() {
 
 function addRenderedContent(result) {
   const json = getJson();
+  let added = false;
   if (typeof json === 'object') {
     if (json.DATA) {
-      addAlbum(result, json.DATA, json);
+      added |= addAlbum(result, json.DATA, json, true);
     }
 
     if (json.ALBUMS && json.ALBUMS.data) {
       Array.from(json.ALBUMS.data).forEach(album =>
-        addAlbum(result, album, album)
+        added |= addAlbum(result, album, album, false)
       );
+    }
+
+    if (!added) {
+      added |= addSongs(result, [json.DATA]);
     }
   }
 
   addDebugInfo(result, json);
 }
 
-function addAlbum(result, m, j) {
+function addAlbum(result, m, j, open) {
   if (!m.ARTISTS || !m.ALB_TITLE || !j.SONGS || !j.SONGS.data) {
     return false;
   }
@@ -108,6 +113,7 @@ function addAlbum(result, m, j) {
   const artists = Array.from(m.ARTISTS).map(m => m.ART_NAME).join(', ')
   summary.textContent = artists + ': ' + m.ALB_TITLE + ' (' + date + label + ')';
   details.appendChild(summary);
+  details.open = open;
 
   const success = addSongs(details, j.SONGS.data);
   result.appendChild(details);
