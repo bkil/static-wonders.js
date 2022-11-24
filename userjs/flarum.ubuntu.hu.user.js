@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://ubuntu.hu/blog*
 // @grant       none
-// @version     2022.11.1
+// @version     2022.11.19
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -49,6 +49,7 @@ function addStyle() {
     'blockquote { border-left-style: solid; padding-left: 1em; }' +
     '.userscript .post { border-bottom: 1px solid }' +
     '.userscript .time, .userscript .user { margin-left: 2em }' +
+    '.userscript .thread, .userscript .action { margin-left: 2em; font-size: smaller; }' +
     '#app { min-height: initial; padding-bottom: initial; }'
   ;
   document.body.appendChild(style);
@@ -119,8 +120,52 @@ function addPost(result, post, posts, users) {
   body.innerHTML = posts[first].attributes.contentHtml;
   entry.appendChild(body);
   result.appendChild(entry);
+
+  if (post.relationships.posts) {
+    addReplies(result, first, post.relationships.posts.data, posts, users);
+  }
 }
 
+function addReplies(result, first, allReplies, posts, users) {
+  const replies = allReplies.filter(p => (p.type === 'posts') && (p.id !== first));
+  if (!replies.length) {
+    return;
+  }
+
+  const thread = document.createElement('div');
+  thread.className = 'thread';
+
+  replies.forEach(reply => {
+    const p = posts[reply.id];
+    const entry = document.createElement('div');
+    entry.className = 'post';
+
+    const time = document.createElement('span');
+    time.className = 'time';
+    time.textContent = p.attributes.createdAt;
+    entry.appendChild(time);
+
+    const user = document.createElement('span');
+    user.className = 'user';
+    user.textContent = users[p.relationships.user.data.id].attributes.username;
+    entry.appendChild(user);
+
+    if (p.attributes.contentType === 'comment') {
+      const body = document.createElement('div');
+      body.innerHTML = p.attributes.contentHtml;
+      entry.appendChild(body);
+    } else {
+      const action = document.createElement('span');
+      action.className = 'action';
+      action.textContent = p.attributes.contentType + ' ' + JSON.stringify(p.attributes.content);
+      entry.appendChild(action);
+    }
+
+    thread.appendChild(entry);
+  });
+
+  result.appendChild(thread);
+}
 
 function addDebugInfo(result, json) {
   const details = document.createElement('details');
