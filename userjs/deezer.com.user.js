@@ -97,7 +97,7 @@ function addRenderedContent(result) {
 
 function addAlbum(result, m, j) {
   if (!m.ARTISTS || !m.ALB_TITLE || !m.ORIGINAL_RELEASE_DATE || !j.SONGS || !j.SONGS.data) {
-    return;
+    return false;
   }
 
   const details = document.createElement('details');
@@ -108,10 +108,17 @@ function addAlbum(result, m, j) {
   summary.textContent = artists + ': ' + m.ALB_TITLE + ' (' + m.ORIGINAL_RELEASE_DATE + label + ')';
   details.appendChild(summary);
 
+  const success = addSongs(details, j.SONGS.data);
+  result.appendChild(details);
+  return success;
+}
+
+function addSongs(result, songs) {
   const table = document.createElement('table');
   const body = table.createTBody();
+  let success = false;
 
-  Array.from(j.SONGS.data).forEach(s => {
+  Array.from(songs).forEach(s => {
     const row = body.insertRow();
 
     row.insertCell().textContent = s.DISK_NUMBER ? s.DISK_NUMBER : '';
@@ -122,11 +129,12 @@ function addAlbum(result, m, j) {
 
     if (s.MEDIA && s.MEDIA[0] && s.MEDIA[0].HREF) {
       play.appendChild(createPlaceholder(s.MEDIA[0].HREF));
+      success = true;
     }
   });
 
-  details.appendChild(table);
-  result.appendChild(details);
+  result.appendChild(table);
+  return success;
 }
 
 function createPlaceholder(url) {
