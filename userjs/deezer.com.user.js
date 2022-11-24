@@ -121,21 +121,25 @@ function addAlbum(result, m, j) {
     const play = row.insertCell();
 
     if (s.MEDIA && s.MEDIA[0] && s.MEDIA[0].HREF) {
-      const button = document.createElement('button');
-      button.textContent = 'play';
-      const url = s.MEDIA[0].HREF;
-      button.onclick = function() {
-        const player = createPlayer(url);
-        play.removeChild(button);
-        play.appendChild(player);
-        player.autoplay = true;
-      }
-      play.appendChild(button);
+      play.appendChild(createPlaceholder(s.MEDIA[0].HREF));
     }
   });
 
   details.appendChild(table);
   result.appendChild(details);
+}
+
+function createPlaceholder(url) {
+  const button = document.createElement('button');
+  button.textContent = 'play';
+
+  button.onclick = function() {
+    const player = createPlayer(url);
+    button.parentElement.appendChild(player);
+    button.parentElement.removeChild(button);
+    player.autoplay = true;
+  }
+  return button;
 }
 
 function createPlayer(url) {
