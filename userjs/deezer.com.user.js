@@ -122,7 +122,6 @@ function addSongs(result, songs) {
   Array.from(songs).forEach(s => {
     const row = body.insertRow();
 
-    row.insertCell().textContent = s.DISK_NUMBER ? s.DISK_NUMBER : '';
     row.insertCell().textContent = s.TRACK_NUMBER ? s.TRACK_NUMBER : '';
     row.insertCell().textContent = s.SNG_TITLE ? s.SNG_TITLE : '';
     row.insertCell().textContent = s.ART_NAME ? s.ART_NAME : '';
