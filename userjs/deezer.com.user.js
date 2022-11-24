@@ -96,7 +96,7 @@ function addRenderedContent(result) {
 }
 
 function addAlbum(result, m, j) {
-  if (!m.ARTISTS || !m.ALB_TITLE || !m.ORIGINAL_RELEASE_DATE || !j.SONGS || !j.SONGS.data) {
+  if (!m.ARTISTS || !m.ALB_TITLE || !j.SONGS || !j.SONGS.data) {
     return false;
   }
 
@@ -104,8 +104,9 @@ function addAlbum(result, m, j) {
   const summary = document.createElement('summary');
 
   const label = m.LABEL_NAME ? ', ' + m.LABEL_NAME : m.PRODUCER_LINE ? ', ' + m.PRODUCER_LINE : '';
+  const date = m.ORIGINAL_RELEASE_DATE ? m.ORIGINAL_RELEASE_DATE : m.PHYSICAL_RELEASE_DATE ? m.PHYSICAL_RELEASE_DATE : '';
   const artists = Array.from(m.ARTISTS).map(m => m.ART_NAME).join(', ')
-  summary.textContent = artists + ': ' + m.ALB_TITLE + ' (' + m.ORIGINAL_RELEASE_DATE + label + ')';
+  summary.textContent = artists + ': ' + m.ALB_TITLE + ' (' + date + label + ')';
   details.appendChild(summary);
 
   const success = addSongs(details, j.SONGS.data);
