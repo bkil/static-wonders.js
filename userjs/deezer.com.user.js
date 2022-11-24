@@ -7,7 +7,7 @@
 // @match       https://www.deezer.com/*/album/*
 // @match       https://www.deezer.com/*/artist/*
 // @grant       none
-// @version     2022.11.19
+// @version     2022.11.20
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -147,6 +147,7 @@ function addSongs(result, songs) {
 
 function createPlaceholder(url) {
   const button = document.createElement('button');
+  button.className = 'player';
   button.textContent = 'play';
 
   button.onclick = function() {
@@ -154,12 +155,14 @@ function createPlaceholder(url) {
     button.parentElement.appendChild(player);
     button.parentElement.removeChild(button);
     player.autoplay = true;
+    player.focus();
   }
   return button;
 }
 
 function createPlayer(url) {
   const player = document.createElement('audio');
+  player.className = 'player';
   player.controls = true;
   player.preload = 'none';
   player.src = url;
@@ -171,6 +174,31 @@ function createPlayer(url) {
       }
     });
   }
+
+  player.onended = function() {
+    const places = Array.from(document.getElementsByClassName('player'));
+    const i = places.findIndex(p => p === player);
+    const next = places[i < places.length - 1 ? i + 1 : 0];
+
+    let details = next.parentElement;
+    while (details && details.tagName !== 'DETAILS') {
+      details = details.parentElement;
+    }
+    if (details) {
+      details.open = true;
+    }
+
+    if (next.tagName === 'AUDIO') {
+      next.play();
+      next.focus();
+    } else if (next.tagName === 'BUTTON') {
+      next.onclick();
+    } else {
+      console.log('error: autoplay stopped at unknown entity');
+      console.log(next);
+    }
+  }
+
   return player;
 }
 
