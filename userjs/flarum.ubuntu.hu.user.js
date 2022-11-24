@@ -22,17 +22,22 @@ function main() {
   result.className = 'userscript';
 
   const json = getJson();
-  addRenderedContent(result, json);
 
-  addDebugInfo(result, json);
+  try {
+    addRenderedContent(result, json);
+  } catch (e) {
+    throw e;
+  } finally {
+    addDebugInfo(result, json);
 
-  var container = document.getElementById('app');
-  if (!container) {
-    container = document.body;
+    let container = document.getElementById('app');
+    if (!container) {
+      container = document.body;
+    }
+    container.appendChild(result);
+
+    addStyle();
   }
-  container.appendChild(result);
-
-  addStyle();
 }
 
 function addStyle() {
