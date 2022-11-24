@@ -3,9 +3,9 @@
 // @author      bkil
 // @description Support track preview without extra resources or round trips
 // @namespace   bkil.hu
-// @match       https://www.deezer.com/en/track/*
-// @match       https://www.deezer.com/en/album/*
-// @match       https://www.deezer.com/en/artist/*
+// @match       https://www.deezer.com/*/track/*
+// @match       https://www.deezer.com/*/album/*
+// @match       https://www.deezer.com/*/artist/*
 // @grant       none
 // @version     2022.11.19
 // @license     MIT
