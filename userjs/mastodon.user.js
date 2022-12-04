@@ -1,12 +1,13 @@
 // ==UserScript==
-// @name        Mastodon-Pleroma noJS reveal
+// @name        Mastodon, Pleroma, MissKey noJS reveal
 // @author      bkil
 // @description Preview without extra round trips
 // @namespace   bkil.hu
 // @match       https://*.*/notice/*
+// @match       https://*.*/notes/*
 // @match       https://*.*/@*/*
 // @grant       none
-// @version     2022.12.01
+// @version     2022.12.02
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -19,7 +20,7 @@
 main();
 
 function main() {
-  const sites = /^\/(notice\/[0-9A-Za-z]{18}|@[^\/]+\/[0-9]+)$/;
+  const sites = /^\/(notice\/[0-9A-Za-z]{18}|@[^\/]+\/[0-9]+|notes\/[0-9a-z]{10})$/;
   if (window.location.hash || window.location.search || !window.location.pathname.match(sites)) {
     return
   }
@@ -36,7 +37,8 @@ function addTitleDescription(result) {
   result.appendChild(el);
 
   el = document.createElement('p');
-  el.innerText = document.head.querySelector('meta[property="og:description"]')?.content;
+  el.innerText = document.head.querySelector('meta[property="og:description"]')?.content ??
+    document.head.querySelector('meta[name="description"]')?.content;
   result.appendChild(el);
 
   const alt = document.head.querySelector('meta[property="og:image:alt"]')?.content;
@@ -76,6 +78,7 @@ function addStyle() {
 
   style.textContent = `
     h1 { font: initial; font-size: 2em }
+    #splash { display: none }
     img { max-width: 100%; font-size: xx-small }
     blockquote { border-left: 1px solid; padding-left: 1em }
     `;
