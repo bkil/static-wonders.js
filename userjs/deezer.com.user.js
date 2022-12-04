@@ -7,7 +7,7 @@
 // @match       https://www.deezer.com/*/album/*
 // @match       https://www.deezer.com/*/artist/*
 // @grant       none
-// @version     2022.11.21
+// @version     2022.11.22
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -132,6 +132,7 @@ function addSongs(result, songs) {
 
     row.insertCell().textContent = s.TRACK_NUMBER ? s.TRACK_NUMBER : '';
     row.insertCell().textContent = s.SNG_TITLE ? s.SNG_TITLE : '';
+    row.insertCell().textContent = s.VERSION ? s.VERSION : '';
     row.insertCell().textContent = s.ART_NAME ? s.ART_NAME : '';
     const play = row.insertCell();
 
