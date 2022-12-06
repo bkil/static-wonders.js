@@ -5,13 +5,11 @@
 // @namespace   bkil.hu
 // @match       http://imgur.com/*
 // @match       https://imgur.com/*
-// @match       http://i.imgur.com/*
-// @match       https://i.imgur.com/*
 // @match       http://www.imgur.com/*
 // @match       https://www.imgur.com/*
 // @run-at      document-start
 // @grant       none
-// @version     2022.12.01
+// @version     2022.12.02
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -21,6 +19,10 @@
 
 (function() {
   'use strict';
+
+  if (location.href.match(/^https?:\/\/(www\.)?imgur\.com\/[0-9a-zA-Z]{5,7}([sbtmlh]|_d|)\.(png|jpe?g)([?].*)?$/)) {
+    return
+  }
 
   // https://codeberg.org/video-prize-ranch/rimgo/src/branch/main/instances.json
   const domains = [
