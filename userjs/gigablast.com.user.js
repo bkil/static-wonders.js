@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://gigablast.com/*
 // @grant       none
-// @version     2022.9.1
+// @version     2022.12.1
 // @license     MIT
 // @homepageURL https://github.com/bkil/static-wonders.js
 // @supportURL  https://gitlab.com/bkil/static-wonders.js/issues
@@ -29,7 +29,7 @@
 
   const r =
     document.body.getAttribute('onload')
-    .match(/(&rand=[^']*)(.|\n)*(pxb=[^']*)/);
+    .match(/(&rand=[^']*)'([^']|\n)*'([^']*)'/);
   if (r) {
     get(window.location + r[1] + r[3]);
   } else {
