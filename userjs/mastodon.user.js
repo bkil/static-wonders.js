@@ -7,7 +7,7 @@
 // @match       https://*.*/notes/*
 // @match       https://*.*/@*/*
 // @grant       none
-// @version     2022.12.02
+// @version     2022.12.10
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -80,7 +80,7 @@ function addStyle() {
     h1 { font: initial; font-size: 2em }
     #splash { display: none }
     img { max-width: 100%; font-size: xx-small }
-    blockquote { border-left: 1px solid; padding-left: 1em }
+    blockquote { border-left: 1px solid; padding-left: 1em; margin-left: 1em }
     `;
   document.body.appendChild(style);
 }
