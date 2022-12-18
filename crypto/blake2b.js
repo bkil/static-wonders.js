@@ -1,5 +1,5 @@
 // Copyright (c) 2022 bkil.hu
-
+'use strict';
 const v = new Uint32Array(32);
 const m = new Uint32Array(v);
 const chunk = new Uint8Array(128);
