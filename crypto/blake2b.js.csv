@@ -1,0 +1,13 @@
+A,add
+C,compress
+M,mix
+R,rotr
+P,rot
+X,xor
+b,chunk
+d,input
+f,last
+o,out
+r,read
+s,SIGMA
+z,IV

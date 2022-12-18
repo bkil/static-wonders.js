@@ -3,7 +3,7 @@
 
 O="$(readlink -f "$(dirname "$0")")"
 
-for B in sha1; do
+for B in sha1 blake2b; do
   {
     sed "s~^<body>~  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>\n&~" $O/$B.html
 
