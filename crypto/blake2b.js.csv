@@ -1,13 +1,13 @@
 A,add
-C,compress
-M,mix
+F,compress
+G,mix
 R,rotr
 P,rot
 X,xor
-b,chunk
-d,input
+d,chunk
 f,last
 o,out
 r,read
+u,input
 s,SIGMA
 z,IV
