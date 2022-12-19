@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8>
+  <title>Mixed secure context</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta name=referrer content=no-referrer>
+<body>
+  Please keep this window open while you use the app!
+  <a target=secure-context-app>Click here to start the app</a>
+  <p></p>
+<script>
+'use strict';
+(() => {
+
+let parent;
+
+const init = () => {
+  log(`debug: isSecureContext=${isSecureContext}`);
+
+  window.onmessage = e => {
+    if (e.data === 'close') {
+      setParent(null);
+      window.close();
+    } else if ((e.data.url) && (e.data.kind === 'xhr')) {
+      setParent(e.source);
+      doXHR(e.data.url, e.data.headers, e.data.timeout, result => e.source.postMessage(result, '*'));
+    } else {
+      log(`error: invalid request from ${e.origin}: ${JSON.stringify(e.data)}`);
+      e.source.postMessage({success: false, url: e.data.url, data: e.data}, '*');
+    }
+  };
+
+  window.onbeforeunload = (e) => {
+    parent?.postMessage('closed', '*');
+  };
+
+  const a = document.querySelector('a');
+  const hash = window.location.hash.substr(1);
+  if (hash) {
+    a.href = hash;
+    a.onclick = (e) => {
+      createApp(a);
+      return false;
+    };
+    createApp(a);
+  } else if (window.opener) {
+    document.body.removeChild(a);
+    greetParent(window.opener);
+  } else {
+    log('error: missing URI in anchor or window.opener');
+  }
+}
+
+const createApp = (a) => {
+  const parent = window.open(a.href, a.target);
+  if (parent) {
+    greetParent(parent);
+  } else {
+    log('error: failed to create app window');
+  }
+};
+
+const greetParent = (newParent) => {
+  setParent(newParent);
+  try {
+    newParent.postMessage('opened', '*');
+  } catch (e) {
+    log('error: failed to message parent opener window');
+    console.log(e);
+  }
+}
+
+const setParent = (newParent) => {
+  if (parent) {
+    if (newParent === parent) {
+      return
+    }
+    try {
+      parent.postMessage('closed', '*');
+    } catch (e) {
+      console.log(`warning: error detaching from old parent ${parent}`);
+    }
+  }
+  if (newParent) {
+    log('debug: parent set');
+  } else {
+    log('debug: parent set to null');
+  }
+  parent = newParent;
+};
+
+const doXHR = (url, headers, timeout, cb) => {
+  const x = new XMLHttpRequest;
+  x.open('GET', url);
+  if (headers) {
+    headers.forEach(kv => x.setRequestHeader(kv[0], kv[1]));
+  }
+  if (timeout) {
+    x.timeout = timeout;
+  }
+
+  x.onload = e => {
+    log(`info: successfully fetched ${url}: ${x.responseText.length} bytes`);
+    cb({url: url, data: {success: (x.status >= 200) && (x.status < 400), status: x.status, data: x.responseText, headers: x.getAllResponseHeaders()}});
+  };
+  x.onerror = e => {
+    log(`warning: failed to fetch ${url}`);
+    console.log(e);
+    cb({url: url, data: {success: false}});
+  };
+  x.send();
+}
+
+const log = (text) => {
+  document.querySelector('p').innerText += `${(new Date).toISOString()} ${text}\n`;
+};
+
+init();
+
+})();
+</script>

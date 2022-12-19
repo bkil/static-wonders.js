@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8>
+  <title>Secure</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta name=referrer content=no-referrer>
+<body>
+  <a class=hosted href=# target=secure-context-mixer></a>
+  <a class=data href=((mixer)) target=secure-context-mixer>Copy & paste this data: URI into your address bar</a>
+  <form>
+    <label>Mixer<input class=mixer></label>
+    <label>Fetch<textarea class=fetch></textarea></label>
+    <label>Headers<textarea class=headers></textarea></label>
+    <input type=submit>
+  </form>
+  <p></p>
+<script>
+'use strict';
+(() => {
+
+let mixer;
+const mixerCb = {};
+let mixerCommands = [];
+let enableMixer = true;
+
+const init = () => {
+  log(`debug: isSecureContext=${isSecureContext}`);
+
+  const a = document.querySelector('a.hosted');
+
+  if (isSecureContext) {
+    const adata = document.querySelector('a.data');
+    adata.href += '#' + window.location.href;
+    adata.onclick = (e) => {
+      (async() => {
+        await navigator.clipboard.writeText(adata.href.substr(0, adata.href.indexOf('#')))
+        window.open('', adata.target);
+      })();
+      return false;
+    };
+
+    window.onmessage = (e) => {
+      if (e.data === 'opened') {
+        updateMixerLabel(e.source, a);
+        window.onbeforeunload = (e) => {
+          enableMixer = false;
+          mixer?.close();
+        };
+      } else if (e.data === 'closed') {
+        updateMixerLabel(null, a);
+        window.close();
+      } else if ((e.data.data !== undefined) && (mixerCb[e.data.url])) {
+        const cb = mixerCb[e.data.url];
+        delete mixerCb[e.data.url];
+        cb(e.data.data);
+      } else {
+        log(`error: invalid response from ${e.origin}: ${JSON.stringify(e.data)}`);
+      }
+    }
+  }
+
+  initForm(a);
+  updateMixerLabel(window.opener, a);
+};
+
+const updateMixerLabel = (newMixer, a) => {
+  if (newMixer !== mixer) {
+    mixer?.close();
+  }
+  mixer = newMixer;
+  if (mixer) {
+    enableMixer = true;
+    const commands = mixerCommands;
+    mixerCommands = [];
+    commands.forEach(c => askMixer(c.command, c.cb));
+
+    a.textContent = 'disable HTTP transfers';
+    a.onclick = (e) => {
+      enableMixer = false;
+      mixer?.postMessage('close', '*');
+      mixer?.close();
+      updateMixerLabel(null, a);
+      return false;
+    }
+  } else {
+    a.textContent = 'enable HTTP transfers';
+    a.onclick = null;
+    const mixerUrl = document.querySelector('.mixer').value;
+    if (mixerUrl) {
+      a.href = mixerUrl;
+      if (enableMixer) {
+        mixer = window.open(a.href, a.target);
+      }
+    } else {
+      a.removeAttribute('href');
+    }
+  }
+};
+
+const initForm = (a) => {
+  const form = document.forms[0];
+
+  form.onsubmit = (e) => {
+    let headers = [];
+    form.querySelector('.headers').value.split('\n').forEach(header => {
+      const [_, k, v] = header.match(/(^[^:]+): *([^ ].*)$/) ?? [];
+      if (k && v) {
+        headers.push([k, v]);
+      }
+    });
+
+    const urls = form.querySelector('.fetch').value;
+    if (urls) {
+      urls.split('\n').forEach(url => {
+        doXHR(url, headers, 5000, (result) =>
+          log(`debug: direct fetch ${url} ${JSON.stringify(headers)}: ${JSON.stringify(result)}`));
+        askMixer({kind: 'xhr', headers: headers, timeout: 5000, url: url}, (url) => (result) =>
+          log(`debug: mixer fetch ${url} ${JSON.stringify(headers)}: ${JSON.stringify(result)}`));
+      });
+    }
+    return false;
+  };
+
+  const p = new URLSearchParams(window.location.hash.substr(1));
+  form.querySelector('.headers').value = p.get('headers');
+  form.querySelector('.mixer').value = p.get('mixer');
+  const fetchUrl = p.get('fetch');
+  if (fetchUrl) {
+    form.querySelector('.fetch').value = fetchUrl;
+  }
+  if (fetchUrl) {
+    form.onsubmit();
+  }
+};
+
+const askMixer = (command, cb) => {
+  if (mixer) {
+    if (mixerCb[command.url]) {
+      log(`error: mixer fetch already in progress for ${command.url}`);
+    } else {
+      mixerCb[command.url] = cb(command.url);
+      mixer.postMessage(command, '*');
+    }
+  } else {
+    mixerCommands.push({command: command, cb: cb});
+  }
+};
+
+const doXHR = (url, headers, timeout, cb) => {
+  const x = new XMLHttpRequest;
+  x.open('GET', url);
+  if (headers) {
+    headers.forEach(kv => x.setRequestHeader(kv[0], kv[1]));
+  }
+  if (timeout) {
+    x.timeout = timeout;
+  }
+
+  x.onload = e => {
+    cb({url: url, data: {success: (x.status >= 200) && (x.status < 400), status: x.status, data: x.responseText, headers: x.getAllResponseHeaders()}});
+  };
+  x.onerror = e => {
+    console.log(e);
+    cb({url: url, data: {success: false}});
+  };
+  x.send();
+};
+
+const log = (text) => {
+  document.querySelector('p').innerText += `${(new Date).toISOString()} ${text}\n\n`;
+};
+
+init();
+
+})();
+</script>

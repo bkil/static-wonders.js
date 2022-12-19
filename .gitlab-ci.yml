@@ -4,6 +4,7 @@ pages:
   before_script:
   - apk update && apk add brotli
   - crypto/mk.sh
+  - jump/mk.sh
   script:
   - find . -type f -regex '.*\.\(htm\|html\|txt\|text\|js\|css\|json\|dz\|index\|csv\)$\|.*/LICENSE$' -exec gzip -9 -f -k {} \;
   - find . -type f -regex '.*\.\(htm\|html\|txt\|text\|js\|css\|json\|dz\|index\|csv\)$\|.*/LICENSE$' -exec brotli -f -k {} \;
