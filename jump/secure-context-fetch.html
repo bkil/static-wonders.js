@@ -20,7 +20,7 @@
 (() => {
 
 let mixer;
-const mixerCb = {};
+let mixerCb = {};
 let mixerCommands = [];
 let enableMixer = true;
 
@@ -42,13 +42,10 @@ const init = () => {
 
     window.onmessage = (e) => {
       if (e.data === 'opened') {
-        updateMixerLabel(e.source, a);
-        window.onbeforeunload = (e) => {
-          enableMixer = false;
-          mixer?.close();
-        };
+        enableMixer = true;
+        updateOpenMixerState(e.source, a);
       } else if (e.data === 'closed') {
-        updateMixerLabel(null, a);
+        updateMixerState(null, a);
         window.close();
       } else if ((e.data.data !== undefined) && (mixerCb[e.data.url])) {
         const cb = mixerCb[e.data.url];
@@ -60,27 +57,40 @@ const init = () => {
     }
   }
 
+  window.onbeforeunload = (e) => {
+    enableMixer = false;
+    mixer?.close();
+  };
+
   initForm(a);
-  updateMixerLabel(window.opener, a);
+  updateOpenMixerState(window.opener, a);
 };
 
-const updateMixerLabel = (newMixer, a) => {
+const updateOpenMixerState = (newMixer, a) => {
+  updateMixerState(newMixer, a);
+  if (newMixer) {
+    const commands = mixerCommands;
+    mixerCommands = [];
+    commands.forEach(c => askMixer(c.command, c.cb));
+  }
+};
+
+const updateMixerState = (newMixer, a) => {
   if (newMixer !== mixer) {
     mixer?.close();
   }
   mixer = newMixer;
-  if (mixer) {
-    enableMixer = true;
-    const commands = mixerCommands;
-    mixerCommands = [];
-    commands.forEach(c => askMixer(c.command, c.cb));
+  updateMixerLabel(a);
+};
 
+const updateMixerLabel = (a) => {
+  if (mixer) {
     a.textContent = 'disable HTTP transfers';
     a.onclick = (e) => {
       enableMixer = false;
       mixer?.postMessage('close', '*');
       mixer?.close();
-      updateMixerLabel(null, a);
+      updateMixerState(null, a);
       return false;
     }
   } else {
@@ -102,6 +112,9 @@ const initForm = (a) => {
   const form = document.forms[0];
 
   form.onsubmit = (e) => {
+    mixerCb = {};
+    mixerCommands = [];
+
     let headers = [];
     form.querySelector('.headers').value.split('\n').forEach(header => {
       const [_, k, v] = header.match(/(^[^:]+): *([^ ].*)$/) ?? [];
@@ -119,6 +132,8 @@ const initForm = (a) => {
           log(`debug: mixer fetch ${url} ${JSON.stringify(headers)}: ${JSON.stringify(result)}`));
       });
     }
+
+    updateMixerLabel(a);
     return false;
   };
 
