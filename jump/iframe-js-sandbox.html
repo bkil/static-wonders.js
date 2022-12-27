@@ -51,10 +51,10 @@
   <details>
     <summary>JavaScript?</summary>
     <button type=button>Update HTML</button>
-    <label>URL<input id=url maxlength=8192><label>
-    <label>HTML<textarea id=html maxlength=16384></textarea><label>
-    <label>CSS<textarea id=css maxlength=16384></textarea><label>
-    <label>JS<textarea id=js maxlength=16384></textarea><label>
+    <label>URL<input id=url maxlength=8192></label>
+    <label>HTML<textarea id=html maxlength=16384></textarea></label>
+    <label>CSS<textarea id=css maxlength=16384></textarea></label>
+    <label>JS<textarea id=js maxlength=16384></textarea></label>
   </details>
 
   <iframe
@@ -79,7 +79,7 @@ function init() {
 }
 
 function saveToAnchor() {
-  let p = new URLSearchParams;
+  const p = new URLSearchParams;
   const url = document.getElementById('url').value;
   const html = document.getElementById('html').value;
   const css = document.getElementById('css').value;
@@ -100,7 +100,7 @@ function saveToAnchor() {
 }
 
 function loadFromAnchor() {
-  let p = new URLSearchParams(window.location.hash.substring(1));
+  const p = new URLSearchParams(window.location.hash.substring(1));
   const url = p.get('url');
   const html = p.get('html');
   const css = p.get('css');
@@ -124,7 +124,7 @@ function loadFromAnchor() {
 }
 
 function renderInline(preview, html, css, js) {
-  const noImport = js.replace(/(^|[};]\s*)import ([\w]+)\s+from\s+'https:\/\/[^']*'/, '$1const $2 = {};');
+  const noImport = js?.replace(/(^|[};]\s*)import ([\w]+)\s+from\s+'https:\/\/[^']*'/, '$1const $2 = {};');
   preview.srcdoc =
     `<!DOCTYPE html>
     <html>
@@ -141,16 +141,16 @@ function renderInline(preview, html, css, js) {
     <body>
       ${html ?? ''}
       <script>
-        ${noImport}
+        ${noImport ?? ''}
       <` + `/script>
     </body>
     </html>
   `;
 }
 
-const escape = (s) => {
+function escape(s) {
   return new Option(s).innerHTML;
-};
+}
 
 init();
 })();
