@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>JS preview in iframe</title>
+  <link rel="shortcut icon" type=image/x-icon href=data:image/x-icon;,>
+  <meta name=viewport content='width=device-width, initial-scale=1.0'>
+  <style>
+    html, body {
+      height: 100%;
+    }
+
+    html, body, details, iframe {
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    button, textarea {
+      display: block;
+    }
+
+    details {
+      height: 3em;
+    }
+
+    iframe {
+      width: 100%;
+      height: calc(100% - 3.5em);
+    }
+
+    textarea {
+      height: calc(33% - 4em);
+      width: calc(100% - 1em);
+    }
+
+    details {
+      overflow: auto;
+    }
+
+    [open] {
+      height: 90%;
+    }
+
+    [open] + * {
+      height: calc(90% - 0.5em);
+    }
+  </style>
+</head>
+<body>
+  <details>
+    <summary>JavaScript?</summary>
+    <button type=button>Update HTML</button>
+    <label>URL<input id=url maxlength=8192><label>
+    <label>HTML<textarea id=html maxlength=16384></textarea><label>
+    <label>CSS<textarea id=css maxlength=16384></textarea><label>
+    <label>JS<textarea id=js maxlength=16384></textarea><label>
+  </details>
+
+  <iframe
+    id=preview
+    credentialless
+    sandbox='allow-scripts allow-modals allow-orientation-lock allow-pointer-lock allow-presentation'
+    title='Preview'
+    allow="accelerometer 'none'; ambient-light-sensor 'none'; autoplay 'none'; battery 'none'; bluetooth 'none'; browsing-topics 'none'; camera 'none'; clipboard-read 'none'; clipboard-write 'none'; conversion-measurement 'none'; cross-origin-isolated 'none'; display-capture 'none'; document-domain 'none'; encrypted-media 'none'; execution-while-not-rendered 'none'; execution-while-out-of-viewport 'none'; focus-without-user-activation 'none'; fullscreen 'none'; gamepad 'none'; geolocation 'none'; gyroscope 'none'; hid 'none'; idle-detection 'none'; keyboard-map 'none'; local-fonts 'none'; magnetometer 'none'; microphone 'none'; midi 'none'; navigation-override 'none'; payment 'none'; picture-in-picture 'none'; publickey-credentials-get 'none'; screen-wake-lock 'none'; serial 'none'; speaker-selection 'none'; sync-script 'none'; sync-xhr 'none'; trust-token-redemption 'none'; unload 'none'; usb 'none'; vertical-scroll 'none'; web-share 'none'; window-placement 'none'; xr-spatial-tracking 'none'"
+    csp="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob: mediastream:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src data: blob: 'unsafe-inline' 'unsafe-eval'; base-uri 'none'; form-action 'none'; navigate-to 'none';"
+    referrerpolicy='no-referrer'
+  >iframe?
+  </iframe>
+<script>
+(() => {
+'use strict';
+
+function init() {
+  document.getElementsByTagName('button')[0].onclick = saveToAnchor;
+  window.onhashchange = loadFromAnchor;
+  loadFromAnchor();
+  document.getElementsByTagName('summary')[0].innerHTML = 'Click to edit frontend';
+}
+
+function saveToAnchor() {
+  let p = new URLSearchParams;
+  const url = document.getElementById('url').value;
+  const html = document.getElementById('html').value;
+  const css = document.getElementById('css').value;
+  const js = document.getElementById('js').value;
+  if (url) {
+    p.set('url', url);
+  }
+  if (html) {
+    p.set('html', html);
+  }
+  if (css) {
+    p.set('css', css);
+  }
+  if (js) {
+    p.set('js', js);
+  }
+  console.log(p.get('js'));
+  console.log(p.toString());
+  window.location.hash = p.toString();
+}
+
+function loadFromAnchor() {
+  let p = new URLSearchParams(window.location.hash.substring(1));
+  const url = p.get('url');
+  const html = p.get('html');
+  const css = p.get('css');
+  const js = p.get('js');
+  document.getElementById('url').value = url ?? '';
+  document.getElementById('html').value = html ?? '';
+  document.getElementById('css').value = css ?? '';
+  document.getElementById('js').value = js ?? '';
+
+  const preview = document.getElementById('preview');
+  if (url) {
+    const match = url.match(/^javascript:(.*)$/);
+    if (match) {
+      renderInline(preview, null, null, match[1]);
+    } else {
+      preview.src = url;
+    }
+  } else if (html || css || js) {
+    renderInline(preview, html, css, js);
+  }
+}
+
+function renderInline(preview, html, css, js) {
+  const noImport = js.replace(/(^|[};]\s*)import ([\w]+)\s+from\s+'https:\/\/[^']*'/, '$1const $2 = {};');
+  preview.srcdoc =
+    `<!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset=utf-8>
+      <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+      <meta name=viewport content='width=device-width, initial-scale=1.0'>
+      <meta http-equiv=x-dns-prefetch-control content=off>
+      <meta http-equiv="Content-Security-Policy" content="${preview.getAttribute('csp')}">
+      <style>
+        ${css ?? ''}
+      </style>
+    </head>
+    <body>
+      ${html ?? ''}
+      <script type=module>
+        ${noImport}
+      <` + `/script>
+    </body>
+    </html>
+  `;
+}
+
+const escape = (s) => {
+  return new Option(s).innerHTML;
+};
+
+init();
+})();
+</script>
+</body>
+</html>
