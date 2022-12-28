@@ -53,7 +53,7 @@ const showEmojiSelector = () => {
 
 const getAllEmoji = () => {
   let emoji = '';
-  const regexp = /[^\P{Extended_Pictographic}\P{Assigned}\p{Emoji_Component}\p{Join_Control}]/u;
+  const regexp = /[^\P{Extended_Pictographic}\P{Assigned}\p{Emoji_Component}]/u;
   for (let i = 0; i < 0x20000; i++) {
     const char = String.fromCodePoint(i);
     if (regexp.test(char)) {
