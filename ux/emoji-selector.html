@@ -6,9 +6,8 @@
 <style>
 
 .emoji {
-  padding: 1em;
+  padding: 1.2em;
   margin: 1em;
-  padding-right: 1.5em;
   font-family: monospace;
   background-color: white;
   border: 1px solid;
@@ -23,16 +22,15 @@
   text-align: center;
 }
 
-.emoji span:hover {
+.emoji span:hover::before {
   position: absolute;
-  background-color: white;
+  content: attr(data-char);
   font-size: xx-large;
-  outline: auto;
-}
-
-.emoji span:hover + span {
-  padding-left: 2.75em;
-  width: 1.5em;
+  background-color: white;
+  padding: 0.5em;
+  margin-left: -0.75em;
+  margin-top: -0.5em;
+  border: 1px solid;
 }
 
 </style>
@@ -59,7 +57,7 @@ const getAllEmoji = () => {
   for (let i = 0; i < 0x20000; i++) {
     const char = String.fromCodePoint(i);
     if (regexp.test(char)) {
-      emoji += `<span>${char}</span> `;
+      emoji += `<span data-char="${char}">${char}</span> `;
     }
   }
   return emoji;
