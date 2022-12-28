@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8>
+  <title>Emoji Selector</title>
+<style>
+
+.emoji {
+  padding: 1em;
+  margin: 1em;
+  padding-right: 1.5em;
+  font-family: monospace;
+  background-color: white;
+  border: 1px solid;
+  line-height: 1.5em;
+}
+
+.emoji span {
+  display: inline-block;
+  padding: 0.25em;
+  width: 1.5em;
+  height: 1.5em;
+  text-align: center;
+}
+
+.emoji span:hover {
+  position: absolute;
+  background-color: white;
+  font-size: xx-large;
+  outline: auto;
+}
+
+.emoji span:hover + span {
+  padding-left: 2.75em;
+  width: 1.5em;
+}
+
+</style>
+<body>
+  <textarea autofocus></textarea>
+  <div class=emoji></div>
+
+<script>
+'use strict';
+
+const showEmojiSelector = () => {
+  const emoji = document.querySelector('.emoji');
+  emoji.innerHTML = getAllEmoji();
+
+  const textarea = document.querySelector('textarea');
+  emoji.querySelectorAll('span').forEach((span) => {
+    span.onclick = (e) => textarea.value += span.textContent;
+  });
+};
+
+const getAllEmoji = () => {
+  let emoji = '';
+  const regexp = /[^\P{Extended_Pictographic}\P{Assigned}\p{Emoji_Component}\p{Join_Control}]/u;
+  for (let i = 0; i < 0x20000; i++) {
+    const char = String.fromCodePoint(i);
+    if (regexp.test(char)) {
+      emoji += `<span>${char}</span> `;
+    }
+  }
+  return emoji;
+};
+
+showEmojiSelector();
+
+</script>
