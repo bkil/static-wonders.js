@@ -8,7 +8,6 @@
 .emoji {
   padding: 1.2em;
   margin: 1em;
-  font-family: monospace;
   background-color: white;
   border: 1px solid;
   line-height: 1.5em;
@@ -22,7 +21,7 @@
   text-align: center;
 }
 
-.emoji span:hover::before {
+.emoji span[data-char]:hover::before {
   position: absolute;
   content: attr(data-char);
   font-size: xx-large;
@@ -54,10 +53,15 @@ const showEmojiSelector = () => {
 const getAllEmoji = () => {
   let emoji = '';
   const regexp = /[^\P{Extended_Pictographic}\P{Assigned}\p{Emoji_Component}]/u;
+  let last;
   for (let i = 0; i < 0x20000; i++) {
     const char = String.fromCodePoint(i);
     if (regexp.test(char)) {
+      if (last && (i !== last + 1)) {
+        emoji += `<span>&nbsp;</span> `;
+      }
       emoji += `<span data-char="${char}">${char}</span> `;
+      last = i;
     }
   }
   return emoji;
