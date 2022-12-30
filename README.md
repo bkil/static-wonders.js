@@ -12,3 +12,5 @@ Demonstrating what you can achieve without mandatory usage of any kind custom of
 * https://bkil.gitlab.io/static-wonders.js/crypto/sha1-inlined.html
 * https://bkil.gitlab.io/static-wonders.js/crypto/blake2b-inlined.html
 * https://bkil.gitlab.io/static-wonders.js/ux/emoji-selector.html
+* https://bkil.gitlab.io/static-wonders.js/ux/emoji-selector-category.html
+* https://bkil.gitlab.io/static-wonders.js/ux/unicode-selector.html
