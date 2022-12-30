@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8>
+  <title>Emoji Selector</title>
+<style>
+
+body {
+  overflow: scroll;
+}
+
+button:focus {
+  color: grey;
+}
+
+.emoji {
+  padding: 1.2em;
+  margin: 1em;
+  background-color: white;
+  border: 1px solid;
+  line-height: 1.5em;
+}
+
+.emoji span {
+  display: inline-block;
+  padding: 0.25em;
+  width: 1.5em;
+  height: 1.5em;
+  text-align: center;
+}
+
+.emoji span[data-char]:hover::before {
+  position: absolute;
+  content: attr(data-char);
+  font-size: xx-large;
+  background-color: white;
+  padding: 0.5em;
+  margin-left: -0.75em;
+  margin-top: -0.5em;
+  border: 1px solid;
+}
+
+</style>
+<body>
+  <textarea autofocus></textarea>
+  <div class=categories></div>
+  <div class=emoji></div>
+  <div class=status>JavaScript computing Unicode categories</div>
+
+<script>
+'use strict';
+
+const showEmojiSelector = () => {
+  const catDiv = document.querySelector('.categories');
+  const emojiDiv = document.querySelector('.emoji');
+
+  getCategoryEmoji().forEach(([name, count, emoji]) => {
+    const div = document.createElement('div');
+    div.className = name;
+    div.innerHTML = emoji;
+    div.hidden = true;
+    div.querySelectorAll('span').forEach((span) => {
+      const textarea = document.querySelector('textarea');
+      span.onclick = (e) => textarea.value += span.textContent;
+    });
+    emojiDiv.appendChild(div);
+
+    const button = document.createElement('button');
+    button.textContent = `${name} (${count})`;
+    button.onclick = (e) => {
+      emojiDiv.querySelector(`.${name}`).hidden = false;
+      emojiDiv.querySelectorAll(`div:not(.${name})`).forEach((e) => e.hidden = true);
+    };
+    catDiv.appendChild(button);
+  });
+  document.querySelector('.status').hidden = true;
+};
+
+const getCategoryEmoji = () => {
+  const interest = /[\u{10000}-\u{100FA}\u{10600}-\u{10767}\u{101D0}-\u{101FC}\u{10980}-\u{1099F}\u{13000}-\u{16A38}\p{Extended_Pictographic}\p{Pattern_Syntax}\p{Regional_Indicator}\u{1F000}-\u{1FAFF}]|[^\P{Changes_When_NFKC_Casefolded}\p{Alphabetic}\p{Math}\p{Diacritic}\p{Radical}\p{ASCII}]/u;
+  const ranges = {
+    _Linear_B_sign: /[\u{10000}-\u{100FA}]/u,
+    _Linear_A_sign: /[\u{10600}-\u{10767}]/u,
+    _Phaistos_Disc_sign: /[\u{101D0}-\u{101FC}]/u,
+    _Meroitic: /[\u{10980}-\u{1099F}]/u,
+    _Egyptian_Anatolian_Bamum: /[\u{13000}-\u{16A38}]/u,
+  };
+
+  const props = [
+    'ASCII_Hex_Digit',
+    'Hex_Digit',
+    'ASCII',
+    'Dash',
+    'Quotation_Mark',
+    'Sentence_Terminal',
+    'Terminal_Punctuation',
+    'Extender',
+    'Regional_Indicator',
+    'Emoji_Component',
+    'Emoji_Modifier_Base',
+    'Emoji_Presentation',
+    'Emoji',
+    'Extended_Pictographic',
+    'Logical_Order_Exception',
+    'Soft_Dotted',
+    'Radical',
+    'Diacritic',
+    'Grapheme_Extend',
+    'Case_Ignorable',
+    'Math',
+    'Bidi_Mirrored',
+    'Pattern_Syntax',
+    'Unified_Ideograph',
+    'Ideographic',
+    'Changes_When_Titlecased',
+    'Changes_When_Uppercased',
+    'Changes_When_Casefolded',
+    'Changes_When_Lowercased',
+    'Lowercase',
+    'Uppercase',
+    'Alphabetic',
+    'Changes_When_NFKC_Casefolded',
+    'Grapheme_Base',
+// unordered, just for completeness' sake
+    'Bidi_Control',
+    'Default_Ignorable_Code_Point',
+    'Deprecated',
+    'Join_Control',
+    'Emoji_Modifier',
+    'IDS_Binary_Operator',
+    'IDS_Trinary_Operator',
+    'ID_Start',
+    'ID_Continue',
+    'XID_Continue',
+    'XID_Start',
+    'Noncharacter_Code_Point',
+    'Pattern_White_Space',
+    'Changes_When_Casemapped',
+    'Cased',
+    ];
+  let emoji = {};
+  let last = {};
+  const interesting = 'Interesting';
+  const others = 'Others';
+  const regexp = Object.entries(ranges).concat(props.map(prop =>
+    [prop, new RegExp(`\\p\{${prop}\}`, 'u')]
+  ));
+  for (let i = 0; i < 0x110000; i++) {
+    const char = String.fromCodePoint(i);
+    if (/\P{Assigned}/u.test(char)) {
+      continue;
+    }
+    let names = [];
+    regexp.forEach(([name, r]) => {
+      if (r.test(char)) {
+        names.push(name);
+      }
+    });
+
+    if (!names.length) {
+      names = [others];
+    }
+    const name = names[0];
+    const insert = (name) => {
+      if (!emoji[name]) {
+        emoji[name] = {html: '', count: 0};
+      }
+      if (last[name] && (i !== last[name] + 1)) {
+        emoji[name].html += `<span>&nbsp;<`+`/span> `;
+      }
+      emoji[name].html += `<span data-char="${char}" title="${i.toString(16)} ${names.join(' ')}">${char}<`+`/span> `;
+      emoji[name].count++;
+      last[name] = i;
+    };
+    insert(name);
+
+    if (interest.test(char)) {
+      insert(interesting);
+    }
+  }
+  const emojis = [[interesting, null]].concat(regexp).concat([[others, null]]).map(([name,]) =>
+    [name, emoji[name]?.count ?? 0, emoji[name]?.html ?? '']);
+  return emojis;
+};
+
+setTimeout(showEmojiSelector, 100);
+
+</script>

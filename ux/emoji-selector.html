@@ -35,7 +35,7 @@
 </style>
 <body>
   <textarea autofocus></textarea>
-  <div class=emoji></div>
+  <div class=emoji>JavaScript computing Unicode categories</div>
 
 <script>
 'use strict';
@@ -52,11 +52,11 @@ const showEmojiSelector = () => {
 
 const getAllEmoji = () => {
   let emoji = '';
-  const regexp = /[^\P{Extended_Pictographic}\P{Assigned}\p{Emoji_Component}]/u;
+  const regexp = /[\u{10000}-\u{100FA}\u{10600}-\u{10767}\u{101D0}-\u{101FC}\u{10980}-\u{1099F}\u{13000}-\u{16A38}\u{1F000}-\u{1FAFF}\p{Extended_Pictographic}\p{Regional_Indicator}]|[^\P{Pattern_Syntax}\p{Diacritic}\p{Radical}\p{ASCII}]|[^\P{Changes_When_NFKC_Casefolded}\p{Alphabetic}\p{Math}\p{Diacritic}\p{Radical}\p{ASCII}]/u;
   let last;
   for (let i = 0; i < 0x20000; i++) {
     const char = String.fromCodePoint(i);
-    if (regexp.test(char)) {
+    if (/\p{Assigned}/u.test(char) && regexp.test(char)) {
       if (last && (i !== last + 1)) {
         emoji += `<span>&nbsp;</span> `;
       }
