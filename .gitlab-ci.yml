@@ -2,7 +2,7 @@ image: alpine:latest
 pages:
   stage: deploy
   before_script:
-  - apk update && apk add brotli
+  - apk update && apk add brotli git
   - crypto/mk.sh
   - jump/mk.sh
   - userjs/mk.sh
