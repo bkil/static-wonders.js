@@ -8,7 +8,7 @@
 // @match       https://pcforum.hu/*
 // @match       https://www.pcforum.hu/*
 // @grant       none
-// @version     2023.01.01
+// @version     2023.01.02
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -21,35 +21,56 @@
 
 const main = () => {
   setCookies();
-  const href = readHref();
-  if (!href) {
+  const url = readRedirectUrl();
+  if (!url) {
     console.log('Missing redirect URL path from HTML body');
     return;
   }
 
-  const main = document.getElementsByTagName('main')[0];
+  const main = document.querySelector('main');
   if (!main) {
-    return
+    return;
   }
-  const div = document.createElement('div');
-  main.prepend(div);
-  div.textContent = `Retrying ${href} with cookie...`;
+  const status = document.createElement('h2');
+  main.prepend(status);
+  status.textContent = `Retrying ${url} with cookie...`;
 
-  fetchBody(
-    href,
-    showBody,
-    (s, code) => div.innerText = `Fetch failed ${code}\n${s}`
+  fetch(
+    url,
+    (s) => showBody(s, url),
+    (s, code) => status.innerText = `Fetch failed ${code}\n${s}`
   );
 };
 
-const readHref = () => {
+const showBody = (s, url) => {
+  document.body.innerHTML = s;
+  document.body.classList.remove('loading');
+  const newTitle = document.body.querySelector('title')?.textContent;
+  if (newTitle) {
+    let title = document.head.querySelector('title');
+    if (!title) {
+      title = document.createElement('title');
+      document.head.appendChild(title);
+    }
+    title.textContent = newTitle;
+  }
+
+  if (window.location.hash) {
+    window.location = window.location;
+  } else {
+    window.location.hash = `${window.location.origin}${url}`;
+  }
+  setCookies();
+};
+
+const readRedirectUrl = () => {
   const r = /^(.|\n)* window.location = /;
   const s =
     Array.from(document.querySelectorAll('script'))
-    .find(s => r.test(s.textContent))
-    ?.textContent.replace(r, '')
-    .replace(/(.")(?:.|\n)*$/g, '$1')
-    ?? null;
+      .find(s => r.test(s.textContent))
+      ?.textContent.replace(r, '')
+      .replace(/(.")(?:.|\n)*$/g, '$1')
+      ?? null;
 
   try {
     return JSON.parse(s);
@@ -76,12 +97,12 @@ const setCookies = () => {
 
 const getSecret = (seed) => {
   const s = getPseudo(seed, 32);
-  const vocab = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const tab = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let sum = 0;
   for (const i in s) {
     sum += s.charCodeAt(i);
   }
-  return btoa(`0${s}${vocab[sum % vocab.length]}`);
+  return btoa(`0${s}${tab[sum % tab.length]}`);
 };
 
 const getPseudo = (seed, len) => {
@@ -92,9 +113,9 @@ const getPseudo = (seed, len) => {
   return s.substr(0, len);
 };
 
-const fetchBody = (href, ok, err) => {
+const fetch = (url, ok, err) => {
   const x = new XMLHttpRequest();
-  x.open('GET', href);
+  x.open('GET', url);
   x.onload = (e) => {
     if ((x.status >= 200) && (x.status <= 299)) {
       ok(x.responseText);
@@ -103,17 +124,12 @@ const fetchBody = (href, ok, err) => {
     }
   };
   x.onerror = (e) => {
-    err(x.responseText, x.status);
     console.log(e);
+    err(x.responseText, x.status);
   }
   x.ontimeout = x.onerror;
-  x.timeout = 10000;
+  x.timeout = 20000;
   x.send();
-};
-
-const showBody = (s) => {
-  document.body.innerHTML = s;
-  setCookies();
 };
 
 main();
