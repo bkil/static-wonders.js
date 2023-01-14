@@ -53,6 +53,7 @@ const readConfig = () => {
     .replace(/(\\)x(..)/g, '$1u00$2')
     .replace(/\\([`$'])/g, '$1')
     .replace(/,\s*}/g, '}')
+    ?? null
     ;
 
   try {
@@ -76,12 +77,12 @@ const fetchComments = (config, id, ok, err) => {
   x.onerror = (e) => {
     err(x.responseText, x.status);
     console.log(e);
-  }
+  };
   x.ontimeout = x.onerror;
   x.timeout = 10000;
-  x.setRequestHeader('content-type', 'application/json');
   x.setRequestHeader('x-xsrf-token', config.token);
   x.setRequestHeader('accept', 'application/json');
+  x.setRequestHeader('content-type', 'application/json');
   const data = {
     issueRef: {
       localId: id,
@@ -89,7 +90,7 @@ const fetchComments = (config, id, ok, err) => {
     }
   };
   x.send(JSON.stringify(data));
-}
+};
 
 const showComments = (div, str) => {
   let json;
