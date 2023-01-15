@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        bugs.chromium.org noJS load issue
 // @author      bkil
-// @description Monorail
+// @description Monorail issue tracker
 // @namespace   bkil.hu
 // @match       https://bugs.chromium.org/*
 // @grant       none
