@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://bugs.chromium.org/*
 // @grant       none
-// @version     2023.01.01
+// @version     2023.01.02
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -92,7 +92,7 @@ const fetchComments = (config, id, ok, err) => {
   x.send(JSON.stringify(data));
 };
 
-const showComments = (div, str) => {
+const showComments = (cont, str) => {
   let json;
   try {
     json = JSON.parse(str.replace(/^[^{]*/, ''));
@@ -101,7 +101,20 @@ const showComments = (div, str) => {
     return;
   }
 
-  div.innerText = '';
+  cont.innerText = '';
+  const div = document.createElement('div');
+  cont.appendChild(div);
+
+  const details = document.createElement('details');
+  const pre = document.createElement('pre');
+  pre.innerText = JSON.stringify(json, null, 2);
+  details.appendChild(pre);
+
+  const summary = document.createElement('summary');
+  summary.textContent = 'Show JSON source';
+  details.appendChild(summary);
+  cont.appendChild(details);
+
   (json?.comments ?? []).forEach(comment => {
     const c = document.createElement('div');
     c.className = 'comment';
@@ -109,19 +122,31 @@ const showComments = (div, str) => {
       c.id = `c${comment.sequenceNum}`;
     }
 
-    if (comment.timestamp) {
+    if (comment.timestamp || comment.sequenceNum) {
       const time = document.createElement('span');
       time.className = 'header';
-      time.textContent = new Date(comment.timestamp * 1000).toLocaleString();
+      const a = document.createElement('a');
+      a.textContent = comment.timestamp ? new Date(comment.timestamp * 1000).toLocaleString() : comment.sequenceNum;
+      if (comment.sequenceNum) {
+        a.href = `#${c.id}`;
+      }
+      time.appendChild(a);
       c.appendChild(time);
     }
 
-    const displayName = comment?.commenter.displayName;
+    const displayName = comment?.commenter?.displayName;
     if (displayName) {
       const user = document.createElement('span');
       user.className = 'header';
       user.textContent = displayName;
       c.appendChild(user);
+    }
+
+    if (comment.isDeleted) {
+      const deleted = document.createElement('span');
+      deleted.className = 'header';
+      deleted.textContent = '=deleted';
+      c.appendChild(deleted);
     }
 
     if (comment.amendments) {
@@ -139,18 +164,25 @@ const showComments = (div, str) => {
       c.appendChild(body);
     }
 
+    if (comment.attachments?.length) {
+      const attachments = document.createElement('ul');
+      comment.attachments.forEach(f => {
+        const item = document.createElement('li');
+        const a = document.createElement('a');
+        const file = f.filename ?? f.attachmentId ?? 'attachment.txt';
+        a.textContent = `${file} (${f.contentType ?? ''} ${f.size ? `${f.size} bytes` : ''})`;
+        a.href = f.downloadUrl ?? f.viewUrl ?? '';
+        a.target = '_blank';
+        a.rel = 'noreferrer';
+        a.download = file;
+        item.appendChild(a);
+        attachments.appendChild(item);
+      });
+      c.appendChild(attachments);
+    }
+
     div.appendChild(c);
   });
-
-  const details = document.createElement('details');
-  const pre = document.createElement('pre');
-  pre.innerText = JSON.stringify(json, null, 2);
-  details.appendChild(pre);
-
-  const summary = document.createElement('summary');
-  summary.textContent = 'Show JSON source';
-  details.appendChild(summary);
-  div.appendChild(details);
 
   if (window.location.hash) {
     window.location = window.location;
