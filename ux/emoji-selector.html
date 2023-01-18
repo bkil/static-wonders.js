@@ -60,7 +60,7 @@ const getAllEmoji = () => {
       if (last && (i !== last + 1)) {
         emoji += `<span>&nbsp;</span> `;
       }
-      emoji += `<span data-char="${char}">${char}</span> `;
+      emoji += `<span data-char="${char}" title="\\u\{${i.toString(16)}\}">${char}</span> `;
       last = i;
     }
   }
