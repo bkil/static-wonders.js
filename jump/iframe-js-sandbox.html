@@ -121,6 +121,7 @@ function loadFromAnchor() {
   } else if (html || css || js) {
     renderInline(preview, html, css, js);
   }
+  preview.focus();
 }
 
 function renderInline(preview, html, css, js) {
