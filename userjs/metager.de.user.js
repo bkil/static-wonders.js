@@ -6,7 +6,7 @@
 // @match       https://metager.de/*
 // @match       https://metager.org/*
 // @grant       none
-// @version     2022.9.1
+// @version     2023.1.1
 // @license     MIT
 // @homepageURL https://github.com/bkil/static-wonders.js
 // @supportURL  https://gitlab.com/bkil/static-wonders.js/issues
@@ -15,9 +15,14 @@
 
 (function() {
 'use strict';
-  const target = document.querySelector('body > iframe');
-  if (target) {
+  const url =
+    document.querySelector('iframe')?.src ??
+      document.querySelector('noscript')?.textContent
+      .replace(/^(?:.|\n)*<iframe [^<>]*\bsrc="([^"<>]+)"(?:.|\n)*$/, '$1')
+      .replaceAll('&amp;', '&');
+
+  if (url) {
     document.body.innerText += 'Redirecting to results page...';
-    window.location = target.src;
+    window.location = url;
   }
 })();
