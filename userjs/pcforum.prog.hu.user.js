@@ -8,7 +8,7 @@
 // @match       https://pcforum.hu/*
 // @match       https://www.pcforum.hu/*
 // @grant       none
-// @version     2023.01.02
+// @version     2023.01.10
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -16,11 +16,11 @@
 // @noframes
 // ==/UserScript==
 
-(function() {
+(() => {
 'use strict';
 
 const main = () => {
-  setCookies();
+  setStaticCookies();
   const url = readRedirectUrl();
   if (!url) {
     console.log('Missing redirect URL path from HTML body');
@@ -35,10 +35,29 @@ const main = () => {
   main.prepend(status);
   status.textContent = `Retrying ${url} with cookie...`;
 
+  const js = document.querySelector('#script_pagejs')?.src;
+  if (!js) {
+    status.innerText = 'Failed to find #script_pagejs';
+    return;
+  }
+
   fetch(
-    url,
-    (s) => showBody(s, url),
-    (s, code) => status.innerText = `Fetch failed ${code}\n${s}`
+    js,
+    (s) => {
+      const [, secretName] = s.match(/'([^']+)',this\.base64encode/) ?? [];
+      if (!secretName) {
+        status.innerText = 'Failed to extract cookie name';
+        return;
+      }
+
+      setSecretCookie(secretName);
+      fetch(
+        url,
+        (s) => showBody(s, url),
+        (s, code) => status.innerText = `Fetch failed for content ${url} ${code}\n${s}`
+      );
+    },
+    (s, code) => status.innerText = `Fetch failed for JS ${url} ${code}\n${s}`
   );
 };
 
@@ -60,7 +79,7 @@ const showBody = (s, url) => {
   } else {
     window.location.hash = `${window.location.origin}${url}`;
   }
-  setCookies();
+  setStaticCookies();
 };
 
 const readRedirectUrl = () => {
@@ -80,19 +99,27 @@ const readRedirectUrl = () => {
   }
 };
 
-const setCookies = () => {
-  const seed = Math.trunc(new Date() / 1000 / 3600) * 3600;
+const setStaticCookies = () => {
+  const seed = getSeed();
   const cookies = [
     `vid=${getPseudo(seed, 30)}`,
     `lastvisit=${seed}`,
     'JSDETECTED=1',
     'darkactive=0',
-    `ddbdcbcf=${getSecret(seed)}`,
     'ABRC=1',
     `ABLR=${seed}`,
   ];
-  cookies.forEach(c => document.cookie =
-    `${c}; max-age=3600; path=/; domain=${window.location.hostname}; samesite`);
+  cookies.forEach(setCookie);
+};
+
+const setSecretCookie = (secretName) => {
+  setCookie(`${secretName}=${getSecret(getSeed())}`);
+};
+
+const getSeed = () => Math.trunc(new Date() / 1000 / 3600) * 3600;
+
+const setCookie = (c) => {
+  document.cookie = `${c}; max-age=3600; path=/; domain=${window.location.hostname}; samesite`;
 };
 
 const getSecret = (seed) => {
