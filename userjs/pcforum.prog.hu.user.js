@@ -8,7 +8,7 @@
 // @match       https://pcforum.hu/*
 // @match       https://www.pcforum.hu/*
 // @grant       none
-// @version     2023.01.10
+// @version     2023.01.11
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -73,12 +73,7 @@ const showBody = (s, url) => {
     }
     title.textContent = newTitle;
   }
-
-  if (window.location.hash) {
-    window.location = window.location;
-  } else {
-    window.location.hash = `${window.location.origin}${url}`;
-  }
+  history.replaceState(null, '', url);
   setStaticCookies();
 };
 
