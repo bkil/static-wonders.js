@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://jsfiddle.net/*
 // @grant       none
-// @version     2022.12.20
+// @version     2023.01.10
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -65,13 +65,13 @@ function addJson(result) {
 }
 
 function addRendered(result, json) {
-  if (!json.value || !json.value.html || !json.value.css || !json.value.js) {
+  if (!json.value || !json.value.html && !json.value.css && !json.value.js) {
     return;
   }
 
-  const html = json.value.html;
-  const css = json.value.css;
-  const js = json.value.js;
+  const html = json.value.html ?? '';
+  const css = json.value.css ?? '';
+  const js = json.value.js ?? '';
   const a = document.createElement('a');
   a.target = '_blank';
   a.rel = 'noreferrer';
