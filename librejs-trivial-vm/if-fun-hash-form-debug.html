@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8>
+  <title>Trivial LibreJS Brainfuck interpreter hack - if, functions, form, FAILS LibreJS</title>
+  <link rel="shortcut icon" type=image/x-icon href=data:image/x-icon;,>
+  <meta name=referrer content=no-referrer>
+</head>
+<body>
+<style></style>
+
+++++++++[&gt;++++[&gt;++&gt;+++&gt;+++&gt;+&lt;&lt;&lt;&lt;-]&gt;+&gt;+&gt;-&gt;&gt;+[&lt;]&lt;-]&gt;&gt;.&gt;---.+++++++..+++.&gt;&gt;.&lt;-.&lt;.+++.------.--------.&gt;&gt;+.&gt;++.
+
+<form onsubmit='onFormSubmitted()'>
+  <textarea name=code></textarea>
+  <textarea name=data></textarea>
+  <textarea id=output></textarea>
+  <input type=submit>
+</form>
+
+<script>
+'use strict';
+
+function onFormSubmitted() {
+  const url = new URLSearchParams();
+  url.set('code', document.querySelector('[name="code"]').value);
+  url.set('data', document.querySelector('[name="data"]').value);
+  window.location.hash = url;
+  return false;
+}
+
+function onLoaded(e) {
+  const escaped = bodyOutput.replaceAll('\\', '\\\\').replaceAll('"', '\\"').replaceAll('\n', '\\a ');
+  e.target.body.firstElementChild.textContent += `body::after { white-space: pre-wrap; content: "${escaped}"; }`;
+// You can also build a whole document here via `e.target.write(bodyOutput);`
+}
+
+function onHashChanged() {
+  window.location.reload();
+}
+
+function ifPointLeft() {
+  if (code.charAt(ip) === '<') {
+    right.push(left.pop() | 0);
+    needIncrementIp = true;
+  }
+}
+
+function ifPointRight() {
+  if (code.charAt(ip) === '>') {
+    left.push(right.pop() | 0);
+    needIncrementIp = true;
+  }
+}
+
+function ifIncrement() {
+  if (code.charAt(ip) === '+') {
+    right.push((right.pop() | 0) + 1);
+    needIncrementIp = true;
+  }
+}
+
+
+function ifDecrement() {
+  if (code.charAt(ip) === '-') {
+    right.push((right.pop() | 0) - 1);
+    needIncrementIp = true;
+  }
+}
+
+function ifInput() {
+  if (code.charAt(ip) === ',') {
+    const text = document.querySelector('[name="data"]');
+    right.pop();
+    right.push(text.value.charCodeAt(0));
+    text.value = text.value.substr(1);
+    needIncrementIp = true;
+  }
+}
+
+function ifOutput() {
+  if (code.charAt(ip) === '.') {
+    const peek = right.pop() | 0;
+    right.push(peek);
+    bodyOutput += String.fromCharCode(peek);
+    needIncrementIp = true;
+  }
+}
+
+function ifStartLoop() {
+  if (code.charAt(ip) === '[') {
+    ip++;
+    needIncrementIp = false;
+
+    const peek = right.pop() | 0;
+    right.push(peek);
+    if (peek) {
+      stack.push(ip);
+      return false;
+    } else {
+      return true;
+    }
+  }
+}
+
+function skipToLoopEnd() {
+  let nest = 1;
+  while (nest) {
+    if (code.charAt(ip) === '[') {
+      nest++;
+    } else if (code.charAt(ip) === ']') {
+      nest--;
+    }
+    ip++;
+  }
+}
+
+function ifEndLoop() {
+  if (code.charAt(ip) === ']') {
+    const peek = right.pop() | 0;
+    right.push(peek);
+    if (peek) {
+      ip = stack.pop();
+      stack.push(ip);
+      needIncrementIp = false;
+    } else {
+      stack.pop();
+      needIncrementIp = true;
+    }
+  }
+}
+
+addEventListener('hashchange', onHashChanged);
+addEventListener('load', onLoaded);
+
+// The whole loop below could have been inlined within `onLoaded` to access the reserved `document`
+// through `event.target`, but as this implementation is too complicated to be parsed by LibreJS,
+// it is more about facilitating debugging.
+
+const url = new URLSearchParams(window.location.hash.substr(1));
+const code = document.querySelector('[name="code"]').value = url.get('code');
+document.querySelector('[name="data"]').value = url.get('data');
+
+let ip = 0;
+let left = [];
+let right = [];
+let stack = [];
+let bodyOutput = '';
+let needIncrementIp;
+let limit = 1000;
+
+while (code.charAt(ip) && --limit) {
+  needIncrementIp = true;
+  ifPointLeft();
+  ifPointRight();
+  ifIncrement();
+  ifDecrement();
+  ifInput();
+  ifOutput();
+  if (ifStartLoop()) {
+    skipToLoopEnd();
+  }
+  ifEndLoop();
+  if (needIncrementIp) {
+    ip++;
+  }
+}
+
+document.querySelector('[id="output"]').value = bodyOutput;
+</script>
+</body>
+</html>

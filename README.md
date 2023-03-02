@@ -15,3 +15,6 @@ Demonstrating what you can achieve without mandatory usage of any kind custom of
 * https://bkil.gitlab.io/static-wonders.js/ux/emoji-selector.html
 * https://bkil.gitlab.io/static-wonders.js/ux/emoji-selector-category.html
 * https://bkil.gitlab.io/static-wonders.js/ux/unicode-selector.html
+* https://bkil.gitlab.io/static-wonders.js/librejs-trivial-vm/if-fun-hash-form-debug.html
+* https://bkil.gitlab.io/static-wonders.js/librejs-trivial-vm/switch-skip-fun.html
+* https://bkil.gitlab.io/static-wonders.js/librejs-trivial-vm/switch-state-interpret-fun.html

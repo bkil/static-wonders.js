@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8>
+  <title>Trivial LibreJS Brainfuck interpreter hack - switch, split state, interpreter function, PASSES LibreJS</title>
+  <link rel="shortcut icon" type=image/x-icon href=data:image/x-icon;,>
+  <meta name=referrer content=no-referrer>
+</head>
+<body>
+<style></style>
+
+<script>
+'use strict';
+
+function onLoaded(e) {
+  const escaped = bodyOutput.replaceAll('\\', '\\\\').replaceAll('"', '\\"').replaceAll('\n', '\\a ');
+  e.target.body.firstElementChild.textContent += `body::after { white-space: pre-wrap; content: "${escaped}"; }`;
+}
+
+function interpret(code, input, limit) {
+  let output = '';
+  let ip = 0;
+  let left = [];
+  let right = [];
+  let stack = [];
+  let nest = 0;
+  limit |= 0;
+
+  while (code.charAt(ip) && --limit) {
+    switch (code.charCodeAt(ip++) | (256 * !!nest) | (512 * (nest > 1))) {
+      case '<'.charCodeAt(0):
+        right.push(left.pop() | 0);
+        break;
+
+      case '>'.charCodeAt(0):
+        left.push(right.pop() | 0);
+        break;
+
+      case '+'.charCodeAt(0):
+        right.push((right.pop() | 0) + 1);
+        break;
+
+      case '-'.charCodeAt(0):
+        right.push((right.pop() | 0) - 1);
+        break;
+
+      case ','.charCodeAt(0):
+        right.pop();
+        right.push(input.charCodeAt(0));
+        input = input.substr(1);
+        break;
+
+      case '.'.charCodeAt(0):
+        const peek1 = right.pop() | 0;
+        right.push(peek1);
+        output += String.fromCharCode(peek1);
+        break;
+
+      case '['.charCodeAt(0):
+        stack.push(ip);
+      case '['.charCodeAt(0) | 256:
+      case '['.charCodeAt(0) | 768:
+        nest++;
+        break;
+
+      case ']'.charCodeAt(0) | 256:
+        nest--;
+      case ']'.charCodeAt(0):
+        const peek2 = right.pop() | 0;
+        right.push(peek2);
+        if (peek2) {
+          ip = stack.pop();
+          stack.push(ip);
+        } else {
+          stack.pop();
+        }
+        break;
+
+      case ']'.charCodeAt(0) | 768:
+        nest--;
+        break;
+    }
+  }
+  return output;
+}
+
+const bodyOutput = interpret('++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.,[+.,]', 'aXY', 2000);
+addEventListener('load', onLoaded);
+
+</script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8>
+  <title>Trivial LibreJS Brainfuck interpreter hack - switch, skip function, FAILS LibreJS</title>
+  <link rel="shortcut icon" type=image/x-icon href=data:image/x-icon;,>
+  <meta name=referrer content=no-referrer>
+</head>
+<body>
+<style></style>
+
+<script>
+'use strict';
+
+function onLoaded(e) {
+  const escaped = bodyOutput.replaceAll('\\', '\\\\').replaceAll('"', '\\"').replaceAll('\n', '\\a ');
+  e.target.body.firstElementChild.textContent += `body::after { white-space: pre-wrap; content: "${escaped}"; }`;
+}
+
+function skipToLoopEnd() {
+  let nest = 1;
+  while (nest) {
+    if (code.charAt(ip) === '[') {
+      nest++;
+    } else if (code.charAt(ip) === ']') {
+      nest--;
+    }
+    ip++;
+  }
+}
+
+const code = '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.,[+.,]';
+let input = 'aXY';
+
+let bodyOutput = '';
+let ip = 0;
+let left = [];
+let right = [];
+let stack = [];
+let limit = 2000;
+
+while (code.charAt(ip) && --limit) {
+  switch (code.charAt(ip++)) {
+    case '<':
+      right.push(left.pop() | 0);
+      break;
+
+    case '>':
+      left.push(right.pop() | 0);
+      break;
+
+    case '+':
+      right.push((right.pop() | 0) + 1);
+      break;
+
+    case '-':
+      right.push((right.pop() | 0) - 1);
+      break;
+
+    case ',':
+      right.pop();
+      right.push(input.charCodeAt(0));
+      input = input.substr(1);
+      break;
+
+    case '.':
+      const peek1 = right.pop() | 0;
+      right.push(peek1);
+      bodyOutput += String.fromCharCode(peek1);
+      break;
+
+    case '[':
+      stack.push(ip);
+      skipToLoopEnd();
+    case ']':
+      const peek2 = right.pop() | 0;
+      right.push(peek2);
+      if (peek2) {
+        ip = stack.pop();
+        stack.push(ip);
+      } else {
+        stack.pop();
+      }
+      break;
+  }
+}
+
+addEventListener('load', onLoaded);
+
+</script>
+</body>
+</html>
