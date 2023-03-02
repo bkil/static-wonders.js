@@ -4,10 +4,22 @@
   <meta charset=utf-8>
   <title>Trivial LibreJS Brainfuck interpreter hack - switch, split state, interpreter function, PASSES LibreJS</title>
   <link rel="shortcut icon" type=image/x-icon href=data:image/x-icon;,>
-  <meta name=referrer content=no-referrer>
 </head>
 <body>
 <style></style>
+
+<p>This is a so called <em>trivial</em> script according to the
+<a target=_blank href=https://www.gnu.org/software/librejs/manual/librejs.html#JavaScript-Detection>LibreJS</a>
+article
+<a target=_blank href='https://www.gnu.org/philosophy/javascript-trap.html#:~:text=nontrivial%20if,others'>restrictions</a>
+and also passes with flying green colors through the
+<a target=_blank href=https://git.savannah.gnu.org/cgit/librejs.git/tree/common/checks.js#n210>even</a>
+<a target=_blank href=https://pagure.io/librejs/blob/master/f/common/checks.js>stricter</a>
+<a target=_blank href=https://github.com/librejs/librejs/blob/46ecac9ab60b32ccc7b40a668938c84117de1b4d/common/checks.js#L210>browser</a>
+<a target=_blank href=https://github.com/librejs/librejs/blob/master/common/fname_data.json>extension</a>
+. The twist is that I implement a
+<a target=_blank href=https://en.wikipedia.org/wiki/Brainfuck>Brainfuck</a>
+interpreter with it! As that is a Turing-complete language, it means that you can actually use it as a runtime to work around these restrictions. Stay tuned for further demonstrations. See the generated program output below.</p>
 
 <script>
 'use strict';
