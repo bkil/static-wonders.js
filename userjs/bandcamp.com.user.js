@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://*.bandcamp.com/*
 // @grant       none
-// @version     2023.03.01
+// @version     2023.03.02
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -17,8 +17,9 @@
 'use strict';
 
 const main = () => {
-  const inline = document.querySelector('.inline_player');
-  inline ? inline.style = 'display: none' : {};
+  document.querySelectorAll('svg').forEach(svg => {
+    svg.style = 'width: 24px; height: 24px';
+  });
   const middle = document.querySelector('.middleColumn');
   middle ? middle.style = 'float: initial' : {};
 
@@ -51,8 +52,8 @@ const processJson = (result) => {
 const addRendered = (json) => {
   json.trackinfo?.forEach((info, track) => {
     const previewUrl = (info?.file) ? info.file['mp3-128'] : null;
-    const playCont = document.querySelector(`tr[rel="tracknum=${track+1}"] .play-col`);
-    const play = playCont?.firstChild;
+    const playCont = document.querySelector(`[rel="tracknum=${track+1}"] td`);
+    const play = playCont?.firstElementChild;
     if (play && previewUrl) {
       playCont.style = 'width: initial';
       play.textContent = 'play';
