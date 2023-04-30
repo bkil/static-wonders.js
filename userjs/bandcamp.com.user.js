@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://*.bandcamp.com/*
 // @grant       none
-// @version     2023.03.02
+// @version     2023.04.01
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -23,7 +23,7 @@ const main = () => {
   const middle = document.querySelector('.middleColumn');
   middle ? middle.style = 'float: initial' : {};
 
-  const container = document.getElementById('propOpenWrapper')[0] ?? document.body;
+  const container = document.getElementById('propOpenWrapper') ?? document.body;
   const result = document.createElement('div');
   container.prepend(result);
   processJson(result);
