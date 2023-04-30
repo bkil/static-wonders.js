@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://bugs.chromium.org/*
 // @grant       none
-// @version     2023.01.02
+// @version     2023.04.01
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -97,7 +97,7 @@ const showComments = (cont, str) => {
   try {
     json = JSON.parse(str.replace(/^[^{]*/, ''));
   } catch (e) {
-    div.innerText = `${e}\n${str}`;
+    cont.innerText = `${e}\n${str}`;
     return;
   }
 
@@ -193,7 +193,7 @@ const addStyle = () => {
   const s = document.createElement('style');
   s.innerText = `
     html {
-      overflow-wrap: break-word;
+      overflow-wrap: anywhere;
     }
 
     pre {
