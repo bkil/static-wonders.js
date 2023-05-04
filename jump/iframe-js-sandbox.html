@@ -96,7 +96,10 @@ function saveToAnchor() {
   if (js) {
     p.set('js', js);
   }
-  window.location.hash = p.toString();
+  window.location.hash = p
+    .toString()
+    .replaceAll('*', '%2A')
+    ;
 }
 
 function loadFromAnchor() {
