@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.2
+// @version     2023.5.3
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -96,7 +96,7 @@ const init = () => {
     <div id=log></div>
     <form method=POST action=#>
       <textarea disabled name=message id=message maxlength=180 rows=2 columns=90></textarea>
-      <input id=submit type=submit value='Post (sh+enter)' accesskey=p>
+      <input id=submit type=submit data-value_refresh='Refresh (sh+enter)' data-value_post='Post (sh+enter)' accesskey=p>
       <span id=counter></span>
       <span id=status></span>
       <span id=error></span>
@@ -124,8 +124,16 @@ const init = () => {
 };
 
 const updateCounter = () => {
-  const len = document.getElementById('message').value.length;
+  const text = document.getElementById('message').value;
+  const len = text.length;
   document.getElementById('counter').textContent = len > 0 ? len : '';
+
+  const submit = document.getElementById('submit');
+  if (text.trim().length) {
+    submit.value = submit.dataset.value_post;
+  } else {
+    submit.value = submit.dataset.value_refresh;
+  }
 };
 
 const storageKey = 'spa_state';
