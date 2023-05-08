@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.1
+// @version     2023.5.2
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -96,7 +96,7 @@ const init = () => {
     <div id=log></div>
     <form method=POST action=#>
       <textarea disabled name=message id=message maxlength=180 rows=2 columns=90></textarea>
-      <input id=submit type=submit value=Post>
+      <input id=submit type=submit value='Post (sh+enter)' accesskey=p>
       <span id=counter></span>
       <span id=status></span>
       <span id=error></span>
@@ -114,6 +114,12 @@ const init = () => {
   messageBox.focus();
 
   document.forms[0].onsubmit = onSubmit;
+  messageBox.onkeypress = e => {
+    if ((e.key === 'Enter') && (e.ctrlKey || e.shiftKey)) {
+      e.preventDefault();
+      onSubmit();
+    }
+  };
   updateFeed();
 };
 
