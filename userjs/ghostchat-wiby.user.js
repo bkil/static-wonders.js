@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.4
+// @version     2023.5.6
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -89,22 +89,72 @@ const init = () => {
       #counter {
         font-style: italic;
       }
+
+      #emoji {
+        position: fixed;
+        top: 0;
+        left: 0;
+        max-height: calc(100vh - 2em - 2px);
+        border: 1px solid;
+        margin: 0.5em;
+        padding: 0.5em;
+        padding-right: 1.5em;
+        overflow-y: scroll;
+        background-color: black;
+        line-height: 1.5em;
+      }
+
+      #emoji span {
+        display: inline-block;
+        padding: 0.25em;
+        width: 1.5em;
+        height: 1.5em;
+        text-align: center;
+      }
+
+      #emoji span[data-char]:hover::before {
+        position: absolute;
+        content: attr(data-char);
+        font-size: xx-large;
+        background-color: black;
+        padding: 0.5em;
+        margin-left: -0.75em;
+        margin-top: -0.5em;
+        border: 1px solid;
+      }
+
+      html.js-emoji-selector {
+        overflow-y: hidden;
+      }
+
+      html.js-emoji-selector #foreground,
+      html:not(.js-emoji-selector) #emoji {
+        visibility: hidden;
+      }
+
     </style>
     </head>
 
     <body>
-    <div id=log></div>
-    <form method=POST action=#>
-      <textarea disabled name=message id=message maxlength=180 rows=2 columns=90></textarea>
-      <input id=send type=submit data-value_refresh='Refresh (sh+enter)' data-value_post='Post (sh+enter)' accesskey=p>
-      <span id=counter></span>
-      <span id=status></span>
-      <span id=error></span>
-    </form>
+    <div id=foreground>
+      <div id=log></div>
+      <form method=POST action=#>
+        <textarea disabled name=message id=message maxlength=180 rows=2 columns=90></textarea>
+        <input id=send type=submit data-value_refresh='Refresh (sh+enter)' data-value_post='Post (sh+enter)' accesskey=p>
+        <button disabled id=show_emoji type=button>emoji</button>
+        <span id=counter></span>
+        <span id=status></span>
+        <span id=error></span>
+      </form>
+    </div>
+    <div id=emoji>
+      <div id=js-emoji></div>
+    </div>
     </body>
     `;
 
   loadState();
+
   const messageBox = document.getElementById('message');
   messageBox.value = state.textbox ?? '';
   updateCounter();
@@ -211,11 +261,13 @@ const updateFeed = () => {
       state.lastModified = lastModified,
       gotFeedUpdate(body);
       saveState();
+      initEmojiPicker();
     },
     _ => {
       saveState();
       increasePollDelay();
       scheduleUpdate();
+      initEmojiPicker();
     },
     null,
     state.lastModified
@@ -380,6 +432,53 @@ const getCloakColor = (cloak) => {
       cloak.length);
   const color = 0x808080 | ((hash & 0x00f) << 3) | ((hash & 0x0f0) << 7) | ((hash & 0xf00) << 11);
   return `#${color.toString(16)}`;
+};
+
+const emojiRegexp =
+  /[\u{10000}-\u{100FA}\u{10600}-\u{10767}\u{101D0}-\u{101FC}\u{10980}-\u{1099F}\u{13000}-\u{16A38}\u{1F000}-\u{1FAFF}\p{Extended_Pictographic}\p{Regional_Indicator}]|[^\P{Pattern_Syntax}\p{Diacritic}\p{Radical}\p{ASCII}]|[^\P{Changes_When_NFKC_Casefolded}\p{Alphabetic}\p{Math}\p{Diacritic}\p{Radical}\p{ASCII}]/ug;
+const notEmojis = '…“”‘’▪―─—°„– ️«»《》‍  ​';
+const notEmojiRegexp = /[\P{Assigned}]/ug;
+
+const isNonEmoji = (c) => notEmojiRegexp.test(c) || notEmojis.indexOf(c) >= 0;
+
+const initEmojiPicker = () => {
+  const div = document.getElementById('js-emoji');
+  if (!div) {
+    return;
+  }
+
+  div.id = 'js-emoji-done';
+  setTimeout(() => {
+    fillAllEmoji(div);
+    const toggle = document.getElementById('show_emoji');
+    toggle.onclick = () => document.documentElement.classList.add('js-emoji-selector');
+    toggle.disabled = false;
+  }, 100);
+};
+
+const fillAllEmoji = (div) => {
+  let emoji = '';
+  let last;
+  for (let i = 0; i < 0x20000; i++) {
+    const char = String.fromCodePoint(i);
+    if (!isNonEmoji(char) && emojiRegexp.test(char)) {
+      if (last && (i !== last + 1)) {
+        emoji += '<span>&nbsp;</span> ';
+      }
+      emoji += `<span data-char="${char}">${char}</span> `;
+      last = i;
+    }
+  }
+  div.innerHTML = emoji;
+
+  document.querySelectorAll('#emoji span').forEach((span) => {
+    span.onclick = (e) => {
+      const text = document.getElementById('message')
+      text.value += span.textContent;
+      document.documentElement.classList.remove('js-emoji-selector');
+      text.focus();
+    };
+  });
 };
 
 const onSubmit = (e) => {
