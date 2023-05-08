@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.04.24
+// @version     2023.5.1
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -20,7 +20,6 @@
 const baseUrl = window.location.href.replace(/[^\/]*$/, '');
 const feedUrl = baseUrl + 'feed.html';
 const postUrl = baseUrl + 'post';
-const pollSecond = 600;
 let nextUpdateTime;
 let state;
 
@@ -135,11 +134,11 @@ const loadState = () => {
 
   if (loaded && (typeof loaded === 'object') && (!Array.isArray(loaded))) {
     state = loaded;
-    dbMigrate();
+    migrateDb();
   } else {
     state =
       {
-        version: 0,
+        version: 1,
         key: {},
         log: [],
         postedMessage: null,
@@ -151,11 +150,14 @@ const loadState = () => {
         myCloaks: [],
         lastMention: null,
         lastModified: null,
+        pollMinSecond: 38,
+        pollMaxSecond: 600,
+        pollSecond: 38,
       };
   }
 };
 
-const dbMigrate = () => {
+const migrateDb = () => {
   if ((typeof state.key !== 'object') || (Array.isArray(state.key))) {
     state.key = {};
   }
@@ -164,6 +166,13 @@ const dbMigrate = () => {
   }
   if (!Array.isArray(state.myCloaks)) {
     state.myCloaks = [];
+  }
+
+  if (state.version === 0) {
+    state.pollMinSecond = 38;
+    state.pollMaxSecond = 600;
+    state.pollSecond = state.pollMinSecond;
+    state.version = 1;
   }
 };
 
@@ -178,7 +187,7 @@ const saveState = () => {
 
 const scheduleUpdate = () => {
   clearTimeout(nextUpdateTime);
-  nextUpdateTime = setTimeout(updateFeed, 1000 * pollSecond);
+  nextUpdateTime = setTimeout(updateFeed, 1000 * state.pollSecond);
 };
 
 const updateFeed = () => {
@@ -191,6 +200,7 @@ const updateFeed = () => {
     },
     _ => {
       saveState();
+      increasePollDelay();
       scheduleUpdate();
     },
     null,
@@ -269,6 +279,12 @@ const gotFeedUpdate = (body) => {
       });
   }
 
+  if (updates.length || !(state.pollSecond >= state.pollMinSecond)) {
+    resetPollDelay();
+  } else {
+    increasePollDelay();
+  }
+
   updates.reverse().forEach(u => {
     const key = `${u.hhmm}\n${u.cloak}\n${u.message}`;
     state.key[key] = state.log.length;
@@ -310,6 +326,17 @@ const gotFeedUpdate = (body) => {
   document.getElementById('submit').scrollIntoView();
   messageBox.focus();
   scheduleUpdate();
+};
+
+const resetPollDelay = () => {
+  state.pollSecond = state.pollMinSecond;
+};
+
+const increasePollDelay = () => {
+  state.pollSecond *= 2;
+  if (state.pollSecond > state.pollMaxSecond) {
+    state.pollSecond = state.pollMaxSecond;
+  }
 };
 
 const rotateCloaks = (cloak, timeSec) => {
@@ -372,6 +399,7 @@ const onSubmit = (e) => {
       error.hidden = false;
       saveState();
       message.disabled = false;
+      resetPollDelay();
       scheduleUpdate();
     },
     `message=${encodeURIComponent(text)}`,
@@ -413,7 +441,7 @@ const fetch = (url, ok, err, body, lastModified) => {
     }
   };
   x.ontimeout = x.onerror;
-  x.timeout = 1000 * (pollSecond - 1);
+  x.timeout = 1000 * (state.pollSecond - 1);
   x.send(body);
 };
 
