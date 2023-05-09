@@ -33,12 +33,23 @@ main() {
 
 escape_file() {
   local ESCAPED
-  hexdump -v -e '/1 "_%02X"' "$@" |
-  sed -r "
-    s~_~%%~g
-    s~%%(2[189B-F]|3[0-9ABF]|4[0-9A-F]|5[0-9AEF]|6[1-9A-F]|7[0-9A-E])~\\\\\\\x\1~g
-  " |
-  xargs printf |
+  cat "$@" |
+  awk -b '
+    BEGIN {
+      RS="(.)";
+      for(i=0; i < 256; i++) {
+        ord[sprintf("%c", i)] = i;
+      }
+      ok = "!()+,-./0123456789:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ^_abcdefghijklmnopqrstuvwxyz{|}~";
+    }
+    {
+      if (index(ok, RT) > 0) {
+        printf("%c", RT);
+      } else {
+        printf("%%%02x", ord[RT]);
+      }
+    }
+  ' |
   sed -r "s~\)$~%29~"
 }
 
