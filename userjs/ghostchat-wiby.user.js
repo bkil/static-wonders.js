@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.6
+// @version     2023.5.7
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -174,14 +174,14 @@ const init = () => {
 };
 
 const updateCounter = () => {
-  const text = document.getElementById('message').value;
-  const len = text.length;
-  document.getElementById('counter').textContent = len > 0 ? len : '';
-
+  const len = normalizeEnteredText(document.getElementById('message').value).length;
+  const counter = document.getElementById('counter');
   const submit = document.getElementById('send');
-  if (text.trim().length) {
+  if (len) {
+    counter.textContent = len;
     submit.value = submit.dataset.value_post;
   } else {
+    counter.textContent =  '';
     submit.value = submit.dataset.value_refresh;
   }
 };
@@ -359,6 +359,7 @@ const gotFeedUpdate = (body) => {
 
   console.log(state);
 
+  let lastLineCloak;
   const tab = document.createElement('table');
   state.log.forEach(u => {
     const tr = tab.insertRow();
@@ -371,7 +372,10 @@ const gotFeedUpdate = (body) => {
     }
 
     const cloak = tr.insertCell();
-    cloak.textContent = u.cloak;
+    if (u.cloak !== lastLineCloak) {
+      cloak.textContent = u.cloak;
+    }
+    lastLineCloak = u.cloak;
     cloak.classList.add('cloak');
     cloak.style.color = getCloakColor(u.cloak);
     if (u.isMe) {
@@ -481,13 +485,17 @@ const fillAllEmoji = (div) => {
   });
 };
 
+const normalizeEnteredText = (s) => {
+  return s.replace(/\s+/g, ' ').trim();
+};
+
 const onSubmit = (e) => {
   e.preventDefault();
   const error = document.getElementById('error');
   error.hidden = true;
   const message = document.getElementById('message');
   message.disabled = true;
-  const text = message.value.trim();
+  const text = normalizeEnteredText(message.value);
   if (!text.length) {
     message.disabled = false;
     updateFeed();
