@@ -20,7 +20,7 @@ main() {
         cat_bookmarklet_head "$NAME"
 
         BODY="`escape_file "$FILE"`"
-        printf '<ul><li><a class=bookmarklet onclick="return false" href="javascript:%s">%s %s</a>\n <span class=source>(readable <a href="%s">source</a>)</span></li></ul>\n' "$BODY" "$NAME" "$TIME" "$NAME"
+        printf '<ul><li><a class=bookmarklet onclick="return false" href="javascript:%s">%s %s</a>\n <span class=source>(readable <a href="%s">source</a>)</span></li></ul>\n' "$BODY" "$BASE" "$TIME" "$NAME"
         printf '<p>\n<a href="gen-bookmarklet.html">Overview of other bookmarklets</a>\n'
         cat_tail
       } > "$BLET"
