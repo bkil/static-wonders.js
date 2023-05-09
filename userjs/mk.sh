@@ -1,19 +1,56 @@
 #!/bin/sh
 
-O="`dirname "$(readlink -f "$0")"`"
-{
-cat << EOF
-<!DOCTYPE html>
-<html lang=en>
-<head>
-  <meta charset=utf-8>
-  <title>Bookmarklet versions of the shorter user.js</title>
-  <link rel="shortcut icon" type=image/x-icon href=data:image/x-icon;,>
-  <meta name=viewport content='width=device-width, initial-scale=1.0'>
+main() {
+  local O FILE TIME NAME BASE BLET BODY
+  readonly O="`dirname "$(readlink -f "$0")"`"
+  {
+    cat_common_head 'all user.js'
+    printf 'Please open the following individual pages to access the respective bookmarklet.\n<ul>\n'
+
+    for FILE in "$O"/*.user.js; do
+      TIME="`git log -n 1 --pretty=format:%ad --date=short "$FILE"`"
+      [ -n "$TIME" ] || continue
+      NAME="`basename "$FILE"`"
+      BASE="`basename "$NAME" .user.js`"
+      BLET="$O/$BASE.html"
+
+      printf '<li><a href="%s">%s</a></li>\n' "$BASE.html" "$BASE"
+
+      {
+        cat_bookmarklet_head "$NAME"
+
+        BODY="`escape_file "$FILE"`"
+        printf '<ul><li><a class=bookmarklet onclick="return false" href="javascript:%s">%s %s</a>\n <span class=source>(readable <a href="%s">source</a>)</span></li></ul>\n' "$BODY" "$NAME" "$TIME" "$NAME"
+        printf '<p>\n<a href="gen-bookmarklet.html">Overview of other bookmarklets</a>\n'
+        cat_tail
+      } > "$BLET"
+    done
+
+    echo "</ul>"
+    cat_tail
+  } > "$O"/gen-bookmarklet.html
+}
+
+escape_file() {
+  local ESCAPED
+  hexdump -v -e '/1 "_%02X"' "$@" |
+  sed -r "
+    s~_~%%~g
+    s~%%(2[189B-F]|3[0-9ABF]|4[0-9A-F]|5[0-9AEF]|6[1-9A-F]|7[0-9A-E])~\\\\\\\x\1~g
+  " |
+  xargs printf |
+  sed -r "s~\)$~%29~"
+}
+
+cat_bookmarklet_head() {
+  cat_common_head "$@"
+
+  cat << EOF
 <style>
 
 .bookmarklet {
   text-decoration: none;
+  cursor: grabbing;
 }
 
 .source {
@@ -22,31 +59,32 @@ cat << EOF
 }
 
 </style>
+You can drag &amp; drop the following bookmarklet to your bookmark bar instead of using a UserScript manager:
+<p>
+EOF
+}
+
+cat_common_head() {
+  local HEADBASE
+  readonly HEADBASE="$1"
+cat << EOF
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Bookmarklet version of $HEADBASE UserScript</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta name=viewport content='width=device-width, initial-scale=1.0'>
 </head>
 <body>
-You can drag &amp; drop the following bookmarklets to your bookmark bar instead of using a userscript manager:
-
-  <ul>
 EOF
+}
 
-for FILE in "$O"/*.user.js; do
-  TIME="`git log -n 1 --pretty=format:%ad --date=short "$FILE"`"
-  [ -n "$TIME" ] || continue
-
-  BASE="`basename "$FILE"`"
-
-  hexdump -v -e '/1 "_%02X"' "$FILE" |
-  sed 's~_~%~g' |
-  {
-    read BODY
-    printf '<li><a class=bookmarklet href="javascript:%s">%s %s</a>\n <span class=source>(readable <a href="%s">source</a>)</span></li>\n' "$BODY" "$BASE" "$TIME" "$BASE"
-  }
-done
-
+cat_tail() {
 cat << EOF
-</ul>
 </body>
 </html>
 EOF
+}
 
-} > "$O"/gen-bookmarklet.html
+main "$@"
