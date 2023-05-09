@@ -34,7 +34,7 @@ main() {
 escape_file() {
   local ESCAPED
   cat "$@" |
-  awk -b '
+  awk '
     BEGIN {
       RS="(.)";
       for(i=0; i < 256; i++) {
