@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.8
+// @version     2023.5.9
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -431,6 +431,7 @@ const markup = (s) => {
     .replace(/&amp;lt;b&amp;gt;(.*)&amp;lt;\/b&amp;gt;/g, '<b>$1</b>')
     .replace(/&amp;lt;i&amp;gt;(.*)&amp;lt;\/i&amp;gt;/g, '<i>$1</i>')
     .replace(/&amp;lt;u&amp;gt;(.*)&amp;lt;\/u&amp;gt;/g, '<u>$1</u>')
+    .replace(/&amp;lt;del&amp;gt;(.*)&amp;lt;\/del&amp;gt;/g, '<del>$1</del>')
     .replace(/&amp;lt;code&amp;gt;(.*)&amp;lt;\/code&amp;gt;/g, '<code>$1</code>')
     .replace(/&amp;lt;pre&amp;gt;(.*)&amp;lt;\/pre&amp;gt;/g, '<pre>$1</pre>')
     .replace(/&amp;lt;br&amp;gt;/g, '<br>')
@@ -530,7 +531,7 @@ const fillAllEmoji = (div) => {
 };
 
 const normalizeEnteredText = (s) => {
-  return s.replace(/\s+/g, ' ').trim();
+  return s.replaceAll('\n', '<br>').replace(/\s+/g, ' ').trim();
 };
 
 const onSubmit = (e) => {
