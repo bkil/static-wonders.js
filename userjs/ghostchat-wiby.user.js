@@ -184,6 +184,18 @@ const updateCounter = () => {
   } else {
     counter.textContent =  '';
     submit.value = submit.dataset.value_refresh;
+    updatePlaceholder();
+  }
+};
+
+const updatePlaceholder = () => {
+  const message = document.getElementById('message');
+  if (!message.length) {
+    if (+new Date() - state.postedTime < 6e5) {
+      message.placeholder = 'Wait before posting messages in a row';
+    } else {
+      message.placeholder = 'Post <180 char once instead of short lines.';
+    }
   }
 };
 
@@ -328,7 +340,6 @@ const gotFeedUpdate = (body) => {
 
       state.lastCloakDay = day;
       state.postedMessage = null;
-      state.postedTime = null;
     }
     const time = +new Date(year, month, day, hour, min + state.zone);
     if (isCloakNew) {
@@ -406,6 +417,7 @@ const gotFeedUpdate = (body) => {
   document.getElementById('status').textContent = now.toLocaleTimeString();
   const messageBox = document.getElementById('message');
   document.getElementById('send').scrollIntoView();
+  updatePlaceholder();
   messageBox.focus();
   scheduleUpdate();
 };
