@@ -21,7 +21,7 @@ main() {
 
         BODY="`escape_file "$FILE"`"
         printf '<ul><li><a class=bookmarklet onclick="return false" href="javascript:%s">%s %s</a>\n <span class=source>(readable <a href="%s">source</a>)</span></li></ul>\n' "$BODY" "$BASE" "$TIME" "$NAME"
-        printf '<p>\n<a href="gen-bookmarklet.html">Overview of other bookmarklets</a>\n'
+        printf '<p>\n<a class=overview href="gen-bookmarklet.html">Overview of other bookmarklets</a>\n'
         cat_tail
       } > "$BLET"
     done
@@ -62,6 +62,7 @@ cat_bookmarklet_head() {
 .bookmarklet {
   text-decoration: none;
   cursor: grabbing;
+  outline: auto;
 }
 
 .source {
@@ -69,10 +70,15 @@ cat_bookmarklet_head() {
   opacity: 0.5;
 }
 
+.overview {
+  font-size: xx-small;
+  opacity: 0.5;
+}
+
 </style>
 You can drag &amp; drop the following bookmarklet to your bookmark bar instead of using a UserScript manager.
 <p>
-You need to click it twice: first to open the vendor page, and then a second time to activate the customized rich interface.
+You will then need to click it twice: first to open the vendor page (not supported by all bookmarklets), and a second time to activate the customized rich interface if you are on the vendor page.
 <p>
 EOF
 }
