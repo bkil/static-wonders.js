@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.9
+// @version     2023.5.10
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -223,10 +223,10 @@ const loadState = () => {
         postedTime: null,
         zone: null,
         lastCloak: null,
-        lastCloakDay: null,
+        lastCloakDay: null, // deprecated
         textbox: null,
         myCloaks: [],
-        lastMention: null,
+        lastMention: null, // deprecated
         lastModified: null,
         pollMinSecond: 38,
         pollMaxSecond: 600,
