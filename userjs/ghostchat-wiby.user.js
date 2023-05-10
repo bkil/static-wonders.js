@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.7
+// @version     2023.5.8
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -80,6 +80,7 @@ const init = () => {
 
       .cloak {
         font-family: monospace;
+        border-top: 1px solid;
       }
 
       #error {
@@ -359,6 +360,7 @@ const gotFeedUpdate = (body) => {
 
   console.log(state);
 
+  const allSeenCloaks = new Set();
   let lastLineCloak;
   const tab = document.createElement('table');
   state.log.forEach(u => {
@@ -374,17 +376,25 @@ const gotFeedUpdate = (body) => {
     const cloak = tr.insertCell();
     if (u.cloak !== lastLineCloak) {
       cloak.textContent = u.cloak;
+      cloak.classList.add('cloak');
+      cloak.style.color = getCloakColor(u.cloak);
+      if (u.isMe) {
+        cloak.classList.add('isMyCloak');
+      }
+      allSeenCloaks.add(u.cloak);
     }
     lastLineCloak = u.cloak;
-    cloak.classList.add('cloak');
-    cloak.style.color = getCloakColor(u.cloak);
-    if (u.isMe) {
-      cloak.classList.add('isMyCloak');
-    }
 
     const comment = tr.insertCell();
     comment.classList.add('comment');
-    comment.textContent = unHTML(u.message);
+    let colored = escapeHTML(u.message);
+    allSeenCloaks.forEach(cl => {
+      const color = getCloakColor(cl);
+      colored = colored.replace(
+        new RegExp(`@?\\b${cl}\\b:?`, 'g'),
+        m => `<span style=color:${color}>${m}</span>`)
+    });
+    comment.innerHTML = markup(colored);
   });
 
   const cont = document.getElementById('log');
@@ -396,6 +406,49 @@ const gotFeedUpdate = (body) => {
   document.getElementById('send').scrollIntoView();
   messageBox.focus();
   scheduleUpdate();
+};
+
+const escapeHTML = (s) => {
+  return s
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    ;
+};
+
+const markup = (s) => {
+  const proto = `(?:(?:https?|gemini|gopher):\/\/|mailto:)`;
+  const link = `(${proto})?([0-9a-z.-]+\\.[a-z]{2,14}(?:\/(?:[^ <>&]|&amp;)*)?)`;
+  return s
+    .replaceAll(' ', '&#32;')
+    .replace(/(^|\s|;)__([^_<>]*)__(&#|\s|$)/g, '$1<u>$2</u>$3')
+    .replace(/(^|\s|;)_([^_<>]*)_(&#|\s|$)/g, '$1<em>$2</em>$3')
+    .replace(/(^|\s|;)[*][*]([^*<>]*)[*][*](&#|\s|$)/g, '$1<strong>$2</strong>$3')
+    .replace(/(^|\s|;)[*]([^*<>]*)[*](&#|\s|$)/g, '$1<em>$2</em>$3')
+    .replace(/(^|\s|;)~~([^~<>]*)~~(&#|\s|$)/g, '$1<del>$2</del>$3')
+    .replace(/(^|\s|;)`([^`<>]*)`(&#|\s|$)/g, '$1<code>$2</code>$3')
+    .replace(/&amp;lt;b&amp;gt;(.*)&amp;lt;\/b&amp;gt;/g, '<b>$1</b>')
+    .replace(/&amp;lt;i&amp;gt;(.*)&amp;lt;\/i&amp;gt;/g, '<i>$1</i>')
+    .replace(/&amp;lt;u&amp;gt;(.*)&amp;lt;\/u&amp;gt;/g, '<u>$1</u>')
+    .replace(/&amp;lt;code&amp;gt;(.*)&amp;lt;\/code&amp;gt;/g, '<code>$1</code>')
+    .replace(/&amp;lt;pre&amp;gt;(.*)&amp;lt;\/pre&amp;gt;/g, '<pre>$1</pre>')
+    .replace(/&amp;lt;br&amp;gt;/g, '<br>')
+    .replace(
+      new RegExp(`&amp;lt;${link}&amp;gt;(&#|\\s|$)`, 'g'),
+      (_, a, b, c) => `<a target=_blank rel=noreferrer href="${a ?? "http://"}${b}">${b}</a>${c}`)
+    .replace(
+      new RegExp(`\\b${link}(&#|\\s|$)`, 'g'),
+      (_, a, b, c) => `<a target=_blank rel=noreferrer href="${a ?? "http://"}${b}">${b}</a>${c}`)
+    .replace(
+      new RegExp(`\\b(${proto}([^ <>&]+))(&#|\\s|$)`, 'g'),
+      '<a target=_blank rel=noreferrer href="$1">$2</a>$3')
+    .replaceAll('&#32;', ' ')
+    .replaceAll('&amp;quot;', '&quot;')
+    .replaceAll('&amp;gt;', '&gt;')
+    .replaceAll('&amp;lt;', '&lt;')
+    .replaceAll('&amp;amp;', '&amp;')
+    ;
 };
 
 const resetPollDelay = () => {
@@ -416,15 +469,6 @@ const rotateCloaks = (cloak, timeSec) => {
     state.myCloaks = cloaks;
   }
   state.myCloaks.push({time: timeSec, cloak: cloak});
-};
-
-const unHTML = (s) => {
-  return s
-    .replaceAll('&lt;', '<')
-    .replaceAll('&gt;', '>')
-    .replaceAll('&amp;', '&')
-    .replaceAll('&quot;', '"')
-    ;
 };
 
 const round = (n, mod) => Math.trunc(n / mod) * mod;
