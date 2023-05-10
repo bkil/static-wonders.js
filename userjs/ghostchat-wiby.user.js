@@ -175,11 +175,12 @@ const init = () => {
 };
 
 const updateCounter = () => {
-  const len = normalizeEnteredText(document.getElementById('message').value).length;
+  const text = normalizeEnteredText(document.getElementById('message').value);
+  const len = text.length;
   const counter = document.getElementById('counter');
   const submit = document.getElementById('send');
   if (len) {
-    counter.textContent = len;
+    counter.textContent = len + (escapeWibyHTML(text).length > 71 ? '+' : '');
     submit.value = submit.dataset.value_post;
   } else {
     counter.textContent =  '';
