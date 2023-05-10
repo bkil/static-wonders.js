@@ -361,6 +361,7 @@ const gotFeedUpdate = (body) => {
 
   const allSeenCloaks = new Set();
   let lastLineCloak;
+  let lastLineMe;
   const tab = document.createElement('table');
   state.log.forEach(u => {
     const tr = tab.insertRow();
@@ -373,7 +374,7 @@ const gotFeedUpdate = (body) => {
     }
 
     const cloak = tr.insertCell();
-    if (u.cloak !== lastLineCloak) {
+    if ((u.cloak !== lastLineCloak) || (u.isMe !== lastLineMe)) {
       cloak.textContent = u.cloak;
       cloak.classList.add('cloak');
       cloak.style.color = getCloakColor(u.cloak);
@@ -381,8 +382,10 @@ const gotFeedUpdate = (body) => {
         cloak.classList.add('isMyCloak');
       }
       allSeenCloaks.add(u.cloak);
+
+      lastLineCloak = u.cloak;
+      lastLineMe = u.isMe;
     }
-    lastLineCloak = u.cloak;
 
     const comment = tr.insertCell();
     comment.classList.add('comment');
