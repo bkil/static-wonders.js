@@ -295,6 +295,7 @@ const gotFeedUpdate = (body) => {
     }
   });
 
+  const escapedMessage = state.postedMessage ? escapeWibyHTML(state.postedMessage) : null;
   let i = lines.length;
   let updates = [];
   while (--i >= 0) {
@@ -317,17 +318,15 @@ const gotFeedUpdate = (body) => {
     lastTime = newTime;
 
     let isCloakNew = false;
-    if (state.postedTime && state.postedMessage && (message === state.postedMessage)) {
-      if ((state.zone === null) || (state.lastCloakDay !== day)) {
-        const zeroTime = new Date(year, month, day, hour, min);
-        state.zone = round((new Date(state.postedTime) - zeroTime) / 60000, 15);
-        if (cloak !== state.lastCloak) {
-          state.lastCloak = cloak;
-          isCloakNew = true;
-        }
-        state.lastCloakDay = day;
+    if (state.postedTime && state.postedMessage && (message === escapedMessage)) {
+      const zeroTime = new Date(year, month, day, hour, min);
+      state.zone = round((new Date(state.postedTime) - zeroTime) / 60000, 15);
+      if (cloak !== state.lastCloak) {
+        state.lastCloak = cloak;
+        isCloakNew = true;
       }
 
+      state.lastCloakDay = day;
       state.postedMessage = null;
       state.postedTime = null;
     }
@@ -406,6 +405,13 @@ const gotFeedUpdate = (body) => {
   document.getElementById('send').scrollIntoView();
   messageBox.focus();
   scheduleUpdate();
+};
+
+const escapeWibyHTML = (s) => {
+  return s
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    ;
 };
 
 const escapeHTML = (s) => {
