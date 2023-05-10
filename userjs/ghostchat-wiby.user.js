@@ -426,14 +426,17 @@ const escapeHTML = (s) => {
 const markup = (s) => {
   const proto = `(?:(?:https?|gemini|gopher):\/\/|mailto:)`;
   const link = `(${proto})?([0-9a-z.-]+\\.[a-z]{2,14}(?:\/(?:[^ <>&]|&amp;)*)?)`;
+  const sw = `(^|\\s|;)`;
+  const ew = `([;:,.!?<)-]?(?:&#|&amp|\s|$))`;
+  const wordReg = (middle) => new RegExp(`${sw}${middle}${ew}`, 'g');
   return s
     .replaceAll(' ', '&#32;')
-    .replace(/(^|\s|;)__([^_<>]*)__(&#|\s|$)/g, '$1<u>$2</u>$3')
-    .replace(/(^|\s|;)_([^_<>]*)_(&#|\s|$)/g, '$1<em>$2</em>$3')
-    .replace(/(^|\s|;)[*][*]([^*<>]*)[*][*](&#|\s|$)/g, '$1<strong>$2</strong>$3')
-    .replace(/(^|\s|;)[*]([^*<>]*)[*](&#|\s|$)/g, '$1<em>$2</em>$3')
-    .replace(/(^|\s|;)~~([^~<>]*)~~(&#|\s|$)/g, '$1<del>$2</del>$3')
-    .replace(/(^|\s|;)`([^`<>]*)`(&#|\s|$)/g, '$1<code>$2</code>$3')
+    .replace(wordReg('__([^_<>]*)__'), '$1<u>$2</u>$3')
+    .replace(wordReg('_([^_<>]*)_'), '$1<em>$2</em>$3')
+    .replace(wordReg('[*][*]([^*<>]*)[*][*]'), '$1<strong>$2</strong>$3')
+    .replace(wordReg('[*]([^*<>]*)[*]'), '$1<em>$2</em>$3')
+    .replace(wordReg('~~([^~<>]*)~~'), '$1<del>$2</del>$3')
+    .replace(wordReg('`([^`<>]*)`'), '$1<code>$2</code>$3')
     .replace(/&amp;lt;b&amp;gt;(.*)&amp;lt;\/b&amp;gt;/g, '<b>$1</b>')
     .replace(/&amp;lt;i&amp;gt;(.*)&amp;lt;\/i&amp;gt;/g, '<i>$1</i>')
     .replace(/&amp;lt;u&amp;gt;(.*)&amp;lt;\/u&amp;gt;/g, '<u>$1</u>')
