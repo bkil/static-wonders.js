@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.10
+// @version     2023.5.11
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -24,6 +24,10 @@ let nextUpdateTime;
 let state;
 
 const init = () => {
+  if ((window.location.hostname !== 'wiby.me') && ((window.location.hostname !== 'localhost'))) {
+    window.location = 'https://wiby.me/chat/#click_bookmarklet_again';
+    return;
+  }
   if (document.documentElement) {
     document.documentElement.remove();
   }
