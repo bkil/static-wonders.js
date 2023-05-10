@@ -70,7 +70,9 @@ cat_bookmarklet_head() {
 }
 
 </style>
-You can drag &amp; drop the following bookmarklet to your bookmark bar instead of using a UserScript manager:
+You can drag &amp; drop the following bookmarklet to your bookmark bar instead of using a UserScript manager.
+<p>
+You need to click it twice: first to open the vendor page, and then a second time to activate the customized rich interface.
 <p>
 EOF
 }
