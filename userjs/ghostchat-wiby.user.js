@@ -53,6 +53,23 @@ const init = () => {
         border-left: 1px solid white;
         padding-left: 0.5em;
         padding-right: 0.5em;
+        vertical-align: top;
+      }
+
+      .meta td {
+        padding: 0.5em;
+        font-style: italic;
+      }
+
+      .meta td,
+      .day td {
+        border-left: initial;
+        border-top: 1px solid;
+      }
+
+      .day td {
+        border-bottom: 1px solid;
+        opacity: 0.7;
       }
 
       textarea {
@@ -315,6 +332,7 @@ const gotFeedUpdate = (body) => {
   const escapedMessage = state.postedMessage ? escapeWibyHTML(state.postedMessage) : null;
   let i = lines.length;
   let updates = [];
+  let foundSeenLine = false;
   while (--i >= 0) {
     const [hours, mins, cloak, message] = lines[i];
     const hhmm = `${hours}:${mins}`;
@@ -322,6 +340,7 @@ const gotFeedUpdate = (body) => {
     const min = parseInt(mins);
     const key = `${hhmm}\n${cloak}\n${message}`;
     if (state.key[key] !== undefined) {
+      foundSeenLine = true;
       break;
     }
 
@@ -362,6 +381,9 @@ const gotFeedUpdate = (body) => {
   }
 
   if (updates.length || !(state.pollSecond >= state.pollMinSecond)) {
+    if (!foundSeenLine) {
+      state.log.push({meta: 'missingLines'});
+    }
     resetPollDelay();
   } else {
     increasePollDelay();
@@ -378,41 +400,67 @@ const gotFeedUpdate = (body) => {
   const allSeenCloaks = new Set();
   let lastLineCloak;
   let lastLineMe;
+  let lastDay;
   const tab = document.createElement('table');
   state.log.forEach(u => {
-    const tr = tab.insertRow();
-
-    const stamp = tr.insertCell();
-    stamp.textContent = new Date(u.time).toLocaleString().replace(':00 ', ' ');
-    stamp.classList.add('timestamp');
-    if (u.isMentionMe) {
-      stamp.classList.add('isMentionMe');
-    }
-
-    const cloak = tr.insertCell();
-    if ((u.cloak !== lastLineCloak) || (u.isMe !== lastLineMe)) {
-      cloak.textContent = u.cloak;
-      cloak.classList.add('cloak');
-      cloak.style.color = getCloakColor(u.cloak);
-      if (u.isMe) {
-        cloak.classList.add('isMyCloak');
+    let tr = tab.insertRow();
+    if (u.meta) {
+      tr.classList.add('meta');
+      const td = tr.insertCell();
+      td.colSpan = 3;
+      if (u.meta === 'missingLines') {
+        td.classList.add('missing_lines');
+        td.textContent = '(log lines may be missing)';
+      } else {
+        td.textContent = meta;
       }
-      allSeenCloaks.add(u.cloak);
+      lastDay = null;
+    } else {
+      const time = new Date(u.time);
+      const day = time.toLocaleDateString();
+      if (day !== lastDay) {
+        tr.classList.add('day');
+        const td = tr.insertCell();
+        td.colSpan = 3;
+        td.textContent = day;
 
-      lastLineCloak = u.cloak;
-      lastLineMe = u.isMe;
+        tr = tab.insertRow();
+      }
+
+      const cloak = tr.insertCell();
+      if ((u.cloak !== lastLineCloak) || (u.isMe !== lastLineMe) || (day !== lastDay)) {
+        cloak.textContent = u.cloak;
+        cloak.classList.add('cloak');
+        cloak.style.color = getCloakColor(u.cloak);
+        if (u.isMe) {
+          cloak.classList.add('isMyCloak');
+        }
+        allSeenCloaks.add(u.cloak);
+
+        lastLineCloak = u.cloak;
+        lastLineMe = u.isMe;
+      }
+
+      const stamp = tr.insertCell();
+      stamp.textContent = time.toLocaleTimeString().replace(':00 ', ' ');
+      stamp.classList.add('timestamp');
+      if (u.isMentionMe) {
+        stamp.classList.add('isMentionMe');
+      }
+
+      const comment = tr.insertCell();
+      comment.classList.add('comment');
+      let colored = escapeHTML(u.message);
+      allSeenCloaks.forEach(cl => {
+        const color = getCloakColor(cl);
+        colored = colored.replace(
+          new RegExp(`@?\\b${cl}\\b:?`, 'g'),
+          m => `<span style=color:${color}>${m}</span>`)
+      });
+      comment.innerHTML = markup(colored);
+
+      lastDay = day;
     }
-
-    const comment = tr.insertCell();
-    comment.classList.add('comment');
-    let colored = escapeHTML(u.message);
-    allSeenCloaks.forEach(cl => {
-      const color = getCloakColor(cl);
-      colored = colored.replace(
-        new RegExp(`@?\\b${cl}\\b:?`, 'g'),
-        m => `<span style=color:${color}>${m}</span>`)
-    });
-    comment.innerHTML = markup(colored);
   });
 
   const cont = document.getElementById('log');
