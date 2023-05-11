@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.11
+// @version     2023.5.12
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -83,6 +83,23 @@ const init = () => {
 
       .comment {
         overflow-wrap: anywhere;
+      }
+
+      pre {
+        max-width: 100%;
+        white-space: pre-wrap;
+        margin: 1em;
+        padding: 1em;
+      }
+
+      code {
+        display: inline-block;
+        margin: 0.5em;
+        padding: 0.5em;
+      }
+
+      pre, code {
+        background-color: #211;
       }
 
       .timestamp {
