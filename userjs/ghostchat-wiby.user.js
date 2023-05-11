@@ -196,7 +196,7 @@ const updateCounter = () => {
 const updatePlaceholder = () => {
   const message = document.getElementById('message');
   if (!message.length) {
-    if (+new Date() - state.postedTime < 6e5) {
+    if (2*(+new Date() - state.postedTime) < state.pollMaxSecond) {
       message.placeholder = 'Wait before posting messages in a row';
     } else {
       message.placeholder = 'Post <180 char once instead of short lines.';
@@ -517,7 +517,7 @@ const emojiRegexp =
 const notEmojis = '…“”‘’▪―─—°„– ️«»《》‍  ​';
 const notEmojiRegexp = /[\P{Assigned}]/ug;
 
-const isNonEmoji = (c) => notEmojiRegexp.test(c) || notEmojis.indexOf(c) >= 0;
+const isNonEmoji = (c) => notEmojiRegexp.test(c) || (notEmojis.indexOf(c) >= 0);
 
 const initEmojiPicker = () => {
   const div = document.getElementById('js-emoji');
@@ -554,6 +554,7 @@ const fillAllEmoji = (div) => {
       const text = document.getElementById('message')
       text.value += span.textContent;
       document.documentElement.classList.remove('js-emoji-selector');
+      updateCounter();
       text.focus();
     };
   });
