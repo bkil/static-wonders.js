@@ -311,6 +311,19 @@ const updateFeed = () => {
 
 const gotFeedUpdate = (body) => {
   const now = new Date();
+  updateStatePosts(body, now);
+  console.log(state);
+  renderLog();
+
+  document.getElementById('status').textContent = now.toLocaleTimeString();
+  const messageBox = document.getElementById('message');
+  document.getElementById('send').scrollIntoView();
+  updatePlaceholder();
+  messageBox.focus();
+  scheduleUpdate();
+};
+
+const updateStatePosts = (body, now) => {
   if (!state.zone) {
     state.zone = -now.getTimezoneOffset();
   }
@@ -394,9 +407,9 @@ const gotFeedUpdate = (body) => {
     state.key[key] = state.log.length;
     state.log.push(u);
   });
+};
 
-  console.log(state);
-
+const renderLog = () => {
   const allSeenCloaks = new Set();
   let lastLineCloak;
   let lastLineMe;
@@ -466,13 +479,6 @@ const gotFeedUpdate = (body) => {
   const cont = document.getElementById('log');
   cont.innerHTML = '';
   cont.appendChild(tab);
-
-  document.getElementById('status').textContent = now.toLocaleTimeString();
-  const messageBox = document.getElementById('message');
-  document.getElementById('send').scrollIntoView();
-  updatePlaceholder();
-  messageBox.focus();
-  scheduleUpdate();
 };
 
 const escapeWibyHTML = (s) => {
