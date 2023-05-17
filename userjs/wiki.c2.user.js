@@ -23,15 +23,17 @@ const cache = {};
 let status;
 
 function init() {
-  const banner = document.getElementsByTagName('center')[0];
   status = document.getElementById('tab');
-  if (!document.body || !banner || !status) {
+  if (!document.body || !status) {
     window.addEventListener('load', init);
     return;
   }
 
   window.addEventListener('popstate', navigateToUrl);
-  banner.style.display = 'none';
+  const banner = document.getElementsByTagName('center')[0];
+  if (banner) {
+    banner.style.display = 'none';
+  }
   navigateToUrl();
 }
 
@@ -153,6 +155,7 @@ function fetch(slug, ok, err0) {
     return
   }
 
+  x.responseType = 'text';
   x.timeout = 30000;
   x.onload = function(e) {
     if ((x.status >= 200) && (x.status <= 299)) {
