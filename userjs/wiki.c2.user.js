@@ -21,26 +21,35 @@
 
 const cache = {};
 let status;
+const host = 'wiki.c2.com';
 
 function init() {
-  status = document.getElementById('tab');
-  if (!document.body || !status) {
-    window.addEventListener('load', init);
-    return;
+  if (window.location.hostname === host) {
+    status = document.getElementById('tab');
+    if (!document.body || !status) {
+      window.addEventListener('load', init);
+      return;
+    }
+  } else {
+    document.body.innerHTML = '';
+    status = document.createElement('div');
+    document.body.appendChild(status);
   }
 
   window.addEventListener('popstate', navigateToUrl);
-  const banner = document.getElementsByTagName('center')[0];
-  if (banner) {
-    banner.style.display = 'none';
-  }
+  window.addEventListener('load', function() {
+    const banner = document.getElementsByTagName('center')[0];
+    if (banner) {
+      banner.style.display = 'none';
+    }
+  });
   navigateToUrl();
 }
 
 function navigateToUrl() {
   const slug = window.location.search.substr(1).replace('=', '');
   navigateTo(
-    ((window.location.hostname === 'wiki.c2.com') && slug.length) ? slug : 'WelcomeVisitors',
+    ((window.location.hostname === host) && slug.length) ? slug : 'WelcomeVisitors',
     function() {},
     function() {
       renderPage("'''404 - Page not found''': " + slug + '.\n----\nSee: WelcomeVisitors');
