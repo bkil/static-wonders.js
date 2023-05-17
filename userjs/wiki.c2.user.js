@@ -38,7 +38,7 @@ function init() {
 function navigateToUrl() {
   const slug = window.location.search.substr(1).replace('=', '');
   navigateTo(
-    slug.length ? slug : 'WelcomeVisitors',
+    ((window.location.hostname === 'wiki.c2.com') && slug.length) ? slug : 'WelcomeVisitors',
     function() {},
     function() {
       renderPage("'''404 - Page not found''': " + slug + '.\n----\nSee: WelcomeVisitors');
@@ -83,7 +83,6 @@ function renderPage(source) {
         return false;
       };
       if (cache[slug] && !cache[slug].body) {
-        console.log(cache[slug]);
         l.style.color = 'red';
         l.style.textDecoration = 'none';
       }
