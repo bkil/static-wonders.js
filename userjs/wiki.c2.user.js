@@ -8,7 +8,7 @@
 // @match       https://wiki.c2.com/
 // @match       https://wiki.c2.com/?*
 // @grant       none
-// @version     2023.5.3
+// @version     2023.5.4
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -40,6 +40,7 @@ function init() {
   s.textContent = 'center { display: none }';
   document.head.appendChild(s);
 
+  document.body.style.overflowWrap = 'anywhere';
   window.addEventListener('popstate', navigateToUrl);
   window.addEventListener('load', function() {
     var banner = document.getElementsByTagName('center')[0];
@@ -70,15 +71,16 @@ function renderPage(source) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/\r(\n)?/g, '\n')
-    .replace(/\n----+/g, '<p><hr>')
-    .replace(/(?:^|\n)  ([^\n]+)/g, '<pre>$1</pre>')
     .replace(/((?:^|\n)(?:[^*\n][^\n]*)?\n)((?:\t*[*][^\n]*(?:\n|$)+)*\t*[*][^\n]*)/g, '$1<ul>$2</ul>')
     .replace(/(?:^|\n|(<ul>))\t*[*] *([^ \n][^\n]*)/g, '$1<li>$2')
+    .replace(/(?:^|\n|>)----+/g, '<p><hr>')
+    .replace(/(?:^|\n)((?:(?:  |\t)[^\n]*\n+)*(?:  |\t)[^\n]*)/g, '<pre>$1</pre>')
     .replace(/(^|\s|>)'''([^\n]*?)'''/g, '$1<strong>$2</strong>')
     .replace(/(^|\s|>)''([^\n]*?)''/g, '$1<em>$2</em>')
     .replace(/\b((?:(?:https?|ftps?|gophers?|gemini|nntp|snews):\/\/|(?:mailto|news):)(?:[^\]\[\s&<>()"']|&amp;)*(?:[^\]\[\s&<>()"'.,!?]|&amp;))/g, '<a href="$1" rel=noreferrer target=_blank>$1</a>')
     .replace(/(^|\s|>)((?:[A-Z][a-z]+){2,})\b/g, '$1<a href="https://' + host + '/?$2">$2</a>')
     .replace(/\n/g, '<p>')
+    .replace(/(?:^|<p>|(<pre>))(?:  |\t|(<\/pre>)|(?=<p>))/g, '$1\n$2')
     ;
 
   foreach(div.getElementsByTagName('a'), function(l) {
@@ -106,6 +108,10 @@ function renderPage(source) {
 
   foreach(div.getElementsByTagName('em'), function(em) {
     em.style.textDecoration = 'underline';
+  });
+
+  foreach(div.getElementsByTagName('pre'), function(em) {
+    em.style.whiteSpace = 'pre-wrap';
   });
 
   foreach(document.getElementsByClassName('parsed'), function(r) {
