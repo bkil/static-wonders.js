@@ -8,7 +8,7 @@
 // @match       https://wiki.c2.com/
 // @match       https://wiki.c2.com/?*
 // @grant       none
-// @version     2023.5.1
+// @version     2023.5.2
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -80,7 +80,8 @@ function renderPage(source) {
   foreach(div.getElementsByTagName('a'), function(l) {
     if (!l.target) {
       var slug = l.textContent;
-      l.onclick = function() {
+      l.onclick = function(e) {
+        e.preventDefault();
         l.style.outline = 'auto';
         navigateTo(slug,
           function() {
@@ -91,7 +92,6 @@ function renderPage(source) {
             l.style.textDecoration = 'none';
             l.style.outline = 'initial';
           });
-        return false;
       };
       if (cache[slug] && !cache[slug].body) {
         l.style.color = 'red';
@@ -140,7 +140,7 @@ function navigateTo(slug, ok, err0) {
       }
       ok();
       status.hidden = true;
-      renderPage(j.text + (j.date ? '\n' + j.date : ''));
+      renderPage((j.text ? j.text : body) + (j.date ? '\n' + j.date : ''));
     },
     err
   );
