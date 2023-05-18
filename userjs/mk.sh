@@ -20,8 +20,22 @@ main() {
         cat_bookmarklet_head "$NAME"
 
         BODY="`escape_file "$FILE"`"
-        printf '<ul><li><a class=bookmarklet onclick="location.hash=href;return false" href="javascript:%s">%s %s</a>\n <span class=source>(readable <a href="%s">source</a>)</span></li></ul>\n' "$BODY" "$BASE" "$TIME" "$NAME"
-        printf '<p>\n<a class=overview href="gen-bookmarklet.html">Overview of other bookmarklets</a>\n'
+
+cat << EOF
+<ul>
+<li>
+ <a class=bookmarklet onclick="location.hash=href;return false" href="javascript:${BODY}">${BASE} ${TIME}</a>
+ <span class=source>(readable <a href="${NAME}">source</a>)</span>
+</li>
+</ul>
+<textarea style="width:100%;height:50%"></textarea>
+<p>
+<a class=overview href="gen-bookmarklet.html">Overview of other bookmarklets</a>
+<script>
+document.getElementsByTagName('textarea')[0].value = document.links[0].href;
+</script>
+EOF
+
         cat_tail
       } > "$BLET"
     done
@@ -75,6 +89,9 @@ cat_bookmarklet_head() {
   opacity: 0.5;
 }
 
+html, body {
+  height: 100%;
+}
 </style>
 You can drag &amp; drop the following bookmarklet to your bookmark bar instead of using a UserScript manager.
 <p>
