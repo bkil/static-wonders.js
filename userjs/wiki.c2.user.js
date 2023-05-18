@@ -8,7 +8,7 @@
 // @match       https://wiki.c2.com/
 // @match       https://wiki.c2.com/?*
 // @grant       none
-// @version     2023.5.4
+// @version     2023.5.5
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -40,6 +40,7 @@ function init() {
   s.textContent = 'center { display: none }';
   document.head.appendChild(s);
 
+  document.body.style.wordWrap = 'anywhere';
   document.body.style.overflowWrap = 'anywhere';
   window.addEventListener('popstate', navigateToUrl);
   window.addEventListener('load', function() {
@@ -91,7 +92,11 @@ function renderPage(source) {
         l.style.outline = 'auto';
         navigateTo(slug,
           function() {
-            window.history.pushState({}, '', '?' + slug);
+            try {
+              window.history.pushState({}, '', '?' + slug);
+            } catch (e) {
+              console.log(e);
+            }
           },
           function() {
             l.style.color = 'red';
