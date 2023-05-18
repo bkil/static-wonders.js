@@ -72,8 +72,8 @@ function renderPage(source) {
     .replace(/(?:^|\n|(<ul>))\t*[*] *([^ \n][^\n]*)/g, '$1<li>$2')
     .replace(/(^|\s|>)'''([^\n]*?)'''/g, '$1<strong>$2</strong>')
     .replace(/(^|\s|>)''([^\n]*?)''/g, '$1<em>$2</em>')
-    .replace(/\b((?:https?|ftps?|gophers?|gemini|mailto|news):(?:[^\]\[\s&<>()"']|&amp;)*(?:[^\]\[\s&<>()"'.,!?]|&amp;))/g, '<a href="' + host + '$1" rel=noreferrer target=_blank>$1</a>')
-    .replace(/(^|\s|>)((?:[A-Z][a-z]+){2,})\b/g, '$1<a href="?$2">$2</a>')
+    .replace(/\b((?:https?|ftps?|gophers?|gemini|mailto|news):(?:[^\]\[\s&<>()"']|&amp;)*(?:[^\]\[\s&<>()"'.,!?]|&amp;))/g, '<a href="$1" rel=noreferrer target=_blank>$1</a>')
+    .replace(/(^|\s|>)((?:[A-Z][a-z]+){2,})\b/g, '$1<a href="https://' + host + '/?$2">$2</a>')
     .replace(/\n/g, '<p>')
     ;
 
