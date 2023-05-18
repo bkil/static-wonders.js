@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        wiki.c2.com noJS
 // @author      bkil
-// @description Minimal viewer for WikiBase
+// @description Minimal viewer for Wiki-WikiBase for Opera Mini ES5
 // @namespace   bkil.hu
 // @match       http://wiki.c2.com/
 // @match       http://wiki.c2.com/?*
@@ -36,7 +36,7 @@ function init() {
     document.body.appendChild(status);
   }
 
-  const s = document.createElement('style');
+  var s = document.createElement('style');
   s.textContent = 'center { display: none }';
   document.head.appendChild(s);
 
