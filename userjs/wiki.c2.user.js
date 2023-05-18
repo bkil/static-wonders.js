@@ -19,9 +19,9 @@
 (function() {
 'use strict';
 
-const cache = {};
-let status;
-const host = 'wiki.c2.com';
+var cache = {};
+var status;
+var host = 'wiki.c2.com';
 
 function init() {
   if (window.location.hostname === host) {
@@ -38,7 +38,7 @@ function init() {
 
   window.addEventListener('popstate', navigateToUrl);
   window.addEventListener('load', function() {
-    const banner = document.getElementsByTagName('center')[0];
+    var banner = document.getElementsByTagName('center')[0];
     if (banner) {
       banner.style.display = 'none';
     }
@@ -47,7 +47,7 @@ function init() {
 }
 
 function navigateToUrl() {
-  const slug = window.location.search.substr(1).replace('=', '');
+  var slug = window.location.search.substr(1).replace('=', '');
   navigateTo(
     ((window.location.hostname === host) && slug.length) ? slug : 'WelcomeVisitors',
     function() {},
@@ -58,7 +58,7 @@ function navigateToUrl() {
 }
 
 function renderPage(source) {
-  const div = document.createElement('div');
+  var div = document.createElement('div');
   div.className = 'parsed';
   div.innerHTML = source
     .replace(/</g, '&lt;')
@@ -79,7 +79,7 @@ function renderPage(source) {
 
   foreach(div.getElementsByTagName('a'), function(l) {
     if (!l.target) {
-      const slug = l.textContent;
+      var slug = l.textContent;
       l.onclick = function() {
         l.style.outline = 'auto';
         navigateTo(slug,
@@ -111,7 +111,7 @@ function renderPage(source) {
 }
 
 function foreach(l, f) {
-  for (let i = 0; i < l.length; i++) {
+  for (var i = 0; i < l.length; i++) {
     f(l[i]);
   }
 }
@@ -122,7 +122,7 @@ function navigateTo(slug, ok, err0) {
   status.style.backgroundColor = 'white';
   status.style.position = 'fixed';
   status.hidden = false;
-  const err = function() {
+  var err = function() {
     status.hidden = true;
     err0();
   };
@@ -130,7 +130,7 @@ function navigateTo(slug, ok, err0) {
   fetch(
     slug,
     function (body) {
-      let j;
+      var j;
       try {
         j = JSON.parse(body);
       } catch (e) {
@@ -151,8 +151,8 @@ function fetch(slug, ok, err0) {
     ok(cache[slug].body);
     return;
   }
-  const x = new XMLHttpRequest();
-  const err = function() {
+  var x = new XMLHttpRequest();
+  var err = function() {
     cache[slug] = {};
     err0();
   };
