@@ -8,7 +8,7 @@
 // @match       https://wiki.c2.com/
 // @match       https://wiki.c2.com/?*
 // @grant       none
-// @version     2023.5.2
+// @version     2023.5.3
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -36,6 +36,10 @@ function init() {
     document.body.appendChild(status);
   }
 
+  const s = document.createElement('style');
+  s.textContent = 'center { display: none }';
+  document.head.appendChild(s);
+
   window.addEventListener('popstate', navigateToUrl);
   window.addEventListener('load', function() {
     var banner = document.getElementsByTagName('center')[0];
@@ -61,9 +65,9 @@ function renderPage(source) {
   var div = document.createElement('div');
   div.className = 'parsed';
   div.innerHTML = source
+    .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/&/g, '&amp;')
     .replace(/"/g, '&quot;')
     .replace(/\r(\n)?/g, '\n')
     .replace(/\n----+/g, '<p><hr>')
@@ -72,7 +76,7 @@ function renderPage(source) {
     .replace(/(?:^|\n|(<ul>))\t*[*] *([^ \n][^\n]*)/g, '$1<li>$2')
     .replace(/(^|\s|>)'''([^\n]*?)'''/g, '$1<strong>$2</strong>')
     .replace(/(^|\s|>)''([^\n]*?)''/g, '$1<em>$2</em>')
-    .replace(/\b((?:https?|ftps?|gophers?|gemini|mailto|news):(?:[^\]\[\s&<>()"']|&amp;)*(?:[^\]\[\s&<>()"'.,!?]|&amp;))/g, '<a href="$1" rel=noreferrer target=_blank>$1</a>')
+    .replace(/\b((?:(?:https?|ftps?|gophers?|gemini|nntp|snews):\/\/|(?:mailto|news):)(?:[^\]\[\s&<>()"']|&amp;)*(?:[^\]\[\s&<>()"'.,!?]|&amp;))/g, '<a href="$1" rel=noreferrer target=_blank>$1</a>')
     .replace(/(^|\s|>)((?:[A-Z][a-z]+){2,})\b/g, '$1<a href="https://' + host + '/?$2">$2</a>')
     .replace(/\n/g, '<p>')
     ;
