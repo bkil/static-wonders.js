@@ -8,7 +8,7 @@
 // @match       https://wiki.c2.com/
 // @match       https://wiki.c2.com/?*
 // @grant       none
-// @version     2023.5.5
+// @version     2023.5.6
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -111,16 +111,16 @@ function renderPage(source) {
     }
   });
 
-  foreach(div.getElementsByTagName('em'), function(em) {
-    em.style.textDecoration = 'underline';
+  foreach(div.getElementsByTagName('em'), function(n) {
+    n.style.textDecoration = 'underline';
   });
 
-  foreach(div.getElementsByTagName('pre'), function(em) {
-    em.style.whiteSpace = 'pre-wrap';
+  foreach(div.getElementsByTagName('pre'), function(n) {
+    n.style.whiteSpace = 'pre-wrap';
   });
 
-  foreach(document.getElementsByClassName('parsed'), function(r) {
-    r.remove();
+  foreach(document.getElementsByClassName('parsed'), function(n) {
+    n.remove();
   });
   document.body.appendChild(div);
 }
@@ -186,6 +186,7 @@ function fetch(slug, ok, err0) {
       cache[slug] = {body: x.responseText};
       ok(x.responseText);
     } else {
+      console.log('failed to fetch "' + slug + '" - HTTP status ' + x.status);
       err();
     }
   };
