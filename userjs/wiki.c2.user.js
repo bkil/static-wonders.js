@@ -78,13 +78,13 @@ function renderPage(source) {
     .replace(/((?:^|\n)(?:[^*\n][^\n]*)?\n)((?:\t*[*][^\n]*(?:\n|$)+)*\t*[*][^\n]*)/g, '$1<ul>$2</ul>')
     .replace(/(?:^|\n|(<ul>))\t*[*] *([^ \n][^\n]*)/g, '$1<li>$2')
     .replace(/(?:^|\n|>)----+/g, '<p><hr>')
-    .replace(/(?:^|\n)((?:(?:  |\t)[^\n]*\n+)*(?:  |\t)[^\n]*)/g, '<pre>$1</pre>')
-    .replace(/(^|\s|>)'''([^\n]*?)'''/g, '$1<strong>$2</strong>')
-    .replace(/(^|\s|>)''([^\n]*?)''/g, '$1<em>$2</em>')
+    .replace(/(?:^|\n)((?:(?: |\t)[^\n]*\n+)*(?: |\t)[^\n]*)/g, '<pre>$1</pre>')
+    .replace(/'''([^\n]*?)'''/g, '<strong>$1</strong>')
+    .replace(/''([^\n]*?)''/g, '<em>$1</em>')
     .replace(/\b((?:(?:https?|ftps?|gophers?|gemini|nntp|snews):\/\/|(?:mailto|news):)(?:[^\]\[\s&<>()"']|&amp;)*(?:[^\]\[\s&<>()"'.,!?]|&amp;))/g, '<a href="$1" rel=noreferrer target=_blank>$1</a>')
-    .replace(/(^|\s|>)((?:[A-Z][a-z]+){2,})\b/g, '$1<a href="https://' + host + '/?$2">$2</a>')
+    .replace(/(^|\s|>)((?:[A-Z][a-z]+){2,})\b/g, '$1<a href="https://' + host + '/?$2=">$2</a>')
     .replace(/\n/g, '<p>')
-    .replace(/(?:^|<p>|(<pre>))(?:  |\t|(<\/pre>)|(?=<p>))/g, '$1\n$2')
+    .replace(/(?:^|<p>|(<pre>))(?: |\t|(<\/pre>)|(?=<p>))/g, '$1\n$2')
     ;
 
   foreach(div.getElementsByTagName('a'), function(l) {
