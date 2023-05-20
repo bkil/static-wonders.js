@@ -8,7 +8,7 @@
 // @match       https://wiki.c2.com/
 // @match       https://wiki.c2.com/?*
 // @grant       none
-// @version     2023.5.6
+// @version     2023.5.7
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -21,6 +21,7 @@
 
 var cache = {};
 var status;
+var currentSlug;
 var host = 'wiki.c2.com';
 
 function init() {
@@ -62,7 +63,8 @@ function navigateToUrl() {
     function() {},
     function() {
       renderPage("'''404 - Page not found''': " + slug + '.\n----\nSee: WelcomeVisitors');
-    }
+    },
+    false
   );
 }
 
@@ -88,8 +90,10 @@ function renderPage(source) {
     ;
 
   foreach(div.getElementsByTagName('a'), function(l) {
-    if (!l.target) {
-      var slug = l.textContent;
+    var slug = l.textContent;
+    if (slug === currentSlug) {
+      l.removeAttribute('href');
+    } else if (!l.target) {
       l.onclick = function(e) {
         e.preventDefault();
         l.style.outline = 'auto';
@@ -106,7 +110,9 @@ function renderPage(source) {
             l.style.color = 'red';
             l.style.textDecoration = 'none';
             l.style.outline = 'initial';
-          });
+          },
+          true
+        );
       };
       if (cache[slug] && !cache[slug].body) {
         l.style.color = 'red';
@@ -135,46 +141,62 @@ function foreach(l, f) {
   }
 }
 
-function navigateTo(slug, ok, err0) {
-  status.innerHTML = 'Loading ' + slug + '...';
-  status.style.padding = '1em';
-  status.style.backgroundColor = 'white';
-  status.style.position = 'fixed';
-  status.hidden = false;
-  var err = function() {
-    status.hidden = true;
-    err0();
-  };
-
-  fetch(
-    slug,
-    function (body) {
-      var j;
-      try {
-        j = JSON.parse(body);
-      } catch (e) {
-        console.log(e);
-        err();
-        return;
-      }
-      ok();
-      status.hidden = true;
-      renderPage((j.text ? j.text : body) + (j.date ? '\n' + j.date : ''));
-    },
-    err
-  );
-}
-
-function fetch(slug, ok, err0) {
-  if (cache[slug] && cache[slug].body) {
-    ok(cache[slug].body);
-    return;
-  }
-  var x = new XMLHttpRequest();
+function navigateTo(slug, ok0, err0, doScroll) {
   var err = function() {
     cache[slug] = {};
     err0();
   };
+
+  var ok = function(body) {
+    var j;
+    try {
+      j = JSON.parse(body);
+    } catch (e) {
+      console.log(e);
+      err();
+      return;
+    }
+    if (currentSlug) {
+      cache[currentSlug].scroll = document.body.scrollTop;
+    }
+    currentSlug = slug;
+    ok0();
+    renderPage((j.text ? j.text : body) + (j.date ? '\n' + j.date : ''));
+    if (doScroll) {
+      if (cache[slug] && cache[slug].scroll) {
+        document.body.scrollTop = cache[slug].scroll;
+      } else {
+        document.body.scrollIntoView();
+      }
+    }
+  };
+
+  if (cache[slug] && cache[slug].body) {
+    ok(cache[slug].body);
+  } else {
+    status.innerHTML = 'Loading ' + slug + '...';
+    status.style.padding = '1em';
+    status.style.backgroundColor = 'white';
+    status.style.position = 'fixed';
+    status.hidden = false;
+
+    fetch(
+      slug,
+      function(body) {
+        status.hidden = true;
+        cache[slug] = {body: body};
+        ok(body);
+      },
+      function() {
+        status.hidden = true;
+        err();
+      }
+    );
+  }
+}
+
+function fetch(slug, ok, err) {
+  var x = new XMLHttpRequest();
   try {
     x.open('GET', 'https://c2.com/wiki/remodel/pages/' + slug);
   } catch (e) {
@@ -187,7 +209,6 @@ function fetch(slug, ok, err0) {
   x.timeout = 30000;
   x.onload = function(e) {
     if ((x.status >= 200) && (x.status <= 299)) {
-      cache[slug] = {body: x.responseText};
       ok(x.responseText);
     } else {
       console.log('failed to fetch "' + slug + '" - HTTP status ' + x.status);
