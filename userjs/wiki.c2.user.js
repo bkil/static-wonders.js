@@ -53,7 +53,10 @@ function init() {
 }
 
 function navigateToUrl() {
-  var slug = window.location.search.substr(1).replace('=', '');
+  var slug = window.location.hash.substr(1);
+  if (!slug.length) {
+    slug = window.location.search.substr(1).replace('=', '');
+  }
   navigateTo(
     ((window.location.hostname === host) && slug.length) ? slug : 'WelcomeVisitors',
     function() {},
@@ -93,9 +96,10 @@ function renderPage(source) {
         navigateTo(slug,
           function() {
             try {
-              window.history.pushState({}, '', '?' + slug);
+              window.history.pushState({}, '', '?' + slug + '=');
             } catch (e) {
               console.log(e);
+              window.location.hash = slug;
             }
           },
           function() {
