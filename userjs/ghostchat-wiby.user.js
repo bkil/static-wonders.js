@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.12
+// @version     2023.5.13
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -474,7 +474,7 @@ const renderLog = () => {
       const stamp = tr.insertCell();
       stamp.textContent = time.toLocaleTimeString().replace(':00 ', ' ');
       stamp.classList.add('timestamp');
-      if (u.isMentionMe) {
+      if (!u.isMe && u.isMentionMe) {
         stamp.classList.add('isMentionMe');
       }
 
@@ -484,8 +484,8 @@ const renderLog = () => {
       allSeenCloaks.forEach(cl => {
         const color = getCloakColor(cl);
         colored = colored.replace(
-          new RegExp(`@?\\b${cl}\\b:?`, 'g'),
-          m => `<span style=color:${color}>${m}</span>`)
+          new RegExp(`((?:@ ?)?\\b${cl}\\b:?)( )`, 'g'),
+          (_, a, b) => `<span style=color:${color}>${a}</span>${b}`)
       });
       comment.innerHTML = markup(colored);
 
