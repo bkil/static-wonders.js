@@ -8,7 +8,7 @@
 // @match       https://wiki.c2.com/
 // @match       https://wiki.c2.com/?*
 // @grant       none
-// @version     2023.5.7
+// @version     2023.5.8
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -77,14 +77,16 @@ function renderPage(source) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/\r(\n)?/g, '\n')
+    .replace(/(?:^|\n|(>))(?:\t| {8}) :(?:\t| {3})([^\n]*)/g, '$1<p><blockquote>$2</blockquote>')
+    .replace(/(?:^|\n|(>))(?:\t| {8})([^\n:]+):(?:\t| {3})([^\n]*)/g, '$1<p><dl><dt>$2</dt><dd>$3</dd></dl>')
     .replace(/((?:^|\n)(?:[^*\n][^\n]*)?\n)((?:\t*[*][^\n]*(?:\n|$)+)*\t*[*][^\n]*)/g, '$1<ul>$2</ul>')
     .replace(/(?:^|\n|(<ul>))\t*[*] *([^ \n][^\n]*)/g, '$1<li>$2')
-    .replace(/(?:^|\n|>)----+/g, '<p><hr>')
+    .replace(/(?:^|\n|(>))----+/g, '$1<p><hr>')
     .replace(/(?:^|\n)((?:(?: |\t)[^\n]*\n+)*(?: |\t)[^\n]*)/g, '<pre>$1</pre>')
     .replace(/'''([^\n]*?)'''/g, '<strong>$1</strong>')
     .replace(/''([^\n]*?)''/g, '<em>$1</em>')
     .replace(/\b((?:(?:https?|ftps?|gophers?|gemini|nntp|snews):\/\/|(?:mailto|news):)(?:[^\]\[\s&<>()"']|&amp;)*(?:[^\]\[\s&<>()"'.,!?]|&amp;))/g, '<a href="$1" rel=noreferrer target=_blank>$1</a>')
-    .replace(/(^|\s|>)((?:[A-Z][a-z]+){2,})\b/g, '$1<a href="https://' + host + '/?$2=">$2</a>')
+    .replace(/(^|[\[\s>("'])((?:[A-Z][a-z]+){2,})\b/g, '$1<a href="https://' + host + '/?$2=">$2</a>')
     .replace(/\n/g, '<p>')
     .replace(/(?:^|<p>|(<pre>))(?: |\t|(<\/pre>)|(?=<p>))/g, '$1\n$2')
     ;
@@ -129,6 +131,11 @@ function renderPage(source) {
     n.style.whiteSpace = 'pre-wrap';
   });
 
+  foreach(div.getElementsByTagName('blockquote'), function(n) {
+    n.style.paddingInlineStart = '1em';
+    n.style.borderInlineStart = '1px solid';
+  });
+
   foreach(document.getElementsByClassName('parsed'), function(n) {
     n.remove();
   });
@@ -166,7 +173,7 @@ function navigateTo(slug, ok0, err0, doScroll) {
       if (cache[slug] && cache[slug].scroll) {
         document.body.scrollTop = cache[slug].scroll;
       } else {
-        document.body.scrollIntoView();
+        document.documentElement.scrollIntoView();
       }
     }
   };
