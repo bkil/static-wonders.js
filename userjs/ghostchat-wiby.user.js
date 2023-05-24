@@ -250,38 +250,25 @@ const loadState = () => {
 
   if (loaded && (typeof loaded === 'object') && (!Array.isArray(loaded))) {
     state = loaded;
-    migrateDb();
   } else {
-    state =
-      {
-        version: 1,
-        key: {},
-        log: [],
-        postedMessage: null,
-        postedTime: null,
-        zone: null,
-        lastCloak: null,
-        lastCloakDay: null, // deprecated
-        textbox: null,
-        myCloaks: [],
-        lastMention: null, // deprecated
-        lastModified: null,
-        pollMinSecond: 38,
-        pollMaxSecond: 600,
-        pollSecond: 38,
-      };
+    state = {};
   }
+  migrateDb();
 };
 
 const migrateDb = () => {
-  if ((typeof state.key !== 'object') || (Array.isArray(state.key))) {
+  if (typeof state.version !== 'number') {
     state.key = {};
-  }
-  if (!Array.isArray(state.log)) {
     state.log = [];
-  }
-  if (!Array.isArray(state.myCloaks)) {
     state.myCloaks = [];
+    state.postedMessage = null;
+    state.postedTime = null;
+    state.zone = null;
+    state.lastCloak = null;
+    state.textbox = null;
+    state.myCloaks = [];
+    state.lastModified = null;
+    state.version = 0;
   }
 
   if (state.version === 0) {
