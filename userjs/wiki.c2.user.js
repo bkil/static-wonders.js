@@ -8,7 +8,7 @@
 // @match       https://wiki.c2.com/
 // @match       https://wiki.c2.com/?*
 // @grant       none
-// @version     2023.5.8
+// @version     2023.5.9
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -25,31 +25,18 @@ var currentSlug;
 var host = 'wiki.c2.com';
 
 function init() {
-  if (window.location.hostname === host) {
-    status = document.getElementById('tab');
-    if (!document.body || !status) {
-      window.addEventListener('load', init);
-      return;
-    }
-  } else {
-    document.body.innerHTML = '';
-    status = document.createElement('div');
-    document.body.appendChild(status);
+  if ((window.location.hostname === host) && (!document.body || (!document.getElementById('tab')))) {
+    window.addEventListener('load', init);
+    return;
   }
 
-  var s = document.createElement('style');
-  s.textContent = 'center { display: none }';
-  document.head.appendChild(s);
+  document.body.innerHTML = '';
+  status = document.createElement('div');
+  document.body.appendChild(status);
 
   document.body.style.wordWrap = 'anywhere';
   document.body.style.overflowWrap = 'anywhere';
   window.addEventListener('popstate', navigateToUrl);
-  window.addEventListener('load', function() {
-    var banner = document.getElementsByTagName('center')[0];
-    if (banner) {
-      banner.style.display = 'none';
-    }
-  });
   navigateToUrl();
 }
 
@@ -124,6 +111,7 @@ function renderPage(source) {
   });
 
   foreach(div.getElementsByTagName('em'), function(n) {
+    n.style.fontStyle = 'normal';
     n.style.textDecoration = 'underline';
   });
 
