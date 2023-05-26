@@ -7,7 +7,7 @@
 // @match       https://*.*/notes/*
 // @match       https://*.*/@*/*
 // @grant       none
-// @version     2022.12.10
+// @version     2023.5.1
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -17,7 +17,6 @@
 
 (function() {
 'use strict';
-main();
 
 function main() {
   const sites = /^\/(notice\/[0-9A-Za-z]{18}|@[^\/]+\/[0-9]+|notes\/[0-9a-z]{10})$/;
@@ -36,10 +35,11 @@ function addTitleDescription(result) {
   el.textContent = document.head.getElementsByTagName('title')[0]?.textContent;
   result.appendChild(el);
 
-  el = document.createElement('p');
-  el.innerText = document.head.querySelector('meta[property="og:description"]')?.content ??
+  const longDesc = document.createElement('div');
+  const shortDesc = document.head.querySelector('meta[property="og:description"]')?.content ??
     document.head.querySelector('meta[name="description"]')?.content;
-  result.appendChild(el);
+  longDesc.innerText = shortDesc;
+  result.appendChild(longDesc);
 
   const alt = document.head.querySelector('meta[property="og:image:alt"]')?.content;
 
@@ -67,6 +67,101 @@ function addTitleDescription(result) {
   el = document.createElement('blockquote');
   el.textContent = alt;
   result.appendChild(el);
+
+  const feed = document.createElement('details');
+  const sum = document.createElement('summary');
+  sum.textContent = '(click to view whole user feed)';
+  addRssEntries(feed, longDesc, shortDesc);
+  result.appendChild(feed);
+}
+
+function addRssEntries(feed, longDesc, shortDesc) {
+  const rss = document.querySelector('link[rel="alternate"][type="application/atom+xml"]')?.href;
+  const err = function() { result.textContent = 'RSS entry not found'; };
+  if (rss) {
+    fetch(rss,
+      function(r) {
+        const j = (new DOMParser()).parseFromString(r, 'text/xml');
+        shortDesc = shortDesc.replace(/\.\.\.$/, '');
+        const rich = document.createElement('div');
+        foreach(j.querySelectorAll('entry'), function(entry) {
+          const content = entry.querySelector('content')?.textContent;
+          if (content) {
+            rich.innerHTML = sanitizeHtmlDesc(content);
+            if (rich.textContent.startsWith(shortDesc)) {
+              render(longDesc, entry);
+            } else {
+              const element = document.createElement('div');
+              element.classList.add('entry');
+              render(element, entry);
+              feed.appendChild(element);
+            }
+          }
+        });
+      },
+      err
+    );
+  }
+}
+
+function sanitizeHtmlDesc(html) {
+  return html.replace(/<br\/?>/g, ' ').replace(/<[^<>]*>/g, '');
+}
+
+function render(result, entry) {
+  const url = document.createElement('a');
+  url.href = entry.querySelector('id')?.textContent;
+  url.target = '_blank';
+  url.textContent = (entry.querySelector('updated') ?? entry.querySelector('published'))?.textContent ?? 'link';
+
+  const content = entry.querySelector('content')?.textContent;
+  const body = document.createElement('div');
+  body.innerHTML  =
+    content
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/(&)amp;(#(?:[0-9]+|$[0-9a-f]+);)/g, '$1$2')
+    .replace(/&lt;br\/?&gt;/g, '<br>');
+
+  result.innerHTML = '';
+  result.appendChild(url);
+  result.appendChild(body);
+}
+
+function foreach(l, f) {
+  for (var i = 0; i < l.length; i++) {
+    f(l[i]);
+  }
+}
+
+function fetch(url, ok, err) {
+  var x = new XMLHttpRequest();
+  try {
+    x.open('GET', url);
+  } catch (e) {
+    console.log(e);
+    err();
+    return
+  }
+
+  x.responseType = 'text';
+  x.timeout = 30000;
+  x.onload = function(e) {
+    if ((x.status >= 200) && (x.status <= 299)) {
+      ok(x.responseText);
+    } else {
+      console.log('failed to fetch "' + slug + '" - HTTP status ' + x.status);
+      err();
+    }
+  };
+
+  x.ontimeout = x.onerror = function(e) {
+    console.log(e);
+    err();
+  };
+  x.send();
 }
 
 function addStyle() {
@@ -76,13 +171,15 @@ function addStyle() {
     style.nonce = nonce;
   }
 
-  style.textContent = `
-    h1 { font: initial; font-size: 2em }
-    #splash { display: none }
-    img { max-width: 100%; font-size: xx-small }
-    blockquote { border-left: 1px solid; padding-left: 1em; margin-left: 1em }
-    `;
+  style.textContent =
+    'h1 { font: initial; font-size: 2em }' +
+    '#splash { display: none }' +
+    'img { max-width: 100%; font-size: xx-small }' +
+    'blockquote { border-left: 1px solid; padding-left: 1em; margin-left: 1em }' +
+    '.entry { border-top: 1px solid }'
+    ;
   document.body.appendChild(style);
 }
 
+main();
 })();
