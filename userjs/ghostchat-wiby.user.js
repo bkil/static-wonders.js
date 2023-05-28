@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.14
+// @version     2023.5.15
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -50,10 +50,14 @@ const init = () => {
       }
 
       th, td {
-        border-left: 1px solid white;
+        border-left: 1px solid;
         padding-left: 0.5em;
         padding-right: 0.5em;
         vertical-align: top;
+      }
+
+      td.timestamp {
+        border-color: white;
       }
 
       .meta td {
@@ -119,7 +123,7 @@ const init = () => {
 
       .cloak {
         font-family: monospace;
-        border-top: 1px solid;
+        border-top: 1px solid white;
       }
 
       #error {
@@ -449,7 +453,6 @@ const renderLog = () => {
       if ((u.cloak !== lastLineCloak) || (u.isMe !== lastLineMe) || (day !== lastDay)) {
         cloak.textContent = u.cloak;
         cloak.classList.add('cloak');
-        cloak.style.color = getCloakColor(u.cloak);
         if (u.isMe) {
           cloak.classList.add('isMyCloak');
         }
@@ -458,6 +461,7 @@ const renderLog = () => {
         lastLineCloak = u.cloak;
         lastLineMe = u.isMe;
       }
+      cloak.style.color = getCloakColor(u.cloak);
 
       const stamp = tr.insertCell();
       stamp.textContent = time.toLocaleTimeString().replace(':00 ', ' ');
