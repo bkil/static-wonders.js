@@ -5,7 +5,7 @@ main() {
   readonly O="`dirname "$(readlink -f "$0")"`"
   {
     cat_common_head 'all user.js'
-    printf 'Please open the following individual pages to access the respective bookmarklet.\n<ul>\n'
+    printf 'Please open the following individual pages to access the respective <a href="https://en.wikipedia.org/wiki/Bookmarklet" target=_blank>bookmarklet</a>.\n<ul>\n'
 
     for FILE in "$O"/*.user.js; do
       TIME="`git log -n 1 --pretty=format:%ad --date=short "$FILE"`"
@@ -32,7 +32,7 @@ cat << EOF
 <p>
 <a class=overview href="gen-bookmarklet.html">Overview of other bookmarklets</a>
 <script>
-document.getElementsByTagName('textarea')[0].value = document.links[0].href;
+document.getElementsByTagName('textarea')[0].value = document.links[2].href;
 </script>
 EOF
 
@@ -93,7 +93,7 @@ html, body {
   height: 100%;
 }
 </style>
-You can drag &amp; drop the following bookmarklet to your bookmark bar instead of using a UserScript manager.
+You can drag &amp; drop the following <a href="https://en.wikipedia.org/wiki/Bookmarklet" target=_blank>bookmarklet</a> to your bookmark bar instead of using a <a href="https://en.wikipedia.org/wiki/Userscript_manager" target=_blank>UserScript manager</a>.
 <p>
 You will then need to click it twice: first to open the vendor page (not supported by all bookmarklets), and a second time to activate the customized rich interface if you are on the vendor page.
 <p>
