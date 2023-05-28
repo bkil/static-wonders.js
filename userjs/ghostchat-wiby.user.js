@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.13
+// @version     2023.5.14
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -104,6 +104,7 @@ const init = () => {
 
       .timestamp {
         white-space: nowrap;
+        text-align: right;
       }
 
       .isMyCloak {
@@ -472,7 +473,7 @@ const renderLog = () => {
         const color = getCloakColor(cl);
         colored = colored.replace(
           new RegExp(`((?:@ ?)?\\b${cl}\\b:?)( )`, 'g'),
-          (_, a, b) => `<span style=color:${color}>${a}</span>${b}`)
+          (_, a, b) => `<span style="color:${color}">${a}</span>${b}`)
       });
       comment.innerHTML = markup(colored);
 
@@ -562,12 +563,11 @@ const rotateCloaks = (cloak, timeSec) => {
 const round = (n, mod) => Math.trunc(n / mod) * mod;
 
 const getCloakColor = (cloak) => {
-  const hash = Array.from(cloak)
+  const hash = cloak ? Array.from(cloak)
     .reduce(
       (a,x) => ((a << 4) ^ (a >> 8) ^ x.charCodeAt(0)) & 0xfff,
-      cloak.length);
-  const color = 0x808080 | ((hash & 0x00f) << 3) | ((hash & 0x0f0) << 7) | ((hash & 0xf00) << 11);
-  return `#${color.toString(16)}`;
+      cloak.length) : 0;
+  return `hsl(${(hash & 31) * 11.25},${75 + (hash & 0xe0) * 0.1116}%,${50 + hash * 0.0061}%)`;
 };
 
 const emojiRegexp =
