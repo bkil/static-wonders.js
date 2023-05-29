@@ -97,6 +97,8 @@ You can drag &amp; drop the following <a href="https://en.wikipedia.org/wiki/Boo
 <p>
 You will then need to click it twice: first to open the vendor page (not supported by all bookmarklets), and a second time to activate the customized rich interface if you are on the vendor page.
 <p>
+You should periodically check this page for updates, as most bookmarklets contain a frozen offline source code snapshot.
+<p>
 EOF
 }
 
