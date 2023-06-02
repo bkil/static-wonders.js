@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>ES5 JavaScript eval for Opera Mini</title>
+  <link rel="shortcut icon" type=image/x-icon href=data:image/x-icon;, />
+  <meta property='og:description' content='Minimal REPL testing forms with easy to type data: URI' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+</head>
+<body>
+
+<style>
+iframe, div {
+  width: 100%;
+}
+
+iframe {
+  height: 320px;
+}
+
+div {
+  display: flex;
+  word-wrap: anywhere;
+  overflow-wrap: anywhere;
+}
+
+textarea {
+  flex-grow: 1;
+}
+</style>
+
+<iframe
+ src="javascript:'<style>textarea{width:100%25;height:40%25}</style><form%20onsubmit=try{o.value=eval(i.value)}catch(e){o.value=e}return!1><textarea%20id=i></textarea><input%20type=submit><textarea%20id=o></textarea></form>'"
+>iframe?</iframe>
+
+<iframe
+ src="data:text/html;charset=utf-8,<style>textarea{width:100%25;height:40%25}</style><form%20onsubmit=try{o.value=eval(i.value)}catch(e){o.value=e}return!1><textarea%20id=i></textarea><input%20type=submit><textarea%20id=o></textarea></form>"
+>iframe?</iframe>
+
+<iframe
+ src="data:text/html;charset=utf-8,<style>textarea{width:100%25;height:40%25}</style><form%20onsubmit=try{o.value=eval(i.value=i.value.replace(/¤/g,decodeURI('%2560')))}catch(e){o.value=e}return!1><textarea%20id=i></textarea><input%20type=submit><textarea%20id=o></textarea></form>"
+>iframe?</iframe>
+
+<iframe
+ src="data:text/html;charset=utf-8,<head><meta%20charset=utf-8><meta%20name=viewport%20content='width=device-width,%20initial-scale=1'><style>textarea{width:100%25;height:40%25;font-family:sans-serif}</style></head><form%20onsubmit=&quot;try{s='û,C5%25B1;ô,C5%2591;Û,C5%25B0;Ô,C5%2590;¤,60;//,27'.split(';');for(r%20in%20s){k=s[r].split(',');i.value=i.value.replace(new%20RegExp(k[0],'g'),decodeURI('%25'+k[1]))}o.value=eval(i.value)}catch(e){o.value=e}return!1&quot;><textarea%20id=i></textarea><input%20type=submit><textarea%20id=o></textarea></form>"
+>iframe?</iframe>
+
+<script>
+(function() {
+  var fr = document.getElementsByTagName('iframe');
+  for (var i = 0; i < fr.length; i++) {
+    var d = document.createElement('div');
+    var t = document.createElement('textarea');
+    t.value = fr[i].src;
+    d.appendChild(t);
+
+    var a = document.createElement('a');
+    a.textContent = 'URL';
+    a.href = '#' + fr[i].src;
+    d.appendChild(a);
+    document.body.insertBefore(d, fr[i].nextSibling);
+  }
+})();
+</script>
+
+</body>
+</html>
