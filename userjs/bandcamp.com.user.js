@@ -4,8 +4,9 @@
 // @description Support track preview without extra resources or round trips
 // @namespace   bkil.hu
 // @match       https://*.bandcamp.com/*
+// @match       https://music.monstercat.com/*
 // @grant       none
-// @version     2023.04.01
+// @version     2023.05.01
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
