@@ -63,7 +63,7 @@ function interpret(code, input, limit) {
 
       case ','.charCodeAt(0):
         right.pop();
-        right.push(input.charCodeAt(0));
+        right.push(input.charCodeAt(0) | 0);
         input = input.substr(1);
         break;
 
