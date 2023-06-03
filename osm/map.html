@@ -176,12 +176,16 @@ function init() {
 }
 
 function hashChanged() {
-  var q = new URLSearchParams(window.location.hash.substr(1));
-  var nx = parseInt(q.get('x'));
-  var ny = parseInt(q.get('y'));
-  var nz = parseInt(q.get('z'));
-  var lat = parseFloat(q.get('lat'));
-  var lon = parseFloat(q.get('lon'));
+  var q = {};
+  window.location.hash.substr(1).split('&').forEach(function(o) {
+    var kv = o.split('=');
+    q[decodeURIComponent(kv[0])] = decodeURIComponent(kv.slice(1).join('='));
+  });
+  var nx = parseInt(q['x']);
+  var ny = parseInt(q['y']);
+  var nz = parseInt(q['z']);
+  var lat = parseFloat(q['lat']);
+  var lon = parseFloat(q['lon']);
 
   if ((!isFinite(nx) || !isFinite(ny)) && isFinite(lat) && isFinite(lat) && isFinite(nz)) {
     nx = lon2tile(lon, nz);
@@ -200,13 +204,13 @@ function hashChanged() {
 }
 
 function updateHash(x, y, z) {
-  var q = new URLSearchParams();
-  q.set('x', x);
-  q.set('y', y);
-  q.set('z', z);
-  q.set('lat', tile2lat(y, z));
-  q.set('lon', tile2lon(x, z));
-  window.location.hash = q;
+  window.location.hash =
+    'x=' + encodeURIComponent(x) +
+    '&y=' + encodeURIComponent(y) +
+    '&z=' + encodeURIComponent(z) +
+    '&lat=' + encodeURIComponent(tile2lat(y, z)) +
+    '&lon=' + encodeURIComponent(tile2lon(x, z))
+    ;
 }
 
 function buttonCloser(dx, dy) {
