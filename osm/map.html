@@ -403,14 +403,15 @@ function loadStats() {
 
 function saveStats() {
   var coreStats = {};
-  Object.entries(stats).forEach(function(v){
-    coreStats[v[0]] = {};
-    if (v[1].average) {
-      coreStats[v[0]].average = v[1].average | 0;
-    } else if (v[1].precedence) {
-      coreStats[v[0]].precedence = v[1].precedence | 0;
+  for (var k in stats) {
+    var v = stats[k];
+    coreStats[k] = {};
+    if (v.average) {
+      coreStats[k].average = v.average | 0;
+    } else if (v.precedence) {
+      coreStats[k].precedence = v.precedence | 0;
     }
-  });
+  }
   var str = btoa(JSON.stringify(coreStats));
   try {
     document.cookie = 'httpTimes=' + str + '; Path=/map.html; Max-Age=604800';
