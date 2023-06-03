@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang=en class=noJs>
+ <head>
+  <meta charset=utf-8>
+  <title>OpenStreetMap mini</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;, />
+  <meta property='og:description' content='OpenStreetMap for Opera Mini and other ES5 mobile proxy browsers' name=description>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=no-referrer-when-downgrade>
+  <style>
+
+html {
+  background-color: black;
+  color: white;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+}
+
+.layers, .tiles, .tiles img {
+  width: 256px;
+  height: 256px;
+}
+
+.layers {
+  position: relative;
+  display: block;
+}
+
+.tiles, .tiles img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+}
+
+.tiles {
+  overflow: hidden;
+}
+
+.layers button {
+  position: absolute;
+  z-index: 4;
+  background-color: transparent;
+}
+
+[data-c="buttonDown"] {
+  bottom: 0;
+  right: 50%;
+}
+
+[data-c="buttonUp"] {
+  top: 0;
+  right: 50%;
+}
+
+[data-c="buttonLeft"] {
+  left: 0;
+  bottom: 50%;
+}
+
+[data-c="buttonRight"] {
+  right: 16px;
+  bottom: 50%;
+}
+
+[data-c="buttonFurther"] {
+  right: 16px;
+  bottom: 25%;
+}
+
+div[data-c] {
+  position: absolute;
+  z-index: 3;
+  width: 50%;
+  height: 50%;
+}
+
+div[data-c]:hover,
+div[data-c]:active {
+  outline: auto;
+}
+
+[data-c="buttonTL"] {
+  left: 0;
+  top: 0;
+}
+
+[data-c="buttonTR"] {
+  right: 16px;
+  top: 0;
+}
+
+[data-c="buttonBL"] {
+  left: 0;
+  bottom: 0;
+}
+
+[data-c="buttonBR"] {
+  right: 16px;
+  bottom: 0;
+}
+
+div[data-c="buttonTR"], div[data-c="buttonBR"] {
+  right: 0;
+}
+
+.attribution {
+  font-size: xx-small;
+}
+
+  </style>
+ </head>
+
+<body>
+
+<div id=map>
+<div class=layers>
+  <button disabled data-c=buttonTL type=button aria-label='zoom top left'>+</button>
+  <button disabled data-c=buttonTR type=button aria-label='zoom top right'>+</button>
+  <button disabled data-c=buttonBL type=button aria-label='zoom bottom left'>+</button>
+  <button disabled data-c=buttonBR type=button aria-label='zoom bottom right'>+</button>
+  <button disabled data-c=buttonFurther type=button aria-label='zoom out'>-</button>
+  <button disabled data-c=buttonUp type=button aria-label='go up'>^</button>
+  <button disabled data-c=buttonLeft type=button aria-label='go left'>&lt;</button>
+  <button disabled data-c=buttonRight type=button aria-label='go right'>&gt;</button>
+  <button disabled data-c=buttonDown type=button aria-label='go down'>v</button>
+  <div data-c=buttonTL></div>
+  <div data-c=buttonTR></div>
+  <div data-c=buttonBL></div>
+  <div data-c=buttonBR></div>
+  <div class=tiles></div>
+</div>
+<div class=attribution>ODbL (c) <span class=date></span>, <a href=https://www.openstreetmap.org/fixthemap target=_blank>OpenStreetMap</a> contributors<span class=provider></span></div></div>
+
+<script>
+(function() {
+'use strict';
+
+var widget;
+var tileFallbackTimeout = 900;
+var tileSize = 256;
+
+var x, y, z;
+var cache = {};
+var stats;
+var loaded;
+
+function init() {
+  widget = document.getElementById('map');
+  loadStats();
+  window.onhashchange = hashChanged;
+  if (!hashChanged()) {
+    updateHash(0, 0, 0);
+  }
+
+  widget.getElementsByClassName('date')[0].textContent = new Date().getFullYear();
+  forEach(
+    widget.querySelectorAll('[data-c]'),
+    function(b) {
+      var fun = b.getAttribute('data-c');
+      if (fun && /^[a-z]+$/i.test(fun)) {
+        b.onclick = function () {
+          eval(fun + '()');
+        };
+        b.disabled = false;
+      }
+    }
+  );
+}
+
+function hashChanged() {
+  var q = new URLSearchParams(window.location.hash.substr(1));
+  var nx = parseInt(q.get('x'));
+  var ny = parseInt(q.get('y'));
+  var nz = parseInt(q.get('z'));
+  var lat = parseFloat(q.get('lat'));
+  var lon = parseFloat(q.get('lon'));
+
+  if ((!isFinite(nx) || !isFinite(ny)) && isFinite(lat) && isFinite(lat) && isFinite(nz)) {
+    nx = lon2tile(lon, nz);
+    ny = lat2tile(lat, nz);
+  }
+
+  if (isFinite(nx) && isFinite(ny) && isFinite(nz) && ((nx !== x) || (ny !== y) || (nz !== z))) {
+    x = nx;
+    y = ny;
+    z = nz;
+    render();
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function updateHash(x, y, z) {
+  var q = new URLSearchParams();
+  q.set('x', x);
+  q.set('y', y);
+  q.set('z', z);
+  q.set('lat', tile2lat(y, z));
+  q.set('lon', tile2lon(x, z));
+  window.location.hash = q;
+}
+
+function buttonCloser(dx, dy) {
+  if (z < 20) {
+    updateHash((x << 1) + (dx ? dx : 0), (y << 1) + (dy ? dy : 0), z + 1);
+  }
+}
+
+function buttonTL() {
+  buttonCloser(0, 0);
+}
+
+function buttonTR() {
+  buttonCloser(1, 0);
+}
+
+function buttonBL() {
+  buttonCloser(0, 1);
+}
+
+function buttonBR() {
+  buttonCloser(1, 1);
+}
+
+function buttonFurther() {
+  if (z > 0) {
+    updateHash(x >> 1, y >> 1, z - 1);
+  }
+}
+
+function buttonUp() {
+  if (y > 0) {
+    updateHash(x, y - 1, z);
+  }
+}
+
+function buttonDown() {
+  if (y < Math.pow(2, z) - 1) {
+    updateHash(x, y + 1, z);
+  }
+}
+
+function buttonLeft() {
+  if (x > 0) {
+    updateHash(x - 1, y, z);
+  }
+}
+
+function buttonRight() {
+  if (x < Math.pow(2, z) - 1) {
+    updateHash(x + 1, y, z);
+  }
+}
+
+function render() {
+  var div, name;
+  div = widget.getElementsByClassName('tiles')[0];
+  div.innerHTML = '';
+
+  var sortedProviders = providers.slice();
+  sortedProviders.sort(function(a, b) { return comparePrecedence(a, b, z); });
+  var cached = sortedProviders
+    .map(function(p) { return cache[subTemplate(p.url, x, y, z)]; })
+    .filter(function(p) { return p; })
+    [0];
+  if (cached) {
+    cached.style.width = cached.style.height = tileSize + 'px';
+    cached.style.left = cached.style.top = 0;
+    div.appendChild(cached);
+  } else {
+    loadImage(div, sortedProviders.filter(function(p){ return haveTile(p, z); } ));
+
+    sortedProviders.slice().reverse().forEach(function(provider) {
+      var fX = x, fY = y, fZoom = z, fSize = tileSize, dX = 0, dY = 0;
+      var minZoom = provider.minZoom ? provider.minZoom : 0;
+      while ((fZoom > minZoom) && (fSize < 2048)) {
+        fX & 1 ? dX -= fSize : 0;
+        fY & 1 ? dY -= fSize : 0;
+        fX >>= 1;
+        fY >>= 1;
+        fZoom--;
+        fSize *= 2;
+        var furtherImg = cache[subTemplate(provider.url, fX, fY, fZoom)];
+        if (furtherImg) {
+          furtherImg.style.width = furtherImg.style.height = fSize + 'px';
+          furtherImg.style.left = dX + 'px';
+          furtherImg.style.top = dY + 'px';
+          div.appendChild(furtherImg);
+          break;
+        }
+      }
+
+      leaveCloserTrail(div, tileSize, provider.url, 0, 0);
+      leaveCloserTrail(div, tileSize, provider.url, 1, 0);
+      leaveCloserTrail(div, tileSize, provider.url, 0, 1);
+      leaveCloserTrail(div, tileSize, provider.url, 1, 1);
+    });
+  }
+}
+
+function loadImage(placeholder, possibleFallbacks) {
+  var loaded, remainingFallbacks = possibleFallbacks.reverse();
+
+  function loadNextImage() {
+    var fallbackTimer;
+
+    function startFallback() {
+      if (fallbackTimer) {
+        window.clearTimeout(fallbackTimer);
+        fallbackTimer = null;
+        if (!loaded) {
+          loadNextImage();
+        }
+      }
+    };
+
+    var provider = remainingFallbacks.pop();
+    if (!provider) {
+      console.log('warning: out of fallbacks');
+      return
+    }
+    var url = subTemplate(provider.url, x, y, z);
+    var img = new Image();
+    if (provider.cors !== false) {
+      img.crossOrigin = 'anonymous';
+    }
+
+    var startTime = +new Date();
+    img.onload = function() {
+      cache[url] = img;
+      updateStats(provider.url, z, +new Date() - startTime);
+      if (!loaded) {
+        loaded = true;
+        widget.getElementsByClassName('provider')[0].textContent = ', ' + provider.name;
+        placeholder.appendChild(img);
+      }
+      startFallback();
+    };
+
+    img.onerror = function() {
+      cache[url] = false;
+      startFallback();
+    };
+
+    img.src = url;
+    fallbackTimer = window.setTimeout(startFallback, tileFallbackTimeout);
+  }
+
+  loadNextImage();
+};
+
+function comparePrecedence(a, b, z) {
+  var updated;
+  var get = function(url) {
+    if (!stats[url]) {
+      stats[url] = {};
+    }
+    if (!stats[url].zoom) {
+      stats[url].zoom = {};
+    }
+    if (!stats[url].precedence) {
+      stats[url].precedence = 1000 + Math.random() * 1000;
+      updated = true;
+    }
+    return stats[url].zoom[z] ? stats[url].zoom[z] : stats[url].average ? stats[url].average : stats[url].precedence;
+  };
+  var precA = get(a.url);
+  var precB = get(b.url);
+  if (updated) {
+    saveStats();
+  }
+  return precA < precB ? -1 : precA > precB ? 1 : 0;
+}
+
+function updateStats(url, z, time) {
+  stats[url].zoom[z] = stats[url].zoom[z] ? 0.8 * stats[url].zoom[z] + 0.2 * time : time;
+  stats[url].average = stats[url].average ? 0.8 * stats[url].average + 0.2 * time : time;
+  saveStats();
+}
+
+function loadStats() {
+  stats = {};
+  try {
+    var m = document.cookie.match(/(?:^|;\s*)httpTimes=([^;]*)/);
+    stats = JSON.parse(atob(m[1]));
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+function saveStats() {
+  var coreStats = {};
+  Object.entries(stats).forEach(function(v){
+    coreStats[v[0]] = {};
+    if (v[1].average) {
+      coreStats[v[0]].average = v[1].average | 0;
+    } else if (v[1].precedence) {
+      coreStats[v[0]].precedence = v[1].precedence | 0;
+    }
+  });
+  var str = btoa(JSON.stringify(coreStats));
+  try {
+    document.cookie = 'httpTimes=' + str + '; Path=/map.html; Max-Age=604800';
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+function haveTile(provider, z) {
+  var minZoom = provider.minZoom ? provider.minZoom : 0;
+  return ((provider.osm !== false) && (z >= minZoom) && ((!provider.maxZoom) || (z <= provider.maxZoom)));
+}
+
+function leaveCloserTrail(div, tileSize, template, dx, dy) {
+  var closer = cache[subTemplate(template, (x << 1) + dx, (y << 1) + dy, z + 1)];
+  if (closer) {
+    var hSize = tileSize / 2 | 0;
+    closer.style.width = closer.style.height = hSize + 'px';
+    closer.style.left = dx * hSize + 'px';
+    closer.style.top = dy * hSize + 'px';
+    div.appendChild(closer);
+  }
+}
+
+function subTemplate(template, x, y, z) {
+  return template.replace(/\$?\{x\}/, x).replace(/\$?\{y\}/, y).replace(/\$?\{z\}/, z);
+}
+
+function lon2tile(lon, z) {
+  return ((lon + 180) / 360 * Math.pow(2, z)) | 0;
+}
+
+function tile2lon(x, z) {
+  return x * 360 / Math.pow(2, z) - 180;
+}
+
+function lat2tile(lat, z) {
+  var a = lat * Math.PI / 180;
+  return ((1 - Math.log(Math.tan(a) + 1 / Math.cos(a)) / Math.PI) / 2 * Math.pow(2, z)) | 0;
+}
+
+function tile2lat(y, z) {
+  var a = Math.PI * (1 - 2 * y / Math.pow(2, z));
+  return 180 / Math.PI * Math.atan((Math.exp(a) - Math.exp(-a)) / 2);
+}
+
+function forEach(l, f) {
+  for (var i = 0; i < l.length; i++) {
+    f(l[i], i);
+  }
+}
+
+var providers = [
+  {
+    url: 'https://cartodb-basemaps-b.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png',
+    name: 'CartoDB-Basemaps Fastly.net Positron',
+    maxZoom: 16,
+    maxZoomHTTP: 19,
+    cors: true,
+    size: 256,
+    etag: true,
+    comment: 'date & age, 180d cache, poi-0, street-2',
+  },
+  {
+    url: 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png',
+    name: 'Stamen Toner Fastly.net',
+    maxZoom: 15,
+    maxZoomHTTP: 17,
+    cors: true,
+    size: 256,
+    etag: true,
+    comment: 'date & age, 30d cache, poi-0, street-0',
+  },
+  {
+    url: 'https://tile.openstreetmap.de/{z}/{x}/{y}.png',
+    name: 'openstreetmap.de',
+    maxZoom: 19,
+    cors: true,
+    size: 256,
+    etag: true,
+    comment: 'no last-modified, 3d cache, poi-5, street-2',
+  },
+  {
+    url: 'https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+    name: 'openstreetmap.fr hot',
+    maxZoom: 20,
+    cors: true,
+    size: 256,
+    etag: true,
+    comment: 'no last-modified, 1-6d cache, poi-3, street-1',
+  },
+  {
+    url: 'https://tile.osm.ch/switzerland/{z}/{x}/{y}.png',
+    name: 'OSM.ch Switzerland',
+    maxZoom: 20,
+    cors: true,
+    size: 256,
+    etag: true,
+    comment: 'no last-modified, 3h cache, poi-5, street-2',
+  },
+  {
+    url: 'https://a.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',
+    name: 'openstreetmap.fr osmfr',
+    maxZoom: 20,
+    cors: true,
+    size: 256,
+    etag: true,
+    comment: 'no last-modified, bad expires, poi-4, street-2',
+  },
+  {
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    name: 'osm.org',
+    maxZoom: 19,
+    cors: true,
+    size: 256,
+    etag: true,
+    comment: 'date & age, 1-24h cache, poi-5, street-2',
+  },
+  {
+    url: 'https://a.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',
+    name: 'openstreetmap.fr CyclOsm',
+    maxZoom: 19,
+    maxZoomHTTP: 20,
+    cors: true,
+    size: 256,
+    etag: true,
+    comment: 'no last-modified, bad expires, poi-2, street-2',
+  },
+  {
+    url: 'https://tile.memomaps.de/tilegen/{z}/{x}/{y}.png',
+    name: 'memomaps.de Öpnvkarte Transport map',
+    maxZoom: 17,
+    cors: false,
+    size: 256,
+    etag: true,
+    comment: 'no last-modified, 7d cache, poi-1, street-2',
+  },
+  {
+    url: 'https://a.tile.opentopomap.org/{z}/{x}/{y}.png',
+    name: 'OpenTopoMap.org',
+    maxZoom: 17,
+    cors: true,
+    size: 256,
+    etag: true,
+    comment: 'no last-modified, 7d cache, poi-1, street-2',
+  },
+  {
+    url: 'https://tile.openstreetmap.bzh/br/{z}/{x}/{y}.png',
+    name: 'openstreetmap.bzh FR breton',
+    maxZoom: 15,
+    maxZoomHTTP: 20,
+    cors: true,
+    size: 256,
+    etag: true,
+    comment: 'etag, no last-modified, 1d cache, poi-0, street-0',
+  },
+  {
+    url: 'https://cartodb-basemaps-b.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png',
+    name: 'Carto-Basemaps Fastly.net Dark Matter',
+    maxZoom: 16,
+    maxZoomHTTP: 19,
+    cors: true,
+    size: 256,
+    etag: true,
+    comment: 'date & age, 180d cache, poi-0, street-2',
+  },
+  {
+    url: 'https://cartodb-basemaps-b.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png',
+    name: 'CartoDB-Basemaps Fastly.net',
+    maxZoom: 15,
+    maxZoomHTTP: 19,
+    cors: true,
+    size: 256,
+    etag: true,
+    comment: 'date & age, 180d cache, poi-0, street-0',
+  },
+  {
+    url: 'https://a.maps.heigit.org/osm-wms/tiles/osm_auto:all/webmercator/{z}/{x}/{y}.png',
+    name: 'HeiGIT.org',
+    minZoom: 1,
+    maxZoom: 18,
+    maxZoomHTTP: 19,
+    cors: true,
+    size: 256,
+    etag: true,
+    comment: 'good last-modified, 1d cache, poi-1, street-2',
+  },
+  {
+    url: 'https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png',
+    name: 'Wikimedia.org',
+    maxZoom: 16,
+    maxZoomHTTP: 19,
+    cors: true,
+    size: 256,
+    etag: true,
+    comment: 'png & jpeg, X-Client-IP, bad last-modified, 900s cache, poi-0, street-2',
+  },
+  {
+    url: 'https://tiles.kartogiraffe.de/tiles/map/{z}/{x}/{y}.png',
+    name: 'Kartogiraffe.de',
+    minZoom: 1,
+    maxZoom: 18,
+    maxZoomHTTP: 20,
+    cors: false,
+    size: 256,
+    etag: false,
+    comment: 'adaptively serves webp on the same URL!, bad last-modified, 14d cache, poi-2, street-1',
+  },
+  {
+    url: 'https://a.tile.hosted.thunderforest.com/komoot-2/{z}/{x}/{y}.png',
+    name: 'ThunderForest.com Komoot',
+    maxZoom: 16,
+    maxZoomHTTP: 20,
+    cors: true,
+    size: 256,
+    etag: true,
+    comment: 'no last-modified, 20min-6h cache, poi-0, street-1',
+  },
+  {
+    url: 'https://tiles1.sigma-dc-control.com/layer5/{z}/{x}/{y}.png',
+    name: 'Sigma-dc-control.com cycle',
+    maxZoom: 19,
+    cors: true,
+    size: 256,
+    etag: true,
+    comment: 'no last-modified, 6d cache, poi-4, street-1',
+  },
+  {
+    url: 'https://map1.mappy.net/map/1.0/slab/standard_hd/256/{z}/{x}/{y}',
+    name: 'Mappy.net',
+    maxZoom: 18,
+    maxZoomHTTP: 19,
+    cors: true,
+    size: 256,
+    etag: true,
+    comment: 'good last-modified, 1d cache, poi-1, street-2',
+  },
+  {
+    url: 'https://gauss.openstreetmap.de/tilesbw/osmde/{z}/{x}/{y}.png',
+    name: 'gauss Sorbian tilesbw',
+    maxZoom: 19,
+    cors: false,
+    size: 256,
+    etag: false,
+    comment: 'no last-modified, poi-5, street-2',
+  },
+  {
+    url: 'https://ha-01.ot-hosting.de:8484/tiles/osm_de_truck/{z}/{x}/{y}.png',
+    name: 'Optitool Truck',
+    maxZoom: 19,
+    cors: false,
+    size: 256,
+    etag: true,
+    comment: 'etag, no last-modified, 5y cache, poi-5, street-2',
+  },
+  {
+    url: 'https://w1.outdooractive.com/map/v1/png/osm/{z}/{x}/{y}/t.png?project=api-dev-oa',
+    name: 'OutdoorActive.com Summer',
+    minZoom: 2,
+    maxZoom: 18,
+    maxZoomHTTP: 20,
+    cors: true,
+    size: 256,
+    etag: false,
+    comment: 'good last-modified, 30d cache, poi-1, street-1',
+  },
+  {
+    url: 'https://tile1.f4map.com/tiles/f4_2d/{z}/{x}/{y}.png',
+    name: 'F4map.com',
+    minZoom: 1,
+    maxZoom: 18,
+    maxZoomHTTP: 19,
+    cors: true,
+    size: 256,
+    etag: true,
+    comment: 'good last-modified, 900s cache, poi-1, street-2',
+  },
+  {
+    url: 'https://rtc-cdn.maptoolkit.net/rtc/toursprung-terrain/{z}/{x}/{y}.png',
+    name: 'MapToolkit.net topo',
+    minZoom: 1,
+    maxZoom: 13,
+    maxZoomHTTP: 18,
+    cors: true,
+    size: 256,
+    etag: true,
+    comment: 'omits fine map detail, age & date (?), 5d cache',
+  },
+  {
+    url: 'https://1.tiles.ump.waw.pl/ump_tiles/{z}/{x}/{y}.png',
+    name: 'UMP.waw.pl',
+    maxZoom: 9,
+    maxZoomHTTP: 20,
+    cors: false,
+    size: 256,
+    etag: false,
+    comment: 'omits fine map detail, good last-modified, 2d cache',
+  },
+];
+
+init();
+})();
+</script>
+
+</body>
+</html>
