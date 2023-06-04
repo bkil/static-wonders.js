@@ -393,7 +393,7 @@ function updateStats(url, z, time) {
 function loadStats() {
   stats = {};
   try {
-    var m = document.cookie.match(/(?:^|;\s*)httpTimes=([^;]*)/);
+    var m = document.cookie.match(/(?:^|;\s*)httpTimes\s*=\s*([^; \t][^;]*)/);
     stats = JSON.parse(atob(m[1]));
   } catch (e) {
     console.log(e);
@@ -413,7 +413,7 @@ function saveStats() {
   }
   var str = btoa(JSON.stringify(coreStats));
   try {
-    document.cookie = 'httpTimes=' + str + '; Path=/map.html; Max-Age=604800';
+    document.cookie = 'httpTimes=' + str + '; Max-Age=604800; SameSite=Lax';
   } catch (e) {
     console.log(e);
   }
