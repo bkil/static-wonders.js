@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.16
+// @version     2023.5.17
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -20,8 +20,11 @@
 const baseUrl = window.location.href.replace(/[^\/]*$/, '');
 const feedUrl = baseUrl + 'feed.html';
 const postUrl = baseUrl + 'post';
+const title = 'GhostChat-JS';
 let nextUpdateTime;
 let state;
+let openNotification;
+let notificationSent;
 
 const init = () => {
   if ((window.location.hostname !== 'wiby.me') && ((window.location.hostname !== 'localhost'))) {
@@ -37,7 +40,6 @@ const init = () => {
   doc.innerHTML = `
     <head>
     <meta charset=utf-8>
-    <title>GhostChat-JS</title>
     <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
     <meta name=referrer content=no-referrer>
     <meta name=viewport content='width=device-width, initial-scale=1.0'>
@@ -121,6 +123,11 @@ const init = () => {
         background-color: #400;
       }
 
+      .isFirstPing .cloak,
+      .isFirstPing .timestamp {
+        background-color: #611;
+      }
+
       .cloak {
         font-family: monospace;
         border-top: 1px solid white;
@@ -176,16 +183,45 @@ const init = () => {
         visibility: hidden;
       }
 
+      #settings label:not(.inline),
+      #settings input:not([type="checkbox"]) {
+        display: block;
+        width: 100%;
+      }
+
+      html.js-settings #log,
+      html.js-settings form,
+      html:not(.js-settings) #settings,
+      html.unlimited #set_inactive,
+      html.isPassive #log,
+      html.isPassive form > :not(#set_active):not(#inactive):not(#status),
+      html:not(.isPassive) #inactive,
+      html:not(.isPassive) #set_active {
+        display: none;
+      }
+
     </style>
     </head>
 
     <body>
     <div id=foreground>
       <div id=log></div>
+      <div id=settings>
+        <input id=notification type=checkbox><label class=inline for=notification>Notification</label>
+        <label for=min_poll>Min sync interval</label><input id=min_poll>
+        <label for=max_poll>Max sync interval</label><input id=max_poll>
+        <label for=min_hour>First chat hour</label><input id=min_hour>
+        <label for=max_hour>Last chat hour</label><input id=max_hour>
+        <button id=close_settings type=button>Resume chat</button>
+        <button id=set_inactive type=button>Go to sleep immediately</button>
+      </div>
       <form method=POST action=#>
+        <div id=inactive>Time to live your life</div>
         <textarea disabled name=message id=message maxlength=180 rows=2 columns=90></textarea>
         <input id=send type=submit data-value_refresh='Refresh (sh+enter)' data-value_post='Post (sh+enter)' accesskey=p>
-        <button disabled id=show_emoji type=button>emoji</button>
+        <button disabled id=show_emoji type=button>Emoji</button>
+        <button id=show_settings type=button>Settings</button>
+        <button id=set_active type=button>Resume doom scrolling for a bit</button>
         <span id=counter></span>
         <span id=status></span>
         <span id=error></span>
@@ -198,6 +234,8 @@ const init = () => {
     `;
 
   loadState();
+  askPermissionNotif();
+  updateTitle();
 
   const messageBox = document.getElementById('message');
   messageBox.value = state.textbox ?? '';
@@ -206,6 +244,72 @@ const init = () => {
   messageBox.disabled = false;
   document.getElementById('send').scrollIntoView();
   messageBox.focus();
+
+  document.onvisibilitychange = messageBox.onfocus = function(e) {
+    if (!document.hidden) {
+      state.pendingPing = null;
+      updateTitle();
+      notificationSent = false;
+    }
+  };
+
+  document.getElementById('set_inactive').onclick = function(e) {
+    state.activeUntil = null;
+    const now = new Date();
+    if (isActiveNow(now)) {
+      state.inactiveUntil = +now + (25 + state.maxActiveHour - now.getHours()) % 24 * 3600e3;
+    } else {
+      state.inactiveUntil = null;
+    }
+    inactivate();
+    document.documentElement.classList.remove('js-settings');
+    console.log(state);
+    saveState();
+  };
+
+  document.getElementById('set_active').onclick = function(e) {
+    state.activeUntil = +new Date() + 600e3;
+    activate();
+    console.log(state);
+    saveState();
+    updateFeed();
+  };
+
+  document.getElementById('show_settings').onclick = function(e) {
+    if ((state.minActiveHour >= 0) && (24 > state.maxActiveHour)) {
+      document.documentElement.classList.remove('unlimited');
+    } else {
+      document.documentElement.classList.add('unlimited');
+    }
+    document.getElementById('notification').checked = state.notification > 0;
+    document.getElementById('min_poll').value = state.pollMinSecond;
+    document.getElementById('max_poll').value = state.pollMaxSecond;
+    document.getElementById('min_hour').value = state.minActiveHour;
+    document.getElementById('max_hour').value = state.maxActiveHour;
+    document.documentElement.classList.add('js-settings');
+  };
+
+  document.getElementById('close_settings').onclick = function(e) {
+    state.notification = document.getElementById('notification').checked ? 1 : 0;
+    askPermissionNotif();
+
+    var k;
+    k = parseInt(document.getElementById('min_poll').value);
+    state.pollMinSecond = (k >= 38) ? ((600 >= k) ? k : 600) : 38;
+
+    k = parseInt(document.getElementById('max_poll').value);
+    state.pollMaxSecond = (k >= state.pollMinSecond) ? ((600 >= k) ? k : 600) : state.pollMinSecond;
+
+    k = parseInt(document.getElementById('min_hour').value);
+    state.minActiveHour = (k >= 0) ? ((24 >= k) ? k : 24) : 0;
+
+    k = parseInt(document.getElementById('max_hour').value);
+    state.maxActiveHour = (k >= 0) ? ((24 >= k) ? k : 24) : 24;
+
+    console.log(state);
+    saveState();
+    document.documentElement.classList.remove('js-settings');
+  };
 
   document.forms[0].onsubmit = onSubmit;
   messageBox.onkeypress = e => {
@@ -216,6 +320,23 @@ const init = () => {
   };
   updateFeed();
 };
+
+function askPermissionNotif() {
+  if (!state.notification || window.Notification && (Notification.permission === 'granted')) {
+    return;
+  }
+  var wantedNotif = state.notification;
+  state.notification = 0;
+  saveState();
+  if ((window.self === window.top) && window.Notification && (Notification.permission !== 'denied')) {
+    Notification.requestPermission(function() {
+      if (Notification.permission === 'granted') {
+        state.notification = wantedNotif;
+        saveState();
+      }
+    });
+  }
+}
 
 const updateCounter = () => {
   const text = normalizeEnteredText(document.getElementById('message').value);
@@ -282,6 +403,16 @@ const migrateDb = () => {
     state.pollSecond = state.pollMinSecond;
     state.version = 1;
   }
+
+  if (state.version === 1) {
+    state.minActiveHour = 0;
+    state.maxActiveHour = 24;
+    state.notification = 1;
+    state.activeUntil = null;
+    state.inactiveUntil = null;
+    state.pendingPing = null;
+    state.version = 2;
+  }
 };
 
 const saveState = () => {
@@ -321,8 +452,44 @@ const updateFeed = () => {
 const gotFeedUpdate = (body) => {
   const now = new Date();
   updateStatePosts(body, now);
+
+  let isActive = isActiveNow(now);
+  if (state.inactiveUntil && (state.inactiveUntil > +now)) {
+    isActive = false;
+  } else {
+    state.inactiveUntil = null;
+  }
+  if (state.activeUntil && (state.activeUntil > +now)) {
+    isActive = true;
+  } else {
+    state.activeUntil = null;
+  }
+
+  if (isActive) {
+    activate();
+    const isFocused = (!document.hasFocus || document.hasFocus()) && (!document.hidden);
+    if (!notificationSent && (state.notification > 0) && state.pendingPing && !isFocused) {
+      console.log('notification ' + new Date());
+      openNotification = new Notification(
+        '💬 Wiby mention',
+        {
+          body: new Date(state.pendingPing).toLocaleString()
+        });
+      notificationSent = true;
+    }
+    renderLog();
+    if (state.pendingPing && isFocused) {
+      if (openNotification) {
+        openNotification.close();
+      }
+      state.pendingPing = null;
+      updateTitle();
+      notificationSent = false;
+    }
+  } else {
+    inactivate();
+  }
   console.log(state);
-  renderLog();
 
   document.getElementById('status').textContent = now.toLocaleTimeString();
   const messageBox = document.getElementById('message');
@@ -412,11 +579,40 @@ const updateStatePosts = (body, now) => {
   }
 
   updates.reverse().forEach(u => {
+    if (!state.pendingPing && isMessagePing(u)) {
+      state.pendingPing = u.time;
+    }
     const key = `${u.hhmm}\n${u.cloak}\n${u.message}`;
     state.key[key] = state.log.length;
     state.log.push(u);
   });
 };
+
+function updateTitle(silence) {
+  document.title = (silence ? '' : state.pendingPing ? '(!)' : '.') + title;
+}
+
+function isActiveNow(now) {
+  const hour = now.getHours();
+  return (
+    ((hour >= state.minActiveHour) && (state.maxActiveHour >= hour) || (state.minActiveHour > state.maxActiveHour)) &&
+    ((hour >= state.minActiveHour) || (state.maxActiveHour >= hour) || (state.maxActiveHour >= state.minActiveHour))
+  );
+}
+
+function activate() {
+  updateTitle();
+  document.documentElement.classList.remove('isPassive');
+}
+
+function inactivate() {
+  updateTitle(true);
+  document.documentElement.classList.add('isPassive');
+}
+
+function isMessagePing(m) {
+  return m.isMentionMe;
+}
 
 const renderLog = () => {
   const allSeenCloaks = new Set();
@@ -424,6 +620,7 @@ const renderLog = () => {
   let lastLineMe;
   let lastDay;
   const tab = document.createElement('table');
+  let isShownPing = false;
   state.log.forEach(u => {
     let tr = tab.insertRow();
     if (u.meta) {
@@ -438,6 +635,11 @@ const renderLog = () => {
       }
       lastDay = null;
     } else {
+      if (!isShownPing && (state.pendingPing === u.time)) {
+        tr.classList.add('isFirstPing');
+        isShownPing = true;
+      }
+
       const time = new Date(u.time);
       const day = time.toLocaleDateString();
       if (day !== lastDay) {
@@ -466,7 +668,7 @@ const renderLog = () => {
       const stamp = tr.insertCell();
       stamp.textContent = time.toLocaleTimeString().replace(':00 ', ' ');
       stamp.classList.add('timestamp');
-      if (!u.isMe && u.isMentionMe) {
+      if (isMessagePing(u)) {
         stamp.classList.add('isMentionMe');
       }
 
