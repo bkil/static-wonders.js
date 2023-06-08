@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.17
+// @version     2023.5.18
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -309,6 +309,8 @@ const init = () => {
     console.log(state);
     saveState();
     document.documentElement.classList.remove('js-settings');
+    document.getElementById('send').scrollIntoView();
+    document.getElementById('message').focus();
   };
 
   document.forms[0].onsubmit = onSubmit;
