@@ -207,7 +207,12 @@ const init = () => {
     <div id=foreground>
       <div id=log></div>
       <div id=settings>
-        <input id=notification type=checkbox><label class=inline for=notification>Notification</label>
+        <label class=inline for=notification>Notification</label>
+        <select id=notification>
+          <option value=0>None</option>
+          <option value=1>Mentions</option>
+          <option value=2>All posts</option>
+        </select>
         <label for=min_poll>Min sync interval</label><input id=min_poll>
         <label for=max_poll>Max sync interval</label><input id=max_poll>
         <label for=min_hour>First chat hour</label><input id=min_hour>
@@ -281,7 +286,10 @@ const init = () => {
     } else {
       document.documentElement.classList.add('unlimited');
     }
-    document.getElementById('notification').checked = state.notification > 0;
+
+    forEach(document.getElementById('notification').getElementsByTagName('option'), function(o) {
+      o.selected = o.value === (state.notification.toString());
+    });
     document.getElementById('min_poll').value = state.pollMinSecond;
     document.getElementById('max_poll').value = state.pollMaxSecond;
     document.getElementById('min_hour').value = state.minActiveHour;
@@ -290,25 +298,7 @@ const init = () => {
   };
 
   document.getElementById('close_settings').onclick = function(e) {
-    state.notification = document.getElementById('notification').checked ? 1 : 0;
-    askPermissionNotif();
-
-    var k;
-    k = parseInt(document.getElementById('min_poll').value);
-    state.pollMinSecond = (k >= 38) ? ((600 >= k) ? k : 600) : 38;
-
-    k = parseInt(document.getElementById('max_poll').value);
-    state.pollMaxSecond = (k >= state.pollMinSecond) ? ((600 >= k) ? k : 600) : state.pollMinSecond;
-
-    k = parseInt(document.getElementById('min_hour').value);
-    state.minActiveHour = (k >= 0) ? ((24 >= k) ? k : 24) : 0;
-
-    k = parseInt(document.getElementById('max_hour').value);
-    state.maxActiveHour = (k >= 0) ? ((24 >= k) ? k : 24) : 24;
-
-    console.log(state);
-    saveState();
-    document.documentElement.classList.remove('js-settings');
+    saveSettings();
     document.getElementById('send').scrollIntoView();
     document.getElementById('message').focus();
   };
@@ -322,6 +312,38 @@ const init = () => {
   };
   updateFeed();
 };
+
+function saveSettings() {
+  forEach(document.getElementById('notification').getElementsByTagName('option'), function(o) {
+    if (o.selected) {
+      state.notification = parseInt(o.value);
+    }
+  });
+  askPermissionNotif();
+
+  var k;
+  k = parseInt(document.getElementById('min_poll').value);
+  state.pollMinSecond = (k >= 38) ? ((600 >= k) ? k : 600) : 38;
+
+  k = parseInt(document.getElementById('max_poll').value);
+  state.pollMaxSecond = (k >= state.pollMinSecond) ? ((600 >= k) ? k : 600) : state.pollMinSecond;
+
+  k = parseInt(document.getElementById('min_hour').value);
+  state.minActiveHour = (k >= 0) ? ((24 >= k) ? k : 24) : 0;
+
+  k = parseInt(document.getElementById('max_hour').value);
+  state.maxActiveHour = (k >= 0) ? ((24 >= k) ? k : 24) : 24;
+
+  console.log(state);
+  saveState();
+  document.documentElement.classList.remove('js-settings');
+}
+
+function forEach(l, f) {
+  for (var i = 0; i < l.length; i++) {
+    f(l[i], i);
+  }
+}
 
 function askPermissionNotif() {
   if (!state.notification || window.Notification && (Notification.permission === 'granted')) {
@@ -415,6 +437,13 @@ const migrateDb = () => {
     state.pendingPing = null;
     state.version = 2;
   }
+
+  if (state.version === 2) {
+    if (state.notification) {
+      state.notification = 2;
+    }
+    state.version = 3;
+  }
 };
 
 const saveState = () => {
@@ -470,10 +499,10 @@ const gotFeedUpdate = (body) => {
   if (isActive) {
     activate();
     const isFocused = (!document.hasFocus || document.hasFocus()) && (!document.hidden);
-    if (!notificationSent && (state.notification > 0) && state.pendingPing && !isFocused) {
+    if (!notificationSent && state.notification && state.pendingPing && !isFocused) {
       console.log('notification ' + new Date());
       openNotification = new Notification(
-        '💬 Wiby mention',
+        '💬 Wiby ' + ((state.notification === 1) ? 'mention' : 'post'),
         {
           body: new Date(state.pendingPing).toLocaleString()
         });
@@ -581,7 +610,7 @@ const updateStatePosts = (body, now) => {
   }
 
   updates.reverse().forEach(u => {
-    if (!state.pendingPing && isMessagePing(u)) {
+    if (!state.pendingPing && isMessagePing(u) || (state.notification === 2)) {
       state.pendingPing = u.time;
     }
     const key = `${u.hhmm}\n${u.cloak}\n${u.message}`;
