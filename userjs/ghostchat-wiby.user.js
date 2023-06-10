@@ -267,9 +267,7 @@ const init = () => {
       state.inactiveUntil = null;
     }
     inactivate();
-    document.documentElement.classList.remove('js-settings');
-    console.log(state);
-    saveState();
+    saveSettings();
   };
 
   document.getElementById('set_active').onclick = function(e) {
