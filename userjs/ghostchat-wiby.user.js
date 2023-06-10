@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.18
+// @version     2023.5.19
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -707,7 +707,7 @@ const renderLog = () => {
       allSeenCloaks.forEach(cl => {
         const color = getCloakColor(cl);
         colored = colored.replace(
-          new RegExp(`((?:@ ?)?\\b${cl}\\b:?)([\[{\( ])`, 'g'),
+          new RegExp(`((?:@ ?)?\\b${cl}\\b)([\[{\(:,. ]|$)`, 'g'),
           (_, a, b) => `<span style="color:${color}">${a}</span>${b}`)
       });
       comment.innerHTML = markup(colored);
