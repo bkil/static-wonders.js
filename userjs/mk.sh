@@ -25,12 +25,23 @@ cat << EOF
 <ul>
 <li>
  <a class=bookmarklet onclick="location.hash=href;return false" href="javascript:${BODY}">${BASE} ${TIME}</a>
- <span class=source>(readable <a href="${NAME}">source</a>)</span>
+ <span class=source>(readable <a href="${NAME}">source</a> .user.js)</span>
 </li>
 </ul>
-<textarea style="width:100%;height:50%"></textarea>
 <p>
+You will then need to click it twice: first to open the vendor page (not supported by all bookmarklets), and a second time to activate the customized rich interface if you are on the vendor page.
+</p><p>
+You should periodically check this page for updates, as these bookmarklets contain a complete frozen offline source code snapshot for compatibility and security.
+</p>
+<hr>
+<p>
+As a convenience to access it in restricted (mobile) browsers, you can also paste the link to the end of your address bar by clicking the link. Its content is also displayed in the box below if copy &amp; pasting is your only option:
+</p>
+<textarea></textarea>
+<p>
+<button type=button onclick="document.getElementsByTagName('textarea')[0].value=unescape(document.links[2].href)">View unescaped</button>
 <a class=overview href="gen-bookmarklet.html">Overview of other bookmarklets</a>
+</p>
 <script>
 document.getElementsByTagName('textarea')[0].value = document.links[2].href;
 </script>
@@ -84,21 +95,24 @@ cat_bookmarklet_head() {
   opacity: 0.5;
 }
 
-.overview {
+.overview, button {
   font-size: xx-small;
   opacity: 0.5;
+}
+
+textarea {
+ min-width: 100%;
+ max-width: 100%;
+ min-height: 50%;
 }
 
 html, body {
   height: 100%;
 }
 </style>
-You can drag &amp; drop the following <a href="https://en.wikipedia.org/wiki/Bookmarklet" target=_blank>bookmarklet</a> to your bookmark bar instead of using a <a href="https://en.wikipedia.org/wiki/Userscript_manager" target=_blank>UserScript manager</a>.
 <p>
-You will then need to click it twice: first to open the vendor page (not supported by all bookmarklets), and a second time to activate the customized rich interface if you are on the vendor page.
-<p>
-You should periodically check this page for updates, as most bookmarklets contain a frozen offline source code snapshot.
-<p>
+You can drag &amp; drop the following <em>bookmarklet</em> <sup><a href="https://en.wikipedia.org/wiki/Bookmarklet" target=_blank>[definition]</a></sup> to your bookmark bar instead of using a <em>UserScript manager</em> <sup><a href="https://en.wikipedia.org/wiki/Userscript_manager" target=_blank>[definition]</a></sup>:
+</p>
 EOF
 }
 
