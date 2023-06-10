@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.19
+// @version     2023.5.20
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -608,7 +608,7 @@ const updateStatePosts = (body, now) => {
   }
 
   updates.reverse().forEach(u => {
-    if (!state.pendingPing && isMessagePing(u) || (state.notification === 2)) {
+    if (!state.pendingPing && !u.isMe && (isMessagePing(u) || (state.notification === 2))) {
       state.pendingPing = u.time;
     }
     const key = `${u.hhmm}\n${u.cloak}\n${u.message}`;
