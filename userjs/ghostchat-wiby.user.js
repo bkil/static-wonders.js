@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name        chat.wiby JS
 // @author      bkil
-// @description Minimal AJAX web app with chat log and more efficient polling
+// @description Frugal AJAX UserScript & bookmarklet web app with many small features: rich text, textbox composer, character count, dark mode, configurable polling, LocalStorage log, emoji, notifications, hash-based name & mention coloring, local user ban, quality of life settings. Not ES5 (Opera Mini) compatible yet.
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.21
+// @version     2023.5.22
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -53,13 +53,24 @@ const init = () => {
 
       th, td {
         border-left: 1px solid;
-        padding-left: 0.5em;
-        padding-right: 0.5em;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
         vertical-align: top;
       }
 
       td.timestamp {
         border-color: white;
+      }
+
+      .ignored .comment {
+        font-size: 0;
+        text-align: right;
+      }
+
+      .ignored .comment::after {
+        font-size: xx-small;
+        color: #777;
+        content: 'hidden';
       }
 
       .meta td {
@@ -131,6 +142,10 @@ const init = () => {
       .cloak {
         font-family: monospace;
         border-top: 1px solid white;
+      }
+
+      .cloak:not(.isMyCloak) {
+        cursor: pointer;
       }
 
       #error {
@@ -442,6 +457,11 @@ const migrateDb = () => {
     }
     state.version = 3;
   }
+
+  if (state.version === 3) {
+    state.ignoredUser = {};
+    state.version = 4;
+  }
 };
 
 const saveState = () => {
@@ -680,12 +700,31 @@ const renderLog = () => {
         tr = tab.insertRow();
       }
 
+      if (state.ignoredUser[u.cloak]) {
+        tr.classList.add('ignored');
+      }
       const cloak = tr.insertCell();
       if ((u.cloak !== lastLineCloak) || (u.isMe !== lastLineMe) || (day !== lastDay)) {
         cloak.textContent = u.cloak;
         cloak.classList.add('cloak');
         if (u.isMe) {
           cloak.classList.add('isMyCloak');
+        } else if (state.ignoredUser[u.cloak]) {
+          cloak.title = 'click to unban';
+          cloak.onclick = function() {
+            delete state.ignoredUser[u.cloak];
+            saveState();
+            renderLog();
+          };
+        } else {
+          cloak.title = 'click to ban';
+          cloak.onclick = function() {
+            if (confirm('Hide all posts of ' + u.cloak + '?')) {
+              state.ignoredUser[u.cloak] = u.time;
+              saveState();
+              renderLog();
+            }
+          };
         }
         allSeenCloaks.add(u.cloak);
 
