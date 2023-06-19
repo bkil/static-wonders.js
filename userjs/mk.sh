@@ -43,6 +43,10 @@ As a convenience to access it in restricted (mobile) browsers, you can also past
 <a class=overview href="gen-bookmarklet.html">Overview of other bookmarklets</a>
 </p>
 <script>
+document.links[2].href = document.links[2].href
+  .replace(
+    /(\()(\);(?:(?:%09|%0a|%0d|%20)*(?:\/\/(?:[^%]|%[^0].|%0[^a])*)?)*)\$/,
+    '\$1{"updateUrl":"' + window.location.href + '"}\$2');
 document.getElementsByTagName('textarea')[0].value = document.links[2].href;
 </script>
 EOF
