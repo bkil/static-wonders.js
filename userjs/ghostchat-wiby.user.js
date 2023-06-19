@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.22
+// @version     2023.5.23
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -14,7 +14,7 @@
 // @noframes
 // ==/UserScript==
 
-(function() {
+(function(param) {
 'use strict';
 
 const baseUrl = window.location.href.replace(/[^\/]*$/, '');
@@ -199,13 +199,15 @@ const init = () => {
       }
 
       #settings label:not(.inline),
-      #settings input:not([type="checkbox"]) {
+      #settings input:not([type="checkbox"]),
+      #updateUrl {
         display: block;
         width: 100%;
       }
 
       html.js-settings #log,
       html.js-settings form,
+      #updateUrl:not([href]),
       html:not(.js-settings) #settings,
       html.unlimited #set_inactive,
       html.isPassive #log,
@@ -232,6 +234,7 @@ const init = () => {
         <label for=max_poll>Max sync interval</label><input id=max_poll>
         <label for=min_hour>First chat hour</label><input id=min_hour>
         <label for=max_hour>Last chat hour</label><input id=max_hour>
+        <a id=updateUrl target=_blank>Update bookmarklet</a>
         <button id=close_settings type=button>Resume chat</button>
         <button id=set_inactive type=button>Go to sleep immediately</button>
       </div>
@@ -417,6 +420,10 @@ const loadState = () => {
     state = {};
   }
   migrateDb();
+  if (param && param.updateUrl) {
+    state.updateUrl = param.updateUrl;
+    document.getElementById('updateUrl').href = state.updateUrl;
+  }
 };
 
 const migrateDb = () => {
@@ -461,6 +468,11 @@ const migrateDb = () => {
   if (state.version === 3) {
     state.ignoredUser = {};
     state.version = 4;
+  }
+
+  if (state.version === 4) {
+    state.updateUrl = null;
+    state.version = 5;
   }
 };
 
