@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.23
+// @version     2023.5.24
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -790,33 +790,34 @@ const escapeHTML = (s) => {
 
 const markup = (s) => {
   const proto = `(?:(?:https?|gemini|gopher):\/\/|mailto:)`;
-  const link = `(${proto})?([0-9a-z.-]+\\.[a-z]{2,14}(?:\/(?:[^ <>&]|&amp;)*)?)`;
+  const path = `(?:(?:[^ <>&]|&amp;)+?)`;
+  const link = `(${proto})?([0-9a-z.-]+\\.[a-z]{2,14}(?:\/${path}?)?)`;
   const sw = `(^|\\s|;)`;
-  const ew = `([;:,.!?<)-]?(?:&#|&amp|\s|$))`;
-  const wordReg = (middle) => new RegExp(`${sw}${middle}${ew}`, 'g');
+  const ew = `([;:,.!?<)-]?(?:&#|&amp|\\s|$))`;
+  const wordReg = function(middle) { return new RegExp(`${sw}${middle}${ew}`, 'g'); };
   return s
     .replaceAll(' ', '&#32;')
-    .replace(wordReg('__([^_<>]*)__'), '$1<u>$2</u>$3')
-    .replace(wordReg('_([^_<>]*)_'), '$1<em>$2</em>$3')
-    .replace(wordReg('[*][*]([^*<>]*)[*][*]'), '$1<strong>$2</strong>$3')
-    .replace(wordReg('[*]([^*<>]*)[*]'), '$1<em>$2</em>$3')
-    .replace(wordReg('~~([^~<>]*)~~'), '$1<del>$2</del>$3')
-    .replace(wordReg('`([^`<>]*)`'), '$1<code>$2</code>$3')
-    .replace(/&amp;lt;b&amp;gt;(.*)&amp;lt;\/b&amp;gt;/g, '<b>$1</b>')
-    .replace(/&amp;lt;i&amp;gt;(.*)&amp;lt;\/i&amp;gt;/g, '<i>$1</i>')
-    .replace(/&amp;lt;u&amp;gt;(.*)&amp;lt;\/u&amp;gt;/g, '<u>$1</u>')
-    .replace(/&amp;lt;del&amp;gt;(.*)&amp;lt;\/del&amp;gt;/g, '<del>$1</del>')
-    .replace(/&amp;lt;code&amp;gt;(.*)&amp;lt;\/code&amp;gt;/g, '<code>$1</code>')
-    .replace(/&amp;lt;pre&amp;gt;(.*)&amp;lt;\/pre&amp;gt;/g, '<pre>$1</pre>')
+    .replace(wordReg('__([^_<>]*?)__'), '$1<u>$2</u>$3')
+    .replace(wordReg('_([^_<>]*?)_'), '$1<em>$2</em>$3')
+    .replace(wordReg('[*][*]([^*<>]*?)[*][*]'), '$1<strong>$2</strong>$3')
+    .replace(wordReg('[*]([^*<>]*?)[*]'), '$1<em>$2</em>$3')
+    .replace(wordReg('~~([^~<>]*?)~~'), '$1<del>$2</del>$3')
+    .replace(wordReg('`([^`<>]*?)`'), '$1<code>$2</code>$3')
+    .replace(/&amp;lt;b&amp;gt;(.*?)&amp;lt;\/b&amp;gt;/g, '<b>$1</b>')
+    .replace(/&amp;lt;i&amp;gt;(.*?)&amp;lt;\/i&amp;gt;/g, '<i>$1</i>')
+    .replace(/&amp;lt;u&amp;gt;(.*?)&amp;lt;\/u&amp;gt;/g, '<u>$1</u>')
+    .replace(/&amp;lt;del&amp;gt;(.*?)&amp;lt;\/del&amp;gt;/g, '<del>$1</del>')
+    .replace(/&amp;lt;code&amp;gt;(.*?)&amp;lt;\/code&amp;gt;/g, '<code>$1</code>')
+    .replace(/&amp;lt;pre&amp;gt;(.*?)&amp;lt;\/pre&amp;gt;/g, '<pre>$1</pre>')
     .replace(/&amp;lt;br&amp;gt;/g, '<br>')
     .replace(
       new RegExp(`&amp;lt;${link}&amp;gt;(&#|\\s|$)`, 'g'),
       (_, a, b, c) => `<a target=_blank rel=noreferrer href="${a ?? "http://"}${b}">${b}</a>${c}`)
     .replace(
-      new RegExp(`\\b${link}(&#|\\s|$)`, 'g'),
+      new RegExp(`\\b${link}${ew}`, 'g'),
       (_, a, b, c) => `<a target=_blank rel=noreferrer href="${a ?? "http://"}${b}">${b}</a>${c}`)
     .replace(
-      new RegExp(`\\b(${proto}([^ <>&]+))(&#|\\s|$)`, 'g'),
+      new RegExp(`\\b(${proto}(${path}))${ew}`, 'g'),
       '<a target=_blank rel=noreferrer href="$1">$2</a>$3')
     .replaceAll('&#32;', ' ')
     .replaceAll('&amp;quot;', '&quot;')
