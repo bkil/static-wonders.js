@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.24
+// @version     2023.5.25
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -326,7 +326,7 @@ const init = () => {
       document.forms[0].requestSubmit();
     }
   };
-  updateFeed();
+  updateFeed(true);
 };
 
 function saveSettings() {
@@ -490,12 +490,12 @@ const scheduleUpdate = () => {
   nextUpdateTime = setTimeout(updateFeed, 1000 * state.pollSecond);
 };
 
-const updateFeed = () => {
+const updateFeed = (forceRenderLog) => {
   const nonce = state.lastModified ? '' : ('?_ts=' + Math.trunc(new Date() / 1000));
   fetch(feedUrl + nonce,
     (body, lastModified) => {
       state.lastModified = lastModified,
-      gotFeedUpdate(body);
+      gotFeedUpdate(body, forceRenderLog);
       saveState();
       initEmojiPicker();
     },
@@ -510,9 +510,10 @@ const updateFeed = () => {
   );
 };
 
-const gotFeedUpdate = (body) => {
+const gotFeedUpdate = (body, forceRenderLog) => {
+  var logRendered;
   const now = new Date();
-  updateStatePosts(body, now);
+  const gotNewPosts = updateStatePosts(body, now);
 
   let isActive = isActiveNow(now);
   if (state.inactiveUntil && (state.inactiveUntil > +now)) {
@@ -538,7 +539,10 @@ const gotFeedUpdate = (body) => {
         });
       notificationSent = true;
     }
-    renderLog();
+    if (forceRenderLog || gotNewPosts) {
+      renderLog();
+      logRendered = true;
+    }
     if (state.pendingPing && isFocused) {
       if (openNotification) {
         openNotification.close();
@@ -553,10 +557,10 @@ const gotFeedUpdate = (body) => {
   console.log(state);
 
   document.getElementById('status').textContent = now.toLocaleTimeString();
-  const messageBox = document.getElementById('message');
-  document.getElementById('send').scrollIntoView();
+  if (logRendered) {
+    document.getElementById('send').scrollIntoView();
+  }
   updatePlaceholder();
-  messageBox.focus();
   scheduleUpdate();
 };
 
@@ -647,6 +651,8 @@ const updateStatePosts = (body, now) => {
     state.key[key] = state.log.length;
     state.log.push(u);
   });
+
+  return !!updates.length;
 };
 
 function updateTitle(silence) {
@@ -933,6 +939,7 @@ const onSubmit = (e) => {
       updateCounter();
       saveState();
       message.disabled = false;
+      document.getElementById('message').focus();
       updateFeed();
     },
     (body, code) => {
@@ -940,6 +947,7 @@ const onSubmit = (e) => {
       error.hidden = false;
       saveState();
       message.disabled = false;
+      document.getElementById('message').focus();
       resetPollDelay();
       scheduleUpdate();
     },
