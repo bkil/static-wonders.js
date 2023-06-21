@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.25
+// @version     2023.5.26
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -25,6 +25,7 @@ let nextUpdateTime;
 let state;
 let openNotification;
 let notificationSent;
+let clearRenderedPing;
 
 const init = () => {
   if ((window.location.hostname !== 'wiby.me') && ((window.location.hostname !== 'localhost'))) {
@@ -271,6 +272,7 @@ const init = () => {
   document.onvisibilitychange = messageBox.onfocus = function(e) {
     if (!document.hidden) {
       state.pendingPing = null;
+      clearRenderedPing = true;
       updateTitle();
       notificationSent = false;
     }
@@ -539,7 +541,7 @@ const gotFeedUpdate = (body, forceRenderLog) => {
         });
       notificationSent = true;
     }
-    if (forceRenderLog || gotNewPosts) {
+    if (forceRenderLog || gotNewPosts || clearRenderedPing) {
       renderLog();
       logRendered = true;
     }
@@ -548,6 +550,7 @@ const gotFeedUpdate = (body, forceRenderLog) => {
         openNotification.close();
       }
       state.pendingPing = null;
+      clearRenderedPing = true;
       updateTitle();
       notificationSent = false;
     }
@@ -682,6 +685,7 @@ function isMessagePing(m) {
 }
 
 const renderLog = () => {
+  clearRenderedPing = false;
   const allSeenCloaks = new Set();
   let lastLineCloak;
   let lastLineMe;
