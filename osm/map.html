@@ -385,6 +385,12 @@ function comparePrecedence(a, b, z) {
 }
 
 function updateStats(url, z, time) {
+  if (!stats[url]) {
+    stats[url] = {};
+  }
+  if (!stats[url].zoom) {
+    stats[url].zoom = {};
+  }
   stats[url].zoom[z] = stats[url].zoom[z] ? 0.8 * stats[url].zoom[z] + 0.2 * time : time;
   stats[url].average = stats[url].average ? 0.8 * stats[url].average + 0.2 * time : time;
   saveStats();
@@ -556,6 +562,16 @@ var providers = [
     size: 256,
     etag: true,
     comment: 'no last-modified, 7d cache, poi-1, street-2',
+  },
+  {
+    url: 'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+    name: 'CartoCDN.com',
+    maxZoom: 16,
+    maxZoomHTTP: 20,
+    cors: true,
+    size: 256,
+    etag: true,
+    comment: 'date, age, 180d cache, poi-0, street-2',
   },
   {
     url: 'https://tile.openstreetmap.bzh/br/{z}/{x}/{y}.png',
