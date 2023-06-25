@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.27
+// @version     2023.5.28
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -341,7 +341,7 @@ function saveSettings() {
 
   var k;
   k = parseInt(document.getElementById('min_poll').value);
-  state.pollMinSecond = (k >= 38) ? ((600 >= k) ? k : 600) : 38;
+  state.pollMinSecond = (k >= 2) ? ((600 >= k) ? k : 600) : 2;
 
   k = parseInt(document.getElementById('max_poll').value);
   state.pollMaxSecond = (k >= state.pollMinSecond) ? ((600 >= k) ? k : 600) : state.pollMinSecond;
@@ -444,8 +444,8 @@ const migrateDb = () => {
   }
 
   if (state.version === 0) {
-    state.pollMinSecond = 38;
-    state.pollMaxSecond = 600;
+    state.pollMinSecond = 8;
+    state.pollMaxSecond = 32;
     state.pollSecond = state.pollMinSecond;
     state.version = 1;
   }
@@ -475,6 +475,16 @@ const migrateDb = () => {
   if (state.version === 4) {
     state.updateUrl = null;
     state.version = 5;
+  }
+
+  if (state.version === 5) {
+    if (state.pollMinSecond === 38) {
+      state.pollMinSecond = 8;
+    }
+    if (state.pollMaxSecond === 600) {
+      state.pollMaxSecond = 32;
+    }
+    state.version = 6;
   }
 };
 
