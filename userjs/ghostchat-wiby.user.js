@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.29
+// @version     2023.5.30
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -130,13 +130,15 @@ const init = () => {
         text-decoration: underline;
       }
 
-      .isMentionMe {
+      .isMentionMe,
+      .isMentionMe button {
         text-decoration: underline;
         background-color: #400;
       }
 
       .isFirstPing .cloak,
-      .isFirstPing .timestamp {
+      .isFirstPing .timestamp,
+      .isFirstPing .timestamp button {
         background-color: #611;
       }
 
