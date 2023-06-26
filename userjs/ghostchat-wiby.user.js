@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://wiby.me/chat/
 // @grant       none
-// @version     2023.5.28
+// @version     2023.5.29
 // @license     MIT
 // @run-at      document-start
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
@@ -547,7 +547,7 @@ const gotFeedUpdate = (body, forceRenderLog) => {
       openNotification = new Notification(
         '💬 Wiby ' + ((state.notification === 1) ? 'mention' : 'post'),
         {
-          body: new Date(state.pendingPing).toLocaleString()
+          body: new Date(state.pendingPing).toLocaleTimeString(),
         });
       notificationSent = true;
     }
@@ -766,7 +766,17 @@ const renderLog = () => {
       cloak.style.color = getCloakColor(u.cloak);
 
       const stamp = tr.insertCell();
-      stamp.textContent = time.toLocaleTimeString().replace(':00 ', ' ');
+      const stampRe = document.createElement('button');
+      stampRe.type = 'button';
+      stampRe.title = 'click to reply';
+      stampRe.onclick = function() {
+        const text = document.getElementById('message');
+        text.value = '@' + u.cloak + '(' + u.hhmm + ') ' + text.value;
+        text.focus();
+      };
+      stampRe.textContent = time.toLocaleTimeString().replace(':00 ', ' ');
+      stamp.appendChild(stampRe);
+
       stamp.classList.add('timestamp');
       if (isMessagePing(u)) {
         stamp.classList.add('isMentionMe');
