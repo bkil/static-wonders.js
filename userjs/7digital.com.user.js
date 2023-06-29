@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://*.7digital.com/artist/*/release/*
 // @grant       none
-// @version     2023.03.01
+// @version     2023.06.01
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -18,19 +18,13 @@
 
 const main = () => {
   addStyle();
-  document.querySelectorAll('tr[data-trackid]').forEach(track => {
-    const trackId = track.dataset.trackid;
-    track.querySelectorAll('.release-track-preview').forEach(td => {
-      const releaseUrl = td.querySelector('meta[itemprop="url"][content]').content;
-      const i = releaseUrl.lastIndexOf('-') + 1;
-      if (i >= 0) {
-        const releaseId = releaseUrl.substr(i);
-        const previewUrl = `${location.origin}/stream/release/${releaseId}/track/${trackId}/m4a`;
-        td.querySelectorAll('button.release-track-play').forEach(play =>
-          addPlayButton(play, previewUrl)
-        );
-      }
-    });
+  const tracks = document.querySelector('table[data-releaseid]');
+  tracks?.querySelectorAll('tr[data-trackid]').forEach(track => {
+    const previewUrl = `${location.origin}/stream/release/${tracks.dataset.releaseid}/track/${track.dataset.trackid}/m4a`;
+    const play = track.querySelector('button.release-track-play');
+    if (play) {
+      addPlayButton(play, previewUrl)
+    }
   });
 };
 
