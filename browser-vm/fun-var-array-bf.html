@@ -49,8 +49,7 @@ function exec(program, read) {
   var rp = 0;
   var output = "";
 
-  var mem = [];
-  mem[0] = 0;
+  var mem = [0];
   var mp = 0;
   var stack = [];
   var sp = 0;
@@ -64,9 +63,7 @@ function exec(program, read) {
       mp = mp - 1
     } else if (c == ">") {
       mp = mp + 1;
-      if (mem[mp] > 0) {
-        mp = mp
-      } else {
+      if (mem[mp] === undefined) {
         mem[mp] = 0
       }
     } else if (c == "+") {
@@ -118,8 +115,6 @@ document.write(output)
 var prog;
 var symType;
 var symValue;
-var row;
-var col;
 
 function init() {
   var runBut = document.getElementById('runButton');
@@ -130,8 +125,6 @@ function init() {
 
 function run() {
   prog = document.getElementById('source').value;
-  row = 0;
-  col = 0;
   var out = document.getElementById('output');
   out.classList.remove('error');
   out.value = '';
@@ -144,40 +137,36 @@ function parseProgram() {
   var ret = {};
   nextSym();
   var mainBody = ['seq'];
-  var isEnd = accept('');
-  while (!isEnd) {
+  while (!accept('')) {
     if (accept('function')) {
       var name = expect('ident');
       expect('(');
       var param = [];
       if (!accept(')')) {
         do {
-          param.push(expect('ident'));
+          param[param.length] = expect('ident');
         } while (accept(','));
         expect(')');
       }
       expect('{');
       var body = ['seq'];
-      do {
+      var b = 1;
+      while (b) {
         var statement;
         if (accept('return')) {
           statement = ['return', parseExpression()];
-          isEnd = true;
+          expect('}');
+          b = 0;
+        } else if (accept('}')) {
+          b = 0;
         } else {
           statement = parseStatement();
-          isEnd = !accept(';');
         }
-        body.push(statement);
-      } while (!isEnd);
-      expect('}');
-      isEnd = accept('');
+        body[body.length] = statement;
+      }
       ret[name] = [param, body];
     } else {
-      mainBody.push(parseStatement());
-      isEnd = accept('');
-      if (!isEnd) {
-        expect(';');
-      }
+      mainBody[mainBody.length] = parseStatement();
     }
   }
   ret[''] = [[], mainBody];
@@ -185,28 +174,35 @@ function parseProgram() {
 }
 
 function evalFun(name, args, tree) {
-  var fun = tree[name];
-  if (!fun) {
-    runError('unknown function ' + name);
+  var ret;
+  if (name == 'parseInt') {
+    ret = parseInt(args[0])
+  } else if (name == 'isNaN') {
+    ret = isNaN(args[0])
+  } else {
+    var fun = tree[name];
+    if (!fun) {
+      runError('unknown function ' + name);
+    }
+    var param = fun[0];
+    var vars = {};
+    var i = 0;
+    while (i < param.length) {
+      vars[param[i]] = args[i];
+      i = i + 1;
+    }
+    ret = evalStatement(fun[1], tree, vars);
   }
-  if (fun[0].length !== args.length) {
-    error('argument count mismatch for function ' + name);
-  }
-  var vars = {};
-  for (var i = 0; i < args.length; i++) {
-    vars[fun[0][i]] = args[i];
-  }
-  return evalStatement(fun[1], tree, vars);
+  return ret
 }
 
 function parseStatements() {
   var ret;
   if (accept('{')) {
     var ret = ['seq'];
-    do {
-      ret.push(parseStatement());
-    } while (accept(';'));
-    expect('}');
+    while (!accept('}')) {
+      ret[ret.length] = parseStatement();
+    };
   } else {
     ret = parseStatement();
   }
@@ -214,14 +210,14 @@ function parseStatements() {
 }
 
 function parseStatement() {
-  var ret = [];
+  var ret;
   if (accept('if')) {
     expect('(');
     var ifCond = parseExpression();
     expect(')');
     ret = ['if', ifCond, parseStatements()];
     if (accept('else')) {
-      ret.push(parseStatements());
+      ret[ret.length] = parseStatements();
     }
   } else if (accept('while')) {
     expect('(');
@@ -231,11 +227,12 @@ function parseStatement() {
   } else if (accept('var')) {
     ret = ['var', expect('ident')];
     if (accept('=')) {
-      ret.push(parseExpression());
+      ret[ret.length] = parseExpression();
     }
   } else {
     ret = parseExpression();
   }
+  accept(';');
   return ret;
 }
 
@@ -269,33 +266,49 @@ function evalStatement(statement, tree, vars) {
 }
 
 function parseExpression() {
-  var ret = parseTerm();
-  var value = accept('binop');
-  if (value) {
-    ret = [value, ret, parseTerm()];
+  var ret;
+  if (accept('!')) {
+    ret = ['!', parseTerm()];
+  } else {
+    ret = parseTerm();
+    var value = accept('binop');
+    if (value) {
+      ret = [value, ret, parseTerm()];
+    }
   }
   return ret;
 }
 
 function parseTerm() {
   var ret = [];
+  var b;
   var value = accept('literal');
   if (value !== undefined) {
     ret = ['literal', value];
+  } else if (accept('undefined')) {
+    ret = ['undefined'];
   } else if (accept('[')) {
-    ret = ['[]'];
-    expect(']');
+    ret = ['list'];
+    if (!accept(']')) {
+      b = 1;
+      while (b) {
+        ret[ret.length] = parseExpression();
+        b = accept(',');
+      }
+      expect(']');
+    }
   } else if (accept('(')) {
     ret = parseExpression();
     expect(')');
-  } else if (value = accept('ident')) {
+  } else {
+    value = expect('ident');
     var name = value;
     var method = accept('method');
     if (accept('(')) {
       var param = [];
       if (!accept(')')) {
         do {
-          param.push(parseExpression());
+          param[param.length] = parseExpression();
         } while (accept(','));
         expect(')');
       }
@@ -319,7 +332,7 @@ function parseTerm() {
           } else {
             ret = ['set', name];
           }
-          ret.push(parseExpression());
+          ret[ret.length] = parseExpression();
         } else {
           if (idx) {
             ret = ['arrget', name, idx];
@@ -329,8 +342,16 @@ function parseTerm() {
         }
       }
     }
-  } else {
-    expect('-term');
+  }
+  return ret;
+}
+
+function evalExprArgs(args, tree, vars) {
+  var ret = [];
+  var i = 0;
+  while (i < args.length) {
+    ret[i] = evalExpression(args[i], tree, vars);
+    i = i + 1;
   }
   return ret;
 }
@@ -343,21 +364,35 @@ function evalExpression(expr, tree, vars) {
     if (vars.hasOwnProperty(n)) {
       return vars[n];
     }
-    runError('trying to getVar undeclared variable ' + n);
+    runError('trying to get undeclared variable ' + n);
   };
-  var evalExprArgs = function(i) {
-    return expr[i].map(function(x) { return evalExpression(x, tree, vars);});
-  };
+  var ret;
+  var i;
+  var arr;
 
-  switch (expr[0]) { // & | ^ ~
+  switch (expr[0]) {
     case 'literal':
       return expr[1];
-    case '[]':
-      return [];
-    case '==':
+    case 'undefined':
+      return undefined;
+    case 'list':
+      ret = [];
+      i = 1;
+      while (i < expr.length) {
+        ret[i - 1] = e(i);
+        i = i + 1;
+      }
+      return ret;
+    case '!':
+      return !e(1)
+    case '===':
       return e(1) === e(2)
-    case '!=':
+    case '!==':
       return e(1) !== e(2)
+    case '==':
+      return e(1) == e(2)
+    case '!=':
+      return e(1) != e(2)
     case '<':
       return e(1) < e(2)
     case '<=':
@@ -366,6 +401,10 @@ function evalExpression(expr, tree, vars) {
       return e(1) > e(2)
     case '>=':
       return e(1) >= e(2)
+    case '&&':
+      return e(1) && e(2)
+    case '||':
+      return e(1) || e(2)
     case '+':
       return e(1) + e(2)
     case '-':
@@ -375,34 +414,42 @@ function evalExpression(expr, tree, vars) {
     case '/':
       return e(1) / e(2)
     case 'call':
-      return evalFun(expr[1], evalExprArgs(2), tree);
+      return evalFun(expr[1], evalExprArgs(expr[2], tree, vars), tree);
     case 'prop':
       switch (expr[2]) {
         case 'length':
-          return getVar(expr[1]).length;
+          var arr = getVar(expr[1]);
+          return arr.length;
         default:
-          runError('unknown property on ' + expr[1] + ': ' + expr[2]);
+          runError(('unknown property on ' + expr[1]) + (': ' + expr[2]));
       }
     case 'method':
-      var a = evalExprArgs(3);
-      switch (expr[1] + '.' + expr[2]) {
+      var a = evalExprArgs(expr[3], tree, vars);
+      switch ((expr[1] + '.') + expr[2]) {
         case 'document.write':
           document.getElementById('output').value += a[0] + '\n';
           return
         case 'String.fromCharCode':
           return String.fromCharCode(a[0]);
         default:
+          var arr = getVar(expr[1]);
           switch (expr[2]) {
             case 'charCodeAt':
-              return getVar(expr[1]).charCodeAt(a[0]);
+              return arr.charCodeAt(a[0]);
+            case 'match':
+              return arr.match(a[0]);
+            case 'hasOwnProperty':
+              return arr.hasOwnProperty(a[0]);
             default:
-              runError('unknown method on ' + expr[1] + ': ' + expr[2]);
+              runError(('unknown method on ' + expr[1]) + (': ' + expr[2]));
           }
       }
     case 'arrget':
-      return getVar(expr[1])[e(2)];
+      var arr = getVar(expr[1]);
+      return arr[e(2)];
     case 'arrset':
-      return getVar(expr[1])[e(2)] = e(3);
+    var arr = getVar(expr[1]);
+      return arr[e(2)] = e(3);
     case 'get':
       return getVar(expr[1]);
     case 'set':
@@ -425,47 +472,39 @@ function evalExpression(expr, tree, vars) {
 }
 
 function nextSym() {
-  var reportError = function(msg) {
-    parseError('lexer failure - ' + msg);
-  }
   symValue = undefined;
-  var m = /^((?:\s*\/\/[^\n]*(?:\n|$)+\s*)*(?:(==|!=|<=|>=|[<>*\/+-])|([\]\[();,={}]|(?:var|if|else|while|function|return)\b)|(\.?)([a-zA-Z_][a-zA-Z0-9_]*)\b|([0-9]+)\b|"((?:[^"\\]|\\.)*)"|$)\s*)((?:.|\n)*?)$/.exec(prog);
+  var m = prog.match('^((?:\\s*//[^\\n]*(?:\\n|$)+\\s*)*(?:(===|!==|==|!=|<=|>=|&&|\\|\\||[<>*/+-])|([\\]\\[();,={}!]|(?:var|if|else|while|function|return|undefined)\\b)|(\\.?)([a-zA-Z_][a-zA-Z0-9_]*)\\b|([0-9]+)\\b|\'((?:[^\'\\\\]|\\\\.)*)\'|"((?:[^"\\\\]|\\\\.)*)"|$)\\s*)((?:.|\\n)*?)$');
   if (m) {
-    if (m[2] !== undefined) {
+    if (m[2]) {
       symType = 'binop';
       symValue = m[2];
-    } else if (m[3] !== undefined) {
+    } else if (m[3]) {
       symType = m[3];
-    } else if (m[5] !== undefined) {
+    } else if (m[5]) {
       if (m[4]) {
         symType = 'method';
       } else {
         symType = 'ident';
       }
       symValue = m[5];
-    } else if ((m[6] !== undefined) || (m[7] !== undefined)) {
+    } else if ((m[6]) || (m[7] !== undefined) || (m[8] !== undefined)) {
       symType = 'literal';
-      if (m[6] !== undefined) {
+      if (m[6]) {
         symValue = parseInt(m[6]);
         if (isNaN(symValue)) {
-          reportError('can\'t parse as integer');
+          parseError('lexer failure, can\'t parse as integer');
         }
-      } else {
+      } else if (m[7] !== undefined) {
         symValue = m[7];
+      } else {
+        symValue = m[8];
       }
     } else {
       symType = '';
     }
-    row += m[1].split('\n').length - 1;
-    var i = m[1].lastIndexOf('\n');
-    if (i >= 0) {
-      col = m[1].length - i - 1;
-    } else {
-      col += m[1].length;
-    }
-    prog = m[8];
+    prog = m[9];
   } else {
-    reportError('unknown token ');
+    parseError('lexer failure, unknown token')
   }
 }
 
@@ -485,18 +524,17 @@ function accept(needTyp) {
 function expect(needTyp) {
   var value = accept(needTyp);
   if (value === undefined) {
-    var next = (symValue === undefined) ? '' : ' (' + symValue + ')';
-    parseError('expect: unexpected symbol ' + symType + next + ', expected: ' + needTyp);
+    var next = '';
+    if (symValue !== undefined) {
+      next = (' (' + symValue) + ')';
+    }
+    parseError((('expect: unexpected symbol ' + symType) + (next + ', expected: ')) + needTyp);
   }
   return value;
 }
 
 function parseError(msg) {
-  var next = prog.split('\n')[0].substr(0, 17);
-  if (next.length > 16) {
-    next = next.substr(0, 16) + '...';
-  }
-  error('parse error at row ' + (row + 1) + ' column ' + (col + 1) + ' ' + msg + ', line remaining: ' + next);
+  error(('parse error - ' + msg) + (', line remaining: ' + prog));
 }
 
 function runError(msg) {
