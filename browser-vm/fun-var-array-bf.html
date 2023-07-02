@@ -10,12 +10,21 @@
   <style>
 html, body {
   height: 100%;
+  margin: 0;
+}
+
+body, .half {
+  display: flex;
+  flex-direction: column;
+}
+
+.half, textarea {
+  flex-grow: 1;
 }
 
 textarea {
   overflow-wrap: anywhere;
-  width: 100%;
-  height: calc(50% - 6em);
+  resize: none;
 }
 
 .error {
@@ -25,8 +34,13 @@ textarea {
 </head>
 <body>
 
-<h2>Program</h2>
-<textarea id=source autofocus>
+<div class=half>
+<div>
+  <span>Program source</span>
+  <button id=runButton type=button autofocus disabled>Run</button>
+</div>
+
+<textarea id=source>
 // <![CDATA[
 function skipToLoopEnd(program, startPc) {
   var nest = 1;
@@ -102,11 +116,12 @@ var output = exec(
 document.write(output)
 // ]]>
 </textarea>
+</div>
 
-<div>Output</div>
-<textarea id=output></textarea>
-
-<button id=runButton type=button disabled>Run</button>
+<div class=half>
+  <div>Errors</div>
+  <textarea id=output></textarea>
+</div>
 
 <script>
 // <![CDATA[
@@ -120,7 +135,6 @@ function init() {
   var runBut = document.getElementById('runButton');
   runBut.onclick = run;
   runBut.disabled = false;
-  run();
 }
 
 function run() {
@@ -479,7 +493,7 @@ function evalExpression(expr, tree, vars) {
     var a = evalExprArgs(expr[3], tree, vars);
     var name = (expr[1] + '.') + expr[2];
     if (name == 'document.write') {
-      document.getElementById('output').value += a[0] + '\n';
+      document.write(a[0]);
     } else if (name == 'String.fromCharCode') {
       ret = String.fromCharCode(a[0]);
     } else if (name == 'Object.keys') {
