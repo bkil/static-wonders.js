@@ -155,6 +155,7 @@ function parseProgram() {
         var statement;
         if (accept('return')) {
           statement = ['return', parseExpression()];
+          accept(';');
           expect('}');
           b = 0;
         } else if (accept('}')) {
