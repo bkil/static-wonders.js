@@ -133,6 +133,23 @@ function run() {
   evalFun('', [], tree, {});
 }
 
+function parseError(msg) {
+  error(('parse error - ' + msg) + (', line remaining: ' + prog));
+}
+
+function runError(msg) {
+  error('runtime error ' + msg);
+}
+
+function error(msg) {
+  var out = document.getElementById('output');
+  out.classList.add('error');
+  out.value += msg + '\n';
+  throw new Error(msg);
+}
+
+// parser
+
 function parseProgram() {
   var ret = {};
   nextSym();
@@ -174,33 +191,10 @@ function parseProgram() {
   return ret;
 }
 
-function evalFun(name, args, tree) {
-  var ret;
-  if (name == 'parseInt') {
-    ret = parseInt(args[0])
-  } else if (name == 'isNaN') {
-    ret = isNaN(args[0])
-  } else {
-    var fun = tree[name];
-    if (!fun) {
-      runError('unknown function ' + name);
-    }
-    var param = fun[0];
-    var vars = {};
-    var i = 0;
-    while (i < param.length) {
-      vars[param[i]] = args[i];
-      i = i + 1;
-    }
-    ret = evalStatement(fun[1], tree, vars);
-  }
-  return ret
-}
-
 function parseStatements() {
   var ret;
   if (accept('{')) {
-    var ret = ['seq'];
+    ret = ['seq'];
     while (!accept('}')) {
       ret[ret.length] = parseStatement();
     };
@@ -234,35 +228,6 @@ function parseStatement() {
     ret = parseExpression();
   }
   accept(';');
-  return ret;
-}
-
-function evalStatement(statement, tree, vars) {
-  var ret;
-  switch (statement[0]) {
-    case 'seq':
-      for (var i = 1; i < statement.length; i++) {
-        ret = evalStatement(statement[i], tree, vars);
-      }
-      break
-    case 'return':
-      ret = evalExpression(statement[1], tree, vars);
-      break
-    case 'if':
-      if (evalExpression(statement[1], tree, vars)) {
-        evalStatement(statement[2], tree, vars);
-      } else if (statement[3]) {
-        evalStatement(statement[3], tree, vars);
-      }
-      break
-    case 'while':
-      while (evalExpression(statement[1], tree, vars)) {
-        evalStatement(statement[2], tree, vars);
-      }
-      break
-    default:
-      ret = evalExpression(statement, tree, vars);
-  }
   return ret;
 }
 
@@ -343,6 +308,124 @@ function parseTerm() {
         }
       }
     }
+  }
+  return ret;
+}
+
+// lexer
+
+function expect(needTyp) {
+  var value = accept(needTyp);
+  if (value === undefined) {
+    var next = '';
+    if (symValue !== undefined) {
+      next = (' (' + symValue) + ')';
+    }
+    parseError((('expect: unexpected symbol ' + symType) + (next + ', expected: ')) + needTyp);
+  }
+  return value;
+}
+
+function accept(needTyp) {
+  var value;
+  if (symType === needTyp) {
+    if (symValue === undefined) {
+      value = true;
+    } else {
+      value = symValue;
+    }
+    nextSym();
+  }
+  return value;
+}
+
+function nextSym() {
+  symValue = undefined;
+  var m = prog.match('^((?:\\s*//[^\\n]*(?:\\n|$)+\\s*)*(?:(===|!==|==|!=|<=|>=|&&|\\|\\||[<>*/+-])|([\\]\\[();,={}!]|(?:var|if|else|while|function|return|undefined)\\b)|(\\.?)([a-zA-Z_][a-zA-Z0-9_]*)\\b|([0-9]+)\\b|\'((?:[^\'\\\\]|\\\\.)*)\'|"((?:[^"\\\\]|\\\\.)*)"|$)\\s*)((?:.|\\n)*?)$');
+  if (m) {
+    if (m[2]) {
+      symType = 'binop';
+      symValue = m[2];
+    } else if (m[3]) {
+      symType = m[3];
+    } else if (m[5]) {
+      if (m[4]) {
+        symType = 'method';
+      } else {
+        symType = 'ident';
+      }
+      symValue = m[5];
+    } else if ((m[6]) || (m[7] !== undefined) || (m[8] !== undefined)) {
+      symType = 'literal';
+      if (m[6]) {
+        symValue = parseInt(m[6]);
+        if (isNaN(symValue)) {
+          parseError('lexer failure, can\'t parse as integer');
+        }
+      } else if (m[7] !== undefined) {
+        symValue = m[7];
+      } else {
+        symValue = m[8];
+      }
+    } else {
+      symType = '';
+    }
+    prog = m[9];
+  } else {
+    parseError('lexer failure, unknown token')
+  }
+}
+
+// eval
+
+function evalFun(name, args, tree) {
+  var ret;
+  if (name == 'parseInt') {
+    ret = parseInt(args[0])
+  } else if (name == 'isNaN') {
+    ret = isNaN(args[0])
+  } else {
+    var fun = tree[name];
+    if (!fun) {
+      runError('unknown function ' + name);
+    }
+    var param = fun[0];
+    var vars = {};
+    var i = 0;
+    while (i < param.length) {
+      vars[param[i]] = args[i];
+      i = i + 1;
+    }
+    ret = evalStatement(fun[1], tree, vars);
+  }
+  return ret
+}
+
+function evalStatement(statement, tree, vars) {
+  var ret;
+  switch (statement[0]) {
+    case 'seq':
+      for (var i = 1; i < statement.length; i++) {
+        ret = evalStatement(statement[i], tree, vars);
+      }
+      break
+    case 'return':
+      ret = evalExpression(statement[1], tree, vars);
+      break
+    case 'if':
+      if (evalExpression(statement[1], tree, vars)) {
+        evalStatement(statement[2], tree, vars);
+      } else if (statement[3]) {
+        evalStatement(statement[3], tree, vars);
+      }
+      break
+    case 'while':
+      while (evalExpression(statement[1], tree, vars)) {
+        evalStatement(statement[2], tree, vars);
+      }
+      break
+    default:
+      ret = evalExpression(statement, tree, vars);
   }
   return ret;
 }
@@ -470,83 +553,6 @@ function evalExpression(expr, tree, vars) {
     default:
       runError('unhandled internal operator ' + expr[0]);
   }
-}
-
-function nextSym() {
-  symValue = undefined;
-  var m = prog.match('^((?:\\s*//[^\\n]*(?:\\n|$)+\\s*)*(?:(===|!==|==|!=|<=|>=|&&|\\|\\||[<>*/+-])|([\\]\\[();,={}!]|(?:var|if|else|while|function|return|undefined)\\b)|(\\.?)([a-zA-Z_][a-zA-Z0-9_]*)\\b|([0-9]+)\\b|\'((?:[^\'\\\\]|\\\\.)*)\'|"((?:[^"\\\\]|\\\\.)*)"|$)\\s*)((?:.|\\n)*?)$');
-  if (m) {
-    if (m[2]) {
-      symType = 'binop';
-      symValue = m[2];
-    } else if (m[3]) {
-      symType = m[3];
-    } else if (m[5]) {
-      if (m[4]) {
-        symType = 'method';
-      } else {
-        symType = 'ident';
-      }
-      symValue = m[5];
-    } else if ((m[6]) || (m[7] !== undefined) || (m[8] !== undefined)) {
-      symType = 'literal';
-      if (m[6]) {
-        symValue = parseInt(m[6]);
-        if (isNaN(symValue)) {
-          parseError('lexer failure, can\'t parse as integer');
-        }
-      } else if (m[7] !== undefined) {
-        symValue = m[7];
-      } else {
-        symValue = m[8];
-      }
-    } else {
-      symType = '';
-    }
-    prog = m[9];
-  } else {
-    parseError('lexer failure, unknown token')
-  }
-}
-
-function accept(needTyp) {
-  var value;
-  if (symType === needTyp) {
-    if (symValue === undefined) {
-      value = true;
-    } else {
-      value = symValue;
-    }
-    nextSym();
-  }
-  return value;
-}
-
-function expect(needTyp) {
-  var value = accept(needTyp);
-  if (value === undefined) {
-    var next = '';
-    if (symValue !== undefined) {
-      next = (' (' + symValue) + ')';
-    }
-    parseError((('expect: unexpected symbol ' + symType) + (next + ', expected: ')) + needTyp);
-  }
-  return value;
-}
-
-function parseError(msg) {
-  error(('parse error - ' + msg) + (', line remaining: ' + prog));
-}
-
-function runError(msg) {
-  error('runtime error ' + msg);
-}
-
-function error(msg) {
-  var out = document.getElementById('output');
-  out.classList.add('error');
-  out.value += msg + '\n';
-  throw new Error(msg);
 }
 
 init();
