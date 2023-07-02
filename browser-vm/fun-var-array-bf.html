@@ -442,20 +442,17 @@ function evalExprArgs(args, tree, vars) {
   return ret;
 }
 
+function getVar(expr, vars) {
+  if (!(vars.hasOwnProperty(expr[1]))) {
+    runError('trying to get undeclared variable ' + expr[1]);
+  }
+  return vars[expr[1]];
+}
+
 function evalExpression(expr, tree, vars) {
-  var e = function(i) {
-    return evalExpression(expr[i], tree, vars);
-  };
-  var getVar = function(n) {
-    if (vars.hasOwnProperty(n)) {
-      return vars[n];
-    }
-    runError('trying to get undeclared variable ' + n);
-  };
   var ret;
   var i;
   var arr;
-
   var f = expr[0];
   if (f == 'undefined') {
   } else if (f == 'literal') {
@@ -466,14 +463,14 @@ function evalExpression(expr, tree, vars) {
     ret = [];
     i = 1;
     while (i < expr.length) {
-      ret[i - 1] = e(i);
+      ret[i - 1] = evalExpression(expr[i], tree, vars);
       i = i + 1;
     }
   } else if (f == 'call') {
     ret = evalFun(expr[1], evalExprArgs(expr[2], tree, vars), tree);
   } else if (f == 'prop') {
     if (expr[2] == 'length') {
-      var arr = getVar(expr[1]);
+      var arr = getVar(expr, vars);
       ret = arr.length;
     } else {
       runError(('unknown property on ' + expr[1]) + (': ' + expr[2]));
@@ -488,7 +485,7 @@ function evalExpression(expr, tree, vars) {
     } else if (name == 'Object.keys') {
       ret = Object.keys(a[0]);
     } else {
-      arr = getVar(expr[1]);
+      arr = getVar(expr, vars);
       if (expr[2] == 'charCodeAt') {
         ret = arr.charCodeAt(a[0]);
       } else if (expr[2] == 'match') {
@@ -500,30 +497,30 @@ function evalExpression(expr, tree, vars) {
       }
     }
   } else if (f == 'arrget') {
-    var arr = getVar(expr[1]);
-    ret = arr[e(2)];
+    var arr = getVar(expr, vars);
+    ret = arr[evalExpression(expr[2], tree, vars)];
   } else if (f == 'arrset') {
-    var arr = getVar(expr[1]);
-    ret = arr[e(2)] = e(3);
+    var arr = getVar(expr, vars);
+    ret = arr[evalExpression(expr[2], tree, vars)] = evalExpression(expr[3], tree, vars);
   } else if (f == 'get') {
-    ret = getVar(expr[1]);
+    ret = getVar(expr, vars);
   } else if (f == 'set') {
     if (!vars.hasOwnProperty(expr[1])) {
       runError('trying to set undeclared variable ' + expr[1]);
     }
-    ret = vars[expr[1]] = e(2);
+    ret = vars[expr[1]] = evalExpression(expr[2], tree, vars);
   } else if (f == 'var') {
     if (vars.hasOwnProperty(expr[1])) {
       runError('may cause a bug if you redeclare function scope variable ' + expr[1]);
     }
     var val;
     if (expr.length > 2) {
-      val = e(2);
+      val = evalExpression(expr[2], tree, vars);
     }
     ret = vars[expr[1]] = val;
   } else {
-    var x = e(1);
-    var y = e(2);
+    var x = evalExpression(expr[1], tree, vars);
+    var y = evalExpression(expr[2], tree, vars);
 
     if (f == '!') {
       ret = !x
