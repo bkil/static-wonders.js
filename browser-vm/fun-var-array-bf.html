@@ -15,7 +15,7 @@ html, body {
 textarea {
   overflow-wrap: anywhere;
   width: 100%;
-  height: 40%;
+  height: calc(50% - 6em);
 }
 
 .error {
@@ -103,7 +103,7 @@ document.write(output)
 // ]]>
 </textarea>
 
-<h2>Output</h2>
+<div>Output</div>
 <textarea id=output></textarea>
 
 <button id=runButton type=button disabled>Run</button>
@@ -341,7 +341,7 @@ function accept(needTyp) {
 
 function nextSym() {
   symValue = undefined;
-  var m = prog.match('^((?:\\s*//[^\\n]*(?:\\n|$)+\\s*)*(?:(===|!==|==|!=|<=|>=|&&|\\|\\||[<>*/+-])|([\\]\\[();,={}!]|(?:var|if|else|while|function|return|undefined)\\b)|(\\.?)([a-zA-Z_][a-zA-Z0-9_]*)\\b|([0-9]+)\\b|\'((?:[^\'\\\\]|\\\\.)*)\'|"((?:[^"\\\\]|\\\\.)*)"|$)\\s*)((?:.|\\n)*?)$');
+  var m = prog.match('^((?:\\s*//[^\\n]*(?:\\n|$)+\\s*)*(?:(===|!==|==|!=|<=|>=|<<|>>|&&|\\|\\||[<>*/%+&|^-])|([\\]\\[();,={}!]|(?:var|if|else|while|function|return|undefined)\\b)|(\\.?)([a-zA-Z_][a-zA-Z0-9_]*)\\b|([0-9]+)\\b|\'((?:[^\'\\\\]|\\\\.)*)\'|"((?:[^"\\\\]|\\\\.)*)"|$)\\s*)((?:.|\\n)*?)$');
   if (m) {
     if (m[2]) {
       symType = 'binop';
@@ -403,29 +403,26 @@ function evalFun(name, args, tree) {
 
 function evalStatement(statement, tree, vars) {
   var ret;
-  switch (statement[0]) {
-    case 'seq':
-      for (var i = 1; i < statement.length; i++) {
-        ret = evalStatement(statement[i], tree, vars);
-      }
-      break
-    case 'return':
-      ret = evalExpression(statement[1], tree, vars);
-      break
-    case 'if':
-      if (evalExpression(statement[1], tree, vars)) {
-        evalStatement(statement[2], tree, vars);
-      } else if (statement[3]) {
-        evalStatement(statement[3], tree, vars);
-      }
-      break
-    case 'while':
-      while (evalExpression(statement[1], tree, vars)) {
-        evalStatement(statement[2], tree, vars);
-      }
-      break
-    default:
-      ret = evalExpression(statement, tree, vars);
+  if (statement[0] == 'seq') {
+    var i = 1;
+    while (i < statement.length) {
+      ret = evalStatement(statement[i], tree, vars);
+      i = i + 1
+    }
+  } else if (statement[0] == 'return') {
+    ret = evalExpression(statement[1], tree, vars);
+  } else if (statement[0] ==  'if') {
+    if (evalExpression(statement[1], tree, vars)) {
+      evalStatement(statement[2], tree, vars);
+    } else if (statement[3]) {
+      evalStatement(statement[3], tree, vars);
+    }
+  } else if (statement[0] == 'while') {
+    while (evalExpression(statement[1], tree, vars)) {
+      evalStatement(statement[2], tree, vars);
+    }
+  } else {
+    ret = evalExpression(statement, tree, vars);
   }
   return ret;
 }
@@ -454,105 +451,118 @@ function evalExpression(expr, tree, vars) {
   var i;
   var arr;
 
-  switch (expr[0]) {
-    case 'literal':
-      return expr[1];
-    case 'undefined':
-      return undefined;
-    case 'list':
-      ret = [];
-      i = 1;
-      while (i < expr.length) {
-        ret[i - 1] = e(i);
-        i = i + 1;
-      }
-      return ret;
-    case '!':
-      return !e(1)
-    case '===':
-      return e(1) === e(2)
-    case '!==':
-      return e(1) !== e(2)
-    case '==':
-      return e(1) == e(2)
-    case '!=':
-      return e(1) != e(2)
-    case '<':
-      return e(1) < e(2)
-    case '<=':
-      return e(1) <= e(2)
-    case '>':
-      return e(1) > e(2)
-    case '>=':
-      return e(1) >= e(2)
-    case '&&':
-      return e(1) && e(2)
-    case '||':
-      return e(1) || e(2)
-    case '+':
-      return e(1) + e(2)
-    case '-':
-      return e(1) - e(2)
-    case '*':
-      return e(1) * e(2)
-    case '/':
-      return e(1) / e(2)
-    case 'call':
-      return evalFun(expr[1], evalExprArgs(expr[2], tree, vars), tree);
-    case 'prop':
-      switch (expr[2]) {
-        case 'length':
-          var arr = getVar(expr[1]);
-          return arr.length;
-        default:
-          runError(('unknown property on ' + expr[1]) + (': ' + expr[2]));
-      }
-    case 'method':
-      var a = evalExprArgs(expr[3], tree, vars);
-      switch ((expr[1] + '.') + expr[2]) {
-        case 'document.write':
-          document.getElementById('output').value += a[0] + '\n';
-          return
-        case 'String.fromCharCode':
-          return String.fromCharCode(a[0]);
-        default:
-          var arr = getVar(expr[1]);
-          switch (expr[2]) {
-            case 'charCodeAt':
-              return arr.charCodeAt(a[0]);
-            case 'match':
-              return arr.match(a[0]);
-            case 'hasOwnProperty':
-              return arr.hasOwnProperty(a[0]);
-            default:
-              runError(('unknown method on ' + expr[1]) + (': ' + expr[2]));
-          }
-      }
-    case 'arrget':
+  var f = expr[0];
+  if (f == 'undefined') {
+  } else if (f == 'literal') {
+    ret = expr[1];
+  } else if (f == 'list') {
+    ret = [];
+    i = 1;
+    while (i < expr.length) {
+      ret[i - 1] = e(i);
+      i = i + 1;
+    }
+  } else if (f == 'call') {
+    ret = evalFun(expr[1], evalExprArgs(expr[2], tree, vars), tree);
+  } else if (f == 'prop') {
+    if (expr[2] == 'length') {
       var arr = getVar(expr[1]);
-      return arr[e(2)];
-    case 'arrset':
+      ret = arr.length;
+    } else {
+      runError(('unknown property on ' + expr[1]) + (': ' + expr[2]));
+    }
+  } else if (f == 'method') {
+    var a = evalExprArgs(expr[3], tree, vars);
+    var name = (expr[1] + '.') + expr[2];
+    if (name == 'document.write') {
+      document.getElementById('output').value += a[0] + '\n';
+    } else if (name == 'String.fromCharCode') {
+      ret = String.fromCharCode(a[0]);
+    } else {
+      arr = getVar(expr[1]);
+      if (expr[2] == 'charCodeAt') {
+        ret = arr.charCodeAt(a[0]);
+      } else if (expr[2] == 'match') {
+        ret = arr.match(a[0]);
+      } else if (expr[2] == 'hasOwnProperty') {
+        ret = arr.hasOwnProperty(a[0]);
+      } else {
+        runError(('unknown method on ' + expr[1]) + (': ' + expr[2]));
+      }
+    }
+  } else if (f == 'arrget') {
     var arr = getVar(expr[1]);
-      return arr[e(2)] = e(3);
-    case 'get':
-      return getVar(expr[1]);
-    case 'set':
-      if (!vars.hasOwnProperty(expr[1])) {
-        runError('trying to set undeclared variable ' + expr[1]);
-      }
-      return vars[expr[1]] = e(2);
-    case 'var':
-      if (vars.hasOwnProperty(expr[1])) {
-        runError('may cause a bug if you redeclare function scope variable ' + expr[1]);
-      }
-      var val;
-      if (expr.length > 2) {
-        val = e(2);
-      }
-      return vars[expr[1]] = val;
-    default:
-      runError('unhandled internal operator ' + expr[0]);
+    ret = arr[e(2)];
+  } else if (f == 'arrset') {
+    var arr = getVar(expr[1]);
+    ret = arr[e(2)] = e(3);
+  } else if (f == 'get') {
+    ret = getVar(expr[1]);
+  } else if (f == 'set') {
+    if (!vars.hasOwnProperty(expr[1])) {
+      runError('trying to set undeclared variable ' + expr[1]);
+    }
+    ret = vars[expr[1]] = e(2);
+  } else if (f == 'var') {
+    if (vars.hasOwnProperty(expr[1])) {
+      runError('may cause a bug if you redeclare function scope variable ' + expr[1]);
+    }
+    var val;
+    if (expr.length > 2) {
+      val = e(2);
+    }
+    ret = vars[expr[1]] = val;
+  } else {
+    var x = e(1);
+    var y = e(2);
+
+    if (f == '!') {
+      ret = !x
+    } else if (f == '===') {
+      ret = x === y
+    } else if (f == '!==') {
+      ret = x !== y
+    } else if (f == '==') {
+      ret = x == y
+    } else if (f == '!=') {
+      ret = x != y
+    } else if (f == '<') {
+      ret = x < y
+    } else if (f == '<=') {
+      ret = x <= y
+    } else if (f == '>') {
+      ret = x > y
+    } else if (f == '>=') {
+      ret = x >= y
+    } else if (f == '&&') {
+      ret = x && y
+    } else if (f == '||') {
+      ret = x || y
+    } else if (f == '&') {
+      ret = x & y
+    } else if (f == '|') {
+      ret = x | y
+    } else if (f == '^') {
+      ret = x ^ y
+    } else if (f == '<<') {
+      ret = x << y
+    } else if (f == '>>') {
+      ret = x >> y
+    } else if (f == '+') {
+      ret = x + y
+    } else if (f == '-') {
+      ret = x - y
+    } else if (f == '*') {
+      ret = x * y
+    } else if (f == '/') {
+      ret = x * y
+    } else if (f == '%') {
+      ret = x % y
+    } else {
+      runError('unhandled internal operator ' + f);
+    }
   }
+  return ret;
 }
 
 init();
