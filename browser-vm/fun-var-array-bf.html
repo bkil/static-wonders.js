@@ -27,7 +27,11 @@ textarea {
   resize: none;
 }
 
-.error {
+#errorPanel:not(.haveError) {
+  display: none;
+}
+
+#errorLog {
   background-color: #fcc;
 }
   </style>
@@ -35,10 +39,10 @@ textarea {
 <body>
 
 <div class=half>
-<div>
-  <span>Program source</span>
-  <button id=runButton type=button autofocus disabled>Run</button>
-</div>
+  <div>
+    <span>Program source</span>
+    <button id=runButton type=button autofocus disabled>Run</button>
+  </div>
 
 <textarea id=source>
 // <![CDATA[
@@ -87,8 +91,8 @@ function exec(program, read) {
     } else if (c == ",") {
       if (rp < read.length) {
         str = read[rp];
-        mem[mp] = str.charCodeAt(0);
         rp = rp + 1
+        mem[mp] = str.charCodeAt(0);
       } else {
         mem[mp] = 0
       }
@@ -118,9 +122,12 @@ document.write(output)
 </textarea>
 </div>
 
-<div class=half>
-  <div>Errors</div>
-  <textarea id=output></textarea>
+<div id=errorPanel class=half>
+  <div>
+    <span>Errors</span>
+    <button id=closeErrors type=button>Close</button>
+  </div>
+  <textarea id=errorLog></textarea>
 </div>
 
 <script>
@@ -135,15 +142,18 @@ function init() {
   var runBut = document.getElementById('runButton');
   runBut.onclick = run;
   runBut.disabled = false;
+  document.getElementById('closeErrors').onclick = closeErrors;
+}
+
+function closeErrors() {
+  document.getElementById('errorPanel').classList.remove('haveError');
 }
 
 function run() {
   prog = document.getElementById('source').value;
-  var out = document.getElementById('output');
-  out.classList.remove('error');
-  out.value = '';
+  closeErrors();
   var tree = parseProgram();
-  out.value = JSON.stringify(tree, null, 2) + '\n';
+  document.getElementById('errorLog').value = JSON.stringify(tree, null, 2) + '\n';
   evalFun('', [], tree, {});
 }
 
@@ -156,9 +166,9 @@ function runError(msg) {
 }
 
 function error(msg) {
-  var out = document.getElementById('output');
-  out.classList.add('error');
-  out.value += msg + '\n';
+  document.getElementById('errorPanel').classList.add('haveError');
+  var out = document.getElementById('errorLog');
+  out.value = msg + '\n' + out.value;
   throw new Error(msg);
 }
 
@@ -262,7 +272,6 @@ function parseExpression() {
 
 function parseTerm() {
   var ret = [];
-  var b;
   var value = accept('literal');
   if (value !== undefined) {
     ret = ['literal', value];
@@ -274,10 +283,9 @@ function parseTerm() {
   } else if (accept('[')) {
     ret = ['list'];
     if (!accept(']')) {
-      b = 1;
-      while (b) {
+      ret[ret.length] = parseExpression();
+      while (accept(',')) {
         ret[ret.length] = parseExpression();
-        b = accept(',');
       }
       expect(']');
     }
@@ -426,7 +434,7 @@ function evalStatement(statement, tree, vars) {
     var i = 1;
     while (i < statement.length) {
       ret = evalStatement(statement[i], tree, vars);
-      i = i + 1
+      i = i + 1;
     }
   } else if (statement[0] == 'return') {
     ret = evalExpression(statement[1], tree, vars);
