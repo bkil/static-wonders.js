@@ -35,8 +35,6 @@ textarea {
   <button onclick=run() type=button autofocus>Run</button>
 </div>
 
-<textarea id=source></textarea>
-
 <script id=interpreter>// <![CDATA[
 'use strict';
 function runProgram(program, href, html) {
@@ -463,8 +461,6 @@ function evalExpression(s, expr, vars) {
   } else if (f == 'undefined') {
   } else if (f == 'literal') {
     ret = expr[1];
-  } else if (f == '{}') {
-    ret = {};
   } else if (f == 'list') {
     ret = [];
     i = 1;
@@ -592,6 +588,15 @@ function evalExpression(s, expr, vars) {
 // ]]>
 </script>
 
+<textarea id=source>// <![CDATA[
+var l = window['location'];
+var d = document['documentElement'];
+runProgram(
+  "function f(n) { var r = 1; if (n > 1) r = f(n - 1) + f(n - 2); return r;} document.write(f(7))",
+  l['href'], d['innerHTML']);
+// ]]>
+</textarea>
+
 <script>// <![CDATA[
 'use strict';
 
@@ -602,11 +607,8 @@ function run() {
     document.documentElement.innerHTML);
 }
 
-var example =
-  ("var l = window['location']; var d = document['documentElement']; runProgram('" +
-  "function f(n) { var r = 1; if (n > 1) r = f(n - 1) + f(n - 2); return r} document.write(f(7))") +
-  "', l['href'], d['innerHTML']);";
-document.getElementById('source').value = document.getElementById('interpreter').textContent + example;
+document.getElementById('source').value = document.getElementById('interpreter').textContent +
+  document.getElementById('source').value;
 
 // ]]>
 </script>
