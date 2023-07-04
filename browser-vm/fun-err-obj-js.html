@@ -37,28 +37,10 @@ textarea {
 
 <script id=interpreter>// <![CDATA[
 'use strict';
-function runProgram(program, href, html) {
-  var s = {
-    'tree': parseProgram(program),
-    'global':
-      {
-        'window': {
-          'location': {
-            'href': href
-          }
-        },
-        'document': {
-          'documentElement': {
-            'innerHTML': html
-          }
-        }
-      }
-  };
-  evalFun(s, '', []);
-  if (s['throw'] !== undefined) {
-    document.write(' throw ' + s['throw'])
-  }
-  return 0
+
+function error(msg) {
+  document.write(msg);
+  throw 0;
 }
 
 function errorParsing(s, msg) {
@@ -69,117 +51,94 @@ function errorRunning(msg) {
   error('runtime error ' + msg);
 }
 
-function error(msg) {
-  document.write(msg);
-  throw 0;
+// lexer
+
+function nextSym(s) {
+  s['symValue'] = undefined;
+  var prog = s['prog'];
+  var m = prog.match('^((?:\\s*//[^\\n]*(?:\\n|$)+\\s*)*(?:(===|!==|==|!=|<=|>=|<<|>>|&&|\\|\\||[<>*/%+&|^-])|([\\]\\[();,={}!:]|(?:var|if|else|while|function|return|throw|try|catch|undefined)\\b)|(\\.?)([a-zA-Z_][a-zA-Z0-9_]*)\\b|([0-9]+)\\b|\'((?:[^\'\\\\]|\\\\.)*)\'|"((?:[^"\\\\]|\\\\.)*)"|$)\\s*)((?:.|\\n)*?)$');
+  if (m) {
+    if (m[2]) {
+      s['symType'] = 'binop';
+      s['symValue'] = m[2];
+    } else if (m[3]) {
+      s['symType'] = m[3];
+    } else if (m[5]) {
+      if (m[4]) {
+        s['symType'] = 'method';
+      } else {
+        s['symType'] = 'ident';
+      }
+      s['symValue'] = m[5];
+    } else if ((m[6] || (m[7] !== undefined)) || (m[8] !== undefined)) {
+      s['symType'] = 'literal';
+      if (m[6]) {
+        s['symValue'] = parseInt(m[6]);
+        if (isNaN(s['symValue'])) {
+          errorParsing(s, 'lexer failure, can\'t parse as integer');
+        }
+      } else {
+        var raw;
+        if (m[7] !== undefined) {
+          raw = m[7];
+        } else {
+          raw = m[8];
+        }
+
+        var dec = '';
+        var i = 0;
+        while (i < raw.length) {
+          if (raw[i] == '\\') {
+            i = i + 1;
+          }
+          if (i < raw.length) {
+            dec = dec + raw[i];
+          }
+          i = i + 1;
+        }
+        s['symValue'] = dec;
+      }
+    } else {
+      s['symType'] = '';
+    }
+    s['prog'] = m[9];
+  } else {
+    errorParsing(s, 'lexer failure, unknown token')
+  }
+}
+
+function accept(s, needTyp) {
+  var value;
+  if (s['symType'] === needTyp) {
+    if (s['symValue'] === undefined) {
+      value = 1;
+    } else {
+      value = s['symValue'];
+    }
+    nextSym(s);
+  }
+  return value;
+}
+
+function expect(s, needTyp) {
+  var value = accept(s, needTyp);
+  if (value === undefined) {
+    var next = '';
+    if (s['symValue'] !== undefined) {
+      next = (' (' + s['symValue']) + ')';
+    }
+    errorParsing(s, (('expect: unexpected symbol ' + s['symType']) + (next + ', expected: ')) + needTyp);
+  }
+  return value;
 }
 
 // parser
 
-function parseProgram(program) {
-  var s = {};
-  s['prog'] = program;
-  var ret = {};
-  nextSym(s);
-  var mainBody = ['seq'];
-  while (!accept(s, '')) {
-    if (accept(s, 'function')) {
-      var name = expect(s, 'ident');
-      expect(s, '(');
-      var param = [];
-      if (!accept(s, ')')) {
-        param[param.length] = expect(s, 'ident');
-        while (accept(s, ',')) {
-          param[param.length] = expect(s, 'ident');
-        }
-        expect(s, ')');
-      }
-      expect(s, '{');
-      var body = ['seq'];
-      var b = 1;
-      var statement;
-      while (b) {
-        if (accept(s, 'return')) {
-          statement = ['return', parseExpression(s)];
-          accept(s, ';');
-          expect(s, '}');
-          b = 0;
-        } else if (accept(s, '}')) {
-          b = 0;
-        } else {
-          statement = parseStatement(s);
-        }
-        body[body.length] = statement;
-      }
-      ret[name] = [param, body];
-    } else {
-      mainBody[mainBody.length] = parseStatement(s);
-    }
-  }
-  ret[''] = [[], mainBody];
-  return ret;
-}
-
-function parseStatements(s) {
-  var ret;
-  if (accept(s, '{')) {
-    ret = ['seq'];
-    while (!accept(s, '}')) {
-      ret[ret.length] = parseStatement(s);
-    };
-  } else {
-    ret = parseStatement(s);
-  }
-  return ret;
-}
-
-function parseStatement(s) {
-  var ret;
-  if (accept(s, 'if')) {
-    expect(s, '(');
-    var ifCond = parseExpression(s);
-    expect(s, ')');
-    ret = ['if', ifCond, parseStatements(s)];
-    if (accept(s, 'else')) {
-      ret[ret.length] = parseStatements(s);
-    }
-  } else if (accept(s, 'while')) {
-    expect(s, '(');
-    var whileCond = parseExpression(s);
-    expect(s, ')');
-    ret = ['while', whileCond, parseStatements(s)];
-  } else if (accept(s, 'throw')) {
-    ret = ['throw', parseExpression(s)];
-  } else if (accept(s, 'try')) {
-    var tried = parseStatements(s);
-    expect(s, 'catch');
-    expect(s, '(');
-    var name = expect(s, 'ident');
-    expect(s, ')');
-    ret = ['try', tried, name, parseStatements(s)];
-  } else if (accept(s, 'var')) {
-    ret = ['var', expect(s, 'ident')];
-    if (accept(s, '=')) {
-      ret[ret.length] = parseExpression(s);
-    }
-  } else {
-    ret = parseExpression(s);
-  }
-  accept(s, ';');
-  return ret;
-}
-
-function parseExpression(s) {
-  var ret;
-  if (accept(s, '!')) {
-    ret = ['!', parseTerm(s)];
-  } else {
-    ret = parseTerm(s);
-    var value = accept(s, 'binop');
-    if (value) {
-      ret = [value, ret, parseTerm(s)];
-    }
-  }
+function parseEntry(s) {
+  var ret = [];
+  ret[ret.length] = expect(s, 'literal');
+  expect(s, ':');
+  ret[ret.length] = parseExpression(s);
   return ret;
 }
 
@@ -258,160 +217,114 @@ function parseTerm(s) {
   return ret;
 }
 
-function parseEntry(s) {
-  var ret = [];
-  ret[ret.length] = expect(s, 'literal');
-  expect(s, ':');
-  ret[ret.length] = parseExpression(s);
+function parseExpression(s) {
+  var ret;
+  if (accept(s, '!')) {
+    ret = ['!', parseTerm(s)];
+  } else {
+    ret = parseTerm(s);
+    var value = accept(s, 'binop');
+    if (value) {
+      ret = [value, ret, parseTerm(s)];
+    }
+  }
   return ret;
 }
 
-// lexer
-
-function expect(s, needTyp) {
-  var value = accept(s, needTyp);
-  if (value === undefined) {
-    var next = '';
-    if (s['symValue'] !== undefined) {
-      next = (' (' + s['symValue']) + ')';
+function parseStatement(s) {
+  var ret;
+  if (accept(s, 'if')) {
+    expect(s, '(');
+    var ifCond = parseExpression(s);
+    expect(s, ')');
+    ret = ['if', ifCond, parseStatements(s)];
+    if (accept(s, 'else')) {
+      ret[ret.length] = parseStatements(s);
     }
-    errorParsing(s, (('expect: unexpected symbol ' + s['symType']) + (next + ', expected: ')) + needTyp);
-  }
-  return value;
-}
-
-function accept(s, needTyp) {
-  var value;
-  if (s['symType'] === needTyp) {
-    if (s['symValue'] === undefined) {
-      value = 1;
-    } else {
-      value = s['symValue'];
+  } else if (accept(s, 'while')) {
+    expect(s, '(');
+    var whileCond = parseExpression(s);
+    expect(s, ')');
+    ret = ['while', whileCond, parseStatements(s)];
+  } else if (accept(s, 'throw')) {
+    ret = ['throw', parseExpression(s)];
+  } else if (accept(s, 'try')) {
+    var tried = parseStatements(s);
+    expect(s, 'catch');
+    expect(s, '(');
+    var name = expect(s, 'ident');
+    expect(s, ')');
+    ret = ['try', tried, name, parseStatements(s)];
+  } else if (accept(s, 'var')) {
+    ret = ['var', expect(s, 'ident')];
+    if (accept(s, '=')) {
+      ret[ret.length] = parseExpression(s);
     }
-    nextSym(s);
-  }
-  return value;
-}
-
-function nextSym(s) {
-  s['symValue'] = undefined;
-  var prog = s['prog'];
-  var m = prog.match('^((?:\\s*//[^\\n]*(?:\\n|$)+\\s*)*(?:(===|!==|==|!=|<=|>=|<<|>>|&&|\\|\\||[<>*/%+&|^-])|([\\]\\[();,={}!:]|(?:var|if|else|while|function|return|throw|try|catch|undefined)\\b)|(\\.?)([a-zA-Z_][a-zA-Z0-9_]*)\\b|([0-9]+)\\b|\'((?:[^\'\\\\]|\\\\.)*)\'|"((?:[^"\\\\]|\\\\.)*)"|$)\\s*)((?:.|\\n)*?)$');
-  if (m) {
-    if (m[2]) {
-      s['symType'] = 'binop';
-      s['symValue'] = m[2];
-    } else if (m[3]) {
-      s['symType'] = m[3];
-    } else if (m[5]) {
-      if (m[4]) {
-        s['symType'] = 'method';
-      } else {
-        s['symType'] = 'ident';
-      }
-      s['symValue'] = m[5];
-    } else if ((m[6] || (m[7] !== undefined)) || (m[8] !== undefined)) {
-      s['symType'] = 'literal';
-      if (m[6]) {
-        s['symValue'] = parseInt(m[6]);
-        if (isNaN(s['symValue'])) {
-          errorParsing(s, 'lexer failure, can\'t parse as integer');
-        }
-      } else {
-        var raw;
-        if (m[7] !== undefined) {
-          raw = m[7];
-        } else {
-          raw = m[8];
-        }
-
-        var dec = '';
-        var i = 0;
-        while (i < raw.length) {
-          if (raw[i] == '\\') {
-            i = i + 1;
-          }
-          if (i < raw.length) {
-            dec = dec + raw[i];
-          }
-          i = i + 1;
-        }
-        s['symValue'] = dec;
-      }
-    } else {
-      s['symType'] = '';
-    }
-    s['prog'] = m[9];
   } else {
-    errorParsing(s, 'lexer failure, unknown token')
+    ret = parseExpression(s);
   }
+  accept(s, ';');
+  return ret;
+}
+
+function parseStatements(s) {
+  var ret;
+  if (accept(s, '{')) {
+    ret = ['seq'];
+    while (!accept(s, '}')) {
+      ret[ret.length] = parseStatement(s);
+    };
+  } else {
+    ret = parseStatement(s);
+  }
+  return ret;
+}
+
+function parseProgram(program) {
+  var s = {};
+  s['prog'] = program;
+  var ret = {};
+  nextSym(s);
+  var mainBody = ['seq'];
+  while (!accept(s, '')) {
+    if (accept(s, 'function')) {
+      var name = expect(s, 'ident');
+      expect(s, '(');
+      var param = [];
+      if (!accept(s, ')')) {
+        param[param.length] = expect(s, 'ident');
+        while (accept(s, ',')) {
+          param[param.length] = expect(s, 'ident');
+        }
+        expect(s, ')');
+      }
+      expect(s, '{');
+      var body = ['seq'];
+      var b = 1;
+      var statement;
+      while (b) {
+        if (accept(s, 'return')) {
+          statement = ['return', parseExpression(s)];
+          accept(s, ';');
+          expect(s, '}');
+          b = 0;
+        } else if (accept(s, '}')) {
+          b = 0;
+        } else {
+          statement = parseStatement(s);
+        }
+        body[body.length] = statement;
+      }
+      ret[name] = [param, body];
+    } else {
+      mainBody[mainBody.length] = parseStatement(s);
+    }
+  }
+  ret[''] = [[], mainBody];
+  return ret;
 }
 
 // eval
-
-function evalFun(s, name, args) {
-  var ret;
-  if (name == 'parseInt') {
-    ret = parseInt(args[0])
-  } else if (name == 'isNaN') {
-    ret = isNaN(args[0])
-  } else {
-    var tree = s['tree'];
-    var fun = tree[name];
-    if (!fun) {
-      errorRunning('unknown function ' + name);
-    }
-    ret = evalStatement(s, fun[1], makeScope(s, fun[0], args, {}));
-  }
-  return ret
-}
-
-function makeScope(s, param, args, vars) {
-  var ret = {};
-  var i = 0;
-  while (i < param.length) {
-    ret[param[i]] = args[i];
-    i = i + 1;
-  }
-  ret[''] = vars;
-  return ret;
-}
-
-function evalStatement(s, statement, vars) {
-  var ret;
-  if (s['throw'] !== undefined) {
-  } else if (statement[0] == 'try') {
-    ret = evalStatement(s, statement[1], vars);
-    if (s['throw'] !== undefined) {
-      var scope = makeScope(s, [statement[2]], [s['throw']], vars);
-      s['throw'] = undefined;
-      ret = evalStatement(s, statement[3], scope);
-    }
-  } else if (statement[0] == 'seq') {
-    var i = 1;
-    while (i < statement.length) {
-      ret = evalStatement(s, statement[i], vars);
-      i = i + 1;
-    }
-  } else if (statement[0] == 'return') {
-    ret = evalExpression(s, statement[1], vars);
-  } else if (statement[0] ==  'if') {
-    if (evalExpression(s, statement[1], vars)) {
-      evalStatement(s, statement[2], vars);
-    } else if (statement[3]) {
-      evalStatement(s, statement[3], vars);
-    }
-  } else if (statement[0] == 'while') {
-    while (evalExpression(s, statement[1], vars)) {
-      evalStatement(s, statement[2], vars);
-    }
-  } else if (statement[0] == 'throw') {
-    s['throw'] = evalExpression(s, statement[1], vars);
-  } else {
-    ret = evalExpression(s, statement, vars);
-  }
-  return ret;
-}
 
 function evalExprArgs(s, args, vars) {
   var ret = [];
@@ -585,6 +498,94 @@ function evalExpression(s, expr, vars) {
   return ret;
 }
 
+function makeScope(s, param, args, vars) {
+  var ret = {};
+  var i = 0;
+  while (i < param.length) {
+    ret[param[i]] = args[i];
+    i = i + 1;
+  }
+  ret[''] = vars;
+  return ret;
+}
+
+function evalStatement(s, statement, vars) {
+  var ret;
+  if (s['throw'] !== undefined) {
+  } else if (statement[0] == 'try') {
+    ret = evalStatement(s, statement[1], vars);
+    if (s['throw'] !== undefined) {
+      var scope = makeScope(s, [statement[2]], [s['throw']], vars);
+      s['throw'] = undefined;
+      ret = evalStatement(s, statement[3], scope);
+    }
+  } else if (statement[0] == 'seq') {
+    var i = 1;
+    while (i < statement.length) {
+      ret = evalStatement(s, statement[i], vars);
+      i = i + 1;
+    }
+  } else if (statement[0] == 'return') {
+    ret = evalExpression(s, statement[1], vars);
+  } else if (statement[0] ==  'if') {
+    if (evalExpression(s, statement[1], vars)) {
+      evalStatement(s, statement[2], vars);
+    } else if (statement[3]) {
+      evalStatement(s, statement[3], vars);
+    }
+  } else if (statement[0] == 'while') {
+    while (evalExpression(s, statement[1], vars)) {
+      evalStatement(s, statement[2], vars);
+    }
+  } else if (statement[0] == 'throw') {
+    s['throw'] = evalExpression(s, statement[1], vars);
+  } else {
+    ret = evalExpression(s, statement, vars);
+  }
+  return ret;
+}
+
+function evalFun(s, name, args) {
+  var ret;
+  if (name == 'parseInt') {
+    ret = parseInt(args[0])
+  } else if (name == 'isNaN') {
+    ret = isNaN(args[0])
+  } else {
+    var tree = s['tree'];
+    var fun = tree[name];
+    if (!fun) {
+      errorRunning('unknown function ' + name);
+    }
+    ret = evalStatement(s, fun[1], makeScope(s, fun[0], args, {}));
+  }
+  return ret
+}
+
+function runProgram(program, href, html) {
+  var s = {
+    'tree': parseProgram(program),
+    'global':
+      {
+        'window': {
+          'location': {
+            'href': href
+          }
+        },
+        'document': {
+          'documentElement': {
+            'innerHTML': html
+          }
+        }
+      }
+  };
+  evalFun(s, '', []);
+  if (s['throw'] !== undefined) {
+    document.write(' throw ' + s['throw'])
+  }
+  return 0
+}
+
 // ]]>
 </script>
 
@@ -612,7 +613,6 @@ document.getElementById('source').value = document.getElementById('interpreter')
 
 // ]]>
 </script>
-
 
 </body>
 </html>
