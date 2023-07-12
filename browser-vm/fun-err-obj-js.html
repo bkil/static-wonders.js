@@ -301,19 +301,17 @@ function parseProgram(program) {
       expect(s, '{');
       var body = ['seq'];
       var b = 1;
-      var statement;
       while (b) {
         if (accept(s, 'return')) {
-          statement = ['return', parseExpression(s)];
+          body[body.length] = ['return', parseExpression(s)];
           accept(s, ';');
           expect(s, '}');
           b = 0;
         } else if (accept(s, '}')) {
           b = 0;
         } else {
-          statement = parseStatement(s);
+          body[body.length] = parseStatement(s);
         }
-        body[body.length] = statement;
       }
       ret[name] = [param, body];
     } else {
