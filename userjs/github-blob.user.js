@@ -6,7 +6,7 @@
 // @match       https://github.com/*/blob/*
 // @match       https://github.com/*/tree/*
 // @grant       none
-// @version     2023.7.2
+// @version     2023.7.3
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -38,6 +38,8 @@ function init() {
   if (j && j.payload) {
     if (j.payload.blob && j.payload.blob.rawBlob) {
       res.appendChild(getPre(j.payload.blob.rawBlob));
+    } else if (j.payload.blob && j.payload.blob.rawLines) {
+      res.appendChild(getPre(j.payload.blob.rawLines.join('\n')));
     } else if (j.payload.blob && j.payload.blob.richText) {
       processRich(res, j.payload.blob.richText);
     } else {
