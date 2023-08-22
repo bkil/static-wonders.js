@@ -6,7 +6,7 @@
 // @match       https://github.com/*/blob/*
 // @match       https://github.com/*/tree/*
 // @grant       none
-// @version     2023.7.3
+// @version     2023.8.1
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -63,6 +63,8 @@ function init() {
 
 function processRich(out, text) {
   var div = document.createElement('div');
+  div.style.wordWrap = 'anywhere';
+  div.style.overflowWrap = 'anywhere';
   div.innerHTML = text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
