@@ -6,7 +6,7 @@
 // @match       https://github.com/*/blob/*
 // @match       https://github.com/*/tree/*
 // @grant       none
-// @version     2023.9.1
+// @version     2023.9.2
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -78,6 +78,10 @@ function processRich(out, text) {
     .replace(/&lt;a( id=)&quot;user-content-([0-9A-Za-z_-]+)&quot;&gt;(.+?)&lt;\/a&gt;/g, '<a$1$2 href="#$2"> link </a> $3')
     .replace(/&lt;a(?:( id=)&quot;user-content-([0-9A-Za-z_-]+)&quot;)?(?: (?:[^&]|&amp;|&quot;)*?)? href=&quot;#((?:[^&]|&amp;)*)&quot;(?:[^&]|&amp;|&quot;)*?&gt;(.+?)&lt;\/a&gt;/g, '<a$1$2 href="#$3">$4</a>')
     .replace(/&lt;a(?:( id=)&quot;user-content-([0-9A-Za-z_-]+)&quot;)?(?: (?:[^&]|&amp;|&quot;)*?)? href=&quot;((?:[^&]|&amp;)*)&quot;(?:[^&]|&amp;|&quot;)*?&gt;(.+?)&lt;\/a&gt;/g, '<a$1$2 href="$3" target=_blank rel=noreferrer>$4</a>')
+    .replace(/&amp;lt;/g, '&lt;')
+    .replace(/&amp;gt;/g, '&gt;')
+    .replace(/&amp;quot;/g, '&quot;')
+    .replace(/&amp;amp;/g, '&amp;')
     ;
   out.appendChild(div);
 }
