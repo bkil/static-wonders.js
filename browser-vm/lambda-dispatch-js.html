@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Fibonacci on meta-circular JavaScript subset self-interpreter</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;, />
+  <meta property='og:description' content='Minimalist client side scripting evaluator experiment of gemini-web' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=no-referrer>
+  <style>
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+textarea {
+  flex-grow: 1;
+}
+
+textarea {
+  overflow-wrap: anywhere;
+  resize: none;
+}
+  </style>
+</head>
+<body>
+
+<div>
+  <span>Program source</span>
+  <button onclick=run() type=button autofocus>Run</button>
+</div>
+
+<script id=interpreter>// <![CDATA[
+'use strict';
+
+function error(msg) {
+  document.write(msg);
+  throw 0;
+}
+
+function errorParsing(s, msg) {
+  error(('parse error - ' + msg) + (', line remaining: ' + s['prog']));
+}
+
+function errorRunning(msg) {
+  error('runtime error ' + msg);
+}
+
+// lexer
+
+function nextSym(s) {
+  s['symValue'] = undefined;
+  var prog = s['prog'];
+  var m = prog.match('^((?:\\s*//[^\\n]*(?:\\n|$)+\\s*)*(?:(===|!==|==|!=|<=|>=|<<|>>|&&|\\|\\||[<>*/%+&|^-])|([\\]\\[();,={}!:]|(?:var|if|else|while|function|return|throw|try|catch|undefined)\\b)|(\\.?)([a-zA-Z_][a-zA-Z0-9_]*)\\b|([0-9]+)\\b|\'((?:[^\'\\\\]|\\\\.)*)\'|"((?:[^"\\\\]|\\\\.)*)"|$)\\s*)((?:.|\\n)*?)$');
+  if (m) {
+    if (m[2]) {
+      s['symType'] = 'binop';
+      s['symValue'] = m[2];
+    } else if (m[3]) {
+      s['symType'] = m[3];
+    } else if (m[5]) {
+      if (m[4]) {
+        s['symType'] = 'method';
+      } else {
+        s['symType'] = 'ident';
+      }
+      s['symValue'] = m[5];
+    } else if ((m[6] || (m[7] !== undefined)) || (m[8] !== undefined)) {
+      s['symType'] = 'literal';
+      if (m[6]) {
+        s['symValue'] = parseInt(m[6]);
+        if (isNaN(s['symValue'])) {
+          errorParsing(s, 'lexer failure, can\'t parse as integer');
+        }
+      } else {
+        var raw;
+        if (m[7] !== undefined) {
+          raw = m[7];
+        } else {
+          raw = m[8];
+        }
+
+        var dec = '';
+        var i = 0;
+        while (i < raw.length) {
+          if (raw[i] == '\\') {
+            i = i + 1;
+          }
+          if (i < raw.length) {
+            dec = dec + raw[i];
+          }
+          i = i + 1;
+        }
+        s['symValue'] = dec;
+      }
+    } else {
+      s['symType'] = '';
+    }
+    s['prog'] = m[9];
+  } else {
+    errorParsing(s, 'lexer failure, unknown token')
+  }
+}
+
+function accept(s, needTyp) {
+  var value;
+  if (s['symType'] === needTyp) {
+    if (s['symValue'] === undefined) {
+      value = 1;
+    } else {
+      value = s['symValue'];
+    }
+    nextSym(s);
+  }
+  return value;
+}
+
+function expect(s, needTyp) {
+  var value = accept(s, needTyp);
+  if (value === undefined) {
+    var next = '';
+    if (s['symValue'] !== undefined) {
+      next = (' (' + s['symValue']) + ')';
+    }
+    errorParsing(s, (('expect: unexpected symbol ' + s['symType']) + (next + ', expected: ')) + needTyp);
+  }
+  return value;
+}
+
+// parser
+
+function parseEntry(s) {
+  var ret = [];
+  ret[ret.length] = expect(s, 'literal');
+  expect(s, ':');
+  ret[ret.length] = parseExpression(s);
+  return ret;
+}
+
+function parseTerm(s) {
+  var ret;
+  var args;
+  var value = accept(s, 'literal');
+  if (value !== undefined) {
+    ret = function(e, vars) { return value }
+  } else if (accept(s, 'undefined')) {
+    ret = function(e, vars) { return undefined }
+  } else if (accept(s, '[')) {
+    args = [];
+    if (!accept(s, ']')) {
+      args[args.length] = parseExpression(s);
+      while (accept(s, ',')) {
+        args[args.length] = parseExpression(s);
+      }
+      expect(s, ']');
+    }
+    ret = function(e, vars) {
+      var ret = [];
+      var i = 0;
+      while (i < args.length) {
+        ret[i] = evalExpression(e, args[i], vars);
+        i = i + 1;
+      }
+      return ret
+    }
+  } else if (accept(s, '{')) {
+    args = [];
+    if (!accept(s, '}')) {
+      args[args.length] = parseEntry(s);
+      while (accept(s, ',')) {
+        args[args.length] = parseEntry(s);
+      }
+      expect(s, '}');
+    }
+    ret = function(e, vars) {
+      var ret = {};
+      var i = 0;
+      while (i < args.length) {
+        var kv = args[i];
+        ret[kv[0]] = evalExpression(e, kv[1], vars);
+        i = i + 1;
+      }
+      return ret
+    }
+  } else if (accept(s, '(')) {
+    ret = parseExpression(s);
+    expect(s, ')');
+  } else if (accept(s, 'function')) {
+    ret = parseFun(s);
+  } else {
+    var name = expect(s, 'ident');
+    var method = accept(s, 'method');
+    if (accept(s, '(')) {
+      var param = [];
+      if (!accept(s, ')')) {
+        param[param.length] = parseExpression(s);
+        while (accept(s, ',')) {
+          param[param.length] = parseExpression(s);
+        }
+        expect(s, ')');
+      }
+      if (method) {
+        ret = function(e, vars) {
+          var ret;
+          var arr;
+          var a = evalExprArgs(e, param, vars);
+          var full = (name + '.') + method;
+          if (full == 'document.write') {
+            document.write(a[0]);
+          } else if (full == 'String.fromCharCode') {
+            ret = String.fromCharCode(a[0]);
+          } else if (full == 'Object.keys') {
+            ret = Object.keys(a[0]);
+          } else {
+            arr = setVar(e, name, vars);
+            if (method == 'charCodeAt') {
+              ret = arr.charCodeAt(a[0]);
+            } else if (method == 'match') {
+              ret = arr.match(a[0]);
+            } else if (method == 'hasOwnProperty') {
+              ret = arr.hasOwnProperty(a[0]);
+            } else {
+              errorRunning(('unknown method on ' + name) + (': ' + method));
+            }
+          }
+          return ret
+        }
+      } else {
+        ret = function(e, vars) {
+          return evalFun(e, name, evalExprArgs(e, param, vars), vars)
+        }
+      }
+    } else {
+      var idx;
+      if (method) {
+        ret = function(e, vars) {
+          var ret;
+          if (method == 'length') {
+            var arr = setVar(e, name, vars);
+            ret = arr.length;
+          } else {
+            errorRunning(('unknown property on ' + name) + (': ' + method));
+          }
+          return ret
+        }
+      } else {
+        if (accept(s, '[')) {
+          idx = parseExpression(s);
+          expect(s, ']');
+        }
+        if (accept(s, '=')) {
+          var set = parseExpression(s);
+          if (idx) {
+            ret = function(e, vars) {
+              var arr = setVar(e, name, vars);
+              return arr[evalExpression(e, idx, vars)] = evalExpression(e, set, vars);
+            }
+          } else {
+            ret = function(e, vars) {
+              return setVar(e, name, vars, 1, evalExpression(e, set, vars));
+            }
+          }
+        } else {
+          if (idx) {
+            ret = function(e, vars) {
+              var arr = setVar(e, name, vars);
+              return arr[evalExpression(e, idx, vars)];
+            }
+          } else {
+            ret = function(e, vars) {
+              return setVar(e, name, vars)
+            }
+          }
+        }
+      }
+    }
+  }
+  return ret;
+}
+
+function parseExpression(s) {
+  var ret;
+  var fx;
+  if (accept(s, '!')) {
+    fx = parseTerm(s);
+    ret = function(e, vars) {
+      return !evalExpression(e, fx, vars)
+    }
+  } else {
+    fx = parseTerm(s);
+    var f = accept(s, 'binop');
+    if (f) {
+      var fy = parseTerm(s);
+      ret = function(e, vars) {
+        var x = evalExpression(e, fx, vars);
+        var y = evalExpression(e, fy, vars);
+        if (f == '===') {
+          ret = x === y
+        } else if (f == '!==') {
+          ret = x !== y
+        } else if (f == '==') {
+          ret = x == y
+        } else if (f == '!=') {
+          ret = x != y
+        } else if (f == '<') {
+          ret = x < y
+        } else if (f == '<=') {
+          ret = x <= y
+        } else if (f == '>') {
+          ret = x > y
+        } else if (f == '>=') {
+          ret = x >= y
+        } else if (f == '&&') {
+          ret = x && y
+        } else if (f == '||') {
+          ret = x || y
+        } else if (f == '&') {
+          ret = x & y
+        } else if (f == '|') {
+          ret = x | y
+        } else if (f == '^') {
+          ret = x ^ y
+        } else if (f == '<<') {
+          ret = x << y
+        } else if (f == '>>') {
+          ret = x >> y
+        } else if (f == '+') {
+          ret = x + y
+        } else if (f == '-') {
+          ret = x - y
+        } else if (f == '*') {
+          ret = x * y
+        } else if (f == '/') {
+          ret = x * y
+        } else if (f == '%') {
+          ret = x % y
+        } else {
+          errorRunning('unhandled internal operator ' + f);
+        }
+        return ret
+      }
+    } else {
+      ret = function(e, vars) {
+        return evalExpression(e, fx, vars)
+      }
+    }
+  }
+  return ret;
+}
+
+function parseStatement(s) {
+  var ret;
+  var arg;
+  var name;
+  var cond;
+  var body;
+  if (accept(s, 'if')) {
+    expect(s, '(');
+    cond = parseExpression(s);
+    expect(s, ')');
+    body = parseStatements(s);
+    var els;
+    if (accept(s, 'else')) {
+      els = parseStatements(s);
+    }
+    ret = function(e, vars) {
+      if (evalExpression(e, cond, vars)) {
+        evalExpression(e, body, vars);
+      } else if (els) {
+        evalExpression(e, els, vars);
+      }
+    }
+  } else if (accept(s, 'while')) {
+    expect(s, '(');
+    cond = parseExpression(s);
+    expect(s, ')');
+    body = parseStatements(s);
+
+    ret = function(e, vars) {
+      while (evalExpression(e, cond, vars)) {
+        evalExpression(e, body, vars);
+      }
+    }
+  } else if (accept(s, 'throw')) {
+    arg = parseExpression(s);
+    ret = function(e, vars) {
+      e['throw'] = evalExpression(e, arg, vars);
+   };
+  } else if (accept(s, 'try')) {
+    cond = parseStatements(s);
+    expect(s, 'catch');
+    expect(s, '(');
+    name = expect(s, 'ident');
+    expect(s, ')');
+    body = parseStatements(s);
+    ret = function(e, vars) {
+      var ret = evalExpression(e, cond, vars);
+      if (e['throw'] !== undefined) {
+        var scope = makeScope(e, [name], [e['throw']], vars);
+        e['throw'] = undefined;
+        ret = evalExpression(e, body, scope);
+      }
+      return ret
+    }
+  } else if (accept(s, 'var')) {
+    name = expect(s, 'ident');
+    if (accept(s, '=')) {
+      body = parseExpression(s);
+    }
+    ret = evalSetVar(name, body);
+  } else if (accept(s, 'function')) {
+    ret = evalSetVar(expect(s, 'ident'), parseFun(s));
+  } else {
+    ret = parseExpression(s);
+  }
+  accept(s, ';');
+  return ret;
+}
+
+function evalSetVar(name, set) {
+  return function(e, vars) {
+    if (vars.hasOwnProperty(name)) {
+      errorRunning('may cause a bug if you redeclare function scope variable ' + name);
+    }
+    var val;
+    if (set) {
+      val = evalExpression(e, set, vars);
+    }
+    return vars[name] = val
+  }
+}
+
+function parseStatements(s) {
+  var ret;
+  if (accept(s, '{')) {
+    ret = [];
+    while (!accept(s, '}')) {
+      ret[ret.length] = parseStatement(s);
+    };
+    ret = evalSeq(ret)
+  } else {
+    ret = parseStatement(s);
+  }
+  return ret;
+}
+
+function parseFun(s) {
+  expect(s, '(');
+  var param = [];
+  if (!accept(s, ')')) {
+    param[param.length] = expect(s, 'ident');
+    while (accept(s, ',')) {
+      param[param.length] = expect(s, 'ident');
+    }
+    expect(s, ')');
+  }
+
+  expect(s, '{');
+  var body = [];
+  var b = 1;
+  var fin;
+  while (b) {
+    if (accept(s, 'return')) {
+      fin = parseExpression(s);
+      body[body.length] = function(e, vars) {
+        return evalExpression(e, fin, vars)
+      }
+      accept(s, ';');
+      expect(s, '}');
+      b = 0;
+    } else if (accept(s, '}')) {
+      b = 0;
+    } else {
+      body[body.length] = parseStatement(s);
+    }
+  }
+  return function(e0, vars0) {
+    return function(e, args, vars) {
+      var eb = evalSeq(body);
+      return eb(e, makeScope(e, param, args, vars0))
+    }
+  }
+}
+
+function parseProgram(program) {
+  var ret = [];
+  var s = {};
+  s['prog'] = program;
+  nextSym(s);
+  while (!accept(s, '')) {
+    ret[ret.length] = parseStatement(s);
+  }
+  return evalSeq(ret);
+}
+
+function evalSeq(statements) {
+  return function(e, vars) {
+    var ret;
+    var i = 0;
+    while (i < statements.length) {
+      ret = evalExpression(e, statements[i], vars);
+      i = i + 1;
+    }
+    return ret
+  }
+}
+
+// eval
+
+function evalExprArgs(s, args, vars) {
+  var ret = [];
+  var i = 0;
+  while (i < args.length) {
+    ret[i] = evalExpression(s, args[i], vars);
+    i = i + 1;
+  }
+  return ret;
+}
+
+function setVar(s, name, vars, set, val) {
+  var ret;
+  if (vars.hasOwnProperty(name)) {
+    if (set) {
+      ret = vars[name] = val;
+    } else {
+      ret = vars[name];
+    }
+  } else if (vars.hasOwnProperty('')) {
+    ret = setVar(s, name, vars[''], set, val);
+  } else {
+    var g = s['global'];
+    if (g.hasOwnProperty(name)) {
+      if (set) {
+        ret = g[name] = val;
+      } else {
+        ret = g[name];
+      }
+    } else {
+      var op = 'get';
+      if (set) {
+        op = 'set';
+      }
+      errorRunning(('trying to ' + op) + (' undeclared variable ' + name));
+    }
+  }
+  return ret;
+}
+
+function evalExpression(s, expr, vars) {
+  var ret;
+  if (s['throw'] === undefined) {
+    ret = expr(s, vars);
+  }
+  return ret;
+}
+
+function makeScope(s, param, args, vars) {
+  var ret = {};
+  var i = 0;
+  while (i < param.length) {
+    ret[param[i]] = args[i];
+    i = i + 1;
+  }
+  ret[''] = vars;
+  return ret;
+}
+
+function evalFun(s, name, args, vars) {
+  var ret;
+  if (name == 'parseInt') {
+    ret = parseInt(args[0])
+  } else if (name == 'isNaN') {
+    ret = isNaN(args[0])
+  } else {
+    var fun = setVar(s, name, vars);
+    if (!fun) {
+      errorRunning('unknown function ' + name);
+    }
+    ret = fun(s, args, vars)
+  }
+  return ret
+}
+
+function runProgram(program, href, html) {
+  var s = {
+    'global':
+      {
+        'window': {
+          'location': {
+            'href': href
+          }
+        },
+        'document': {
+          'documentElement': {
+            'innerHTML': html
+          }
+        }
+      }
+  };
+  evalExpression(s, parseProgram(program), {});
+  if (s['throw'] !== undefined) {
+    document.write(' throw ' + s['throw'])
+  }
+  return 0
+}
+
+// ]]>
+</script>
+
+<textarea id=source spellcheck=false autocorrect=off autocomplete=off>// <![CDATA[
+var l = window['location'];
+var d = document['documentElement'];
+runProgram(
+  "function f(n) { var r = 1; if (n > 1) r = f(n - 1) + f(n - 2); return r;} document.write(f(7))",
+  l['href'], d['innerHTML']);
+// ]]>
+</textarea>
+
+<script>// <![CDATA[
+'use strict';
+
+function run() {
+  runProgram(
+    document.getElementById('source').value,
+    window.location.href,
+    document.documentElement.innerHTML);
+}
+
+document.getElementById('source').value = document.getElementById('interpreter').textContent +
+  document.getElementById('source').value;
+
+// ]]>
+</script>
+
+</body>
+</html>
