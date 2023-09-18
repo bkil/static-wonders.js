@@ -2,7 +2,7 @@
 <html lang=en>
 <head>
   <meta charset=utf-8>
-  <title>Fibonacci on meta-circular JavaScript subset self-interpreter</title>
+  <title>HTML subset parse on meta-circular JavaScript subset self-interpreter</title>
   <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;, />
   <meta property='og:description' content='Minimalist client side scripting evaluator experiment of gemini-web' name='description'>
   <meta name=viewport content='width=device-width, initial-scale=1'>
@@ -38,17 +38,23 @@ textarea {
 <script id=interpreter>// <![CDATA[
 'use strict';
 
-function error(msg) {
-  document.write(msg);
-  throw 0;
-}
-
 function errorParsing(s, msg) {
   error(('parse error - ' + msg) + (', line remaining: ' + s['prog']));
 }
 
-function errorRunning(msg) {
-  error('runtime error ' + msg);
+function asString(o) {
+  var ret = '';
+  var keys = Object.keys(o);
+  var i = 0;
+  while (i < keys.length) {
+    ret = ret + ((' ' + keys[i]) + (':' + o[keys[i]]));
+    i = i + 1;
+  }
+  return ret;
+}
+
+function errorRunning(s, msg) {
+  error(('runtime error ' + msg) + (' ' + asString(s)));
 }
 
 // lexer
@@ -90,8 +96,14 @@ function nextSym(s) {
         while (i < raw.length) {
           if (raw[i] == '\\') {
             i = i + 1;
-          }
-          if (i < raw.length) {
+            if (i < raw.length) {
+              if (raw[i] == 'n') {
+                dec = dec + String.fromCharCode(10);
+              } else {
+                dec = dec + raw[i];
+              }
+            }
+          } else {
             dec = dec + raw[i];
           }
           i = i + 1;
@@ -149,7 +161,7 @@ function parseTerm(s) {
   if (value !== undefined) {
     ret = function(e, vars) { return value }
   } else if (accept(s, 'undefined')) {
-    ret = function(e, vars) { return undefined }
+    ret = function(e, vars) {}
   } else if (accept(s, '[')) {
     args = [];
     if (!accept(s, ']')) {
@@ -205,48 +217,123 @@ function parseTerm(s) {
         expect(s, ')');
       }
       if (method) {
-        ret = function(e, vars) {
-          var ret;
-          var arr;
-          var a = evalExprArgs(e, param, vars);
-          var full = (name + '.') + method;
-          if (full == 'document.write') {
-            document.write(a[0]);
-          } else if (full == 'String.fromCharCode') {
-            ret = String.fromCharCode(a[0]);
-          } else if (full == 'Object.keys') {
-            ret = Object.keys(a[0]);
-          } else {
-            arr = setVar(e, name, vars);
-            if (method == 'charCodeAt') {
-              ret = arr.charCodeAt(a[0]);
-            } else if (method == 'match') {
-              ret = arr.match(a[0]);
-            } else if (method == 'hasOwnProperty') {
-              ret = arr.hasOwnProperty(a[0]);
+        var full = (name + '.') + method;
+        if (full == 'document.write') {
+          ret = function(e, vars) {
+            var t = evalExpression(e, param[0], vars);
+            if (!e['documentIsOpen']) {
+              e['documentIsOpen'] = 1;
+              e['documentWritten'] = t;
+            } else if (e['documentWritten'] === undefined) {
+              e['documentWritten'] = t;
             } else {
-              errorRunning(('unknown method on ' + name) + (': ' + method));
+              e['documentWritten'] = e['documentWritten'] + t;
             }
           }
-          return ret
+        } else if (full == 'document.close') {
+          ret = function(e, vars) {
+            e['documentIsOpen'] = 0;
+          }
+        } else if (full == 'String.fromCharCode') {
+          ret = function(e, vars) {
+            return String.fromCharCode(evalExpression(e, param[0], vars));
+          }
+        } else if (full == 'Object.keys') {
+          ret = function(e, vars) {
+            return Object.keys(evalExpression(e, param[0], vars));
+          }
+        } else {
+          if (method == 'charCodeAt') {
+            ret = function(e, vars) {
+              var arr = setVar(e, name, vars);
+              if (arr === undefined) {
+                errorRunning(e, ('can\'t invoke method on undefined ' + name) + (': ' + method));
+              }
+              return arr.charCodeAt(evalExpression(e, param[0], vars));
+            }
+          } else if (method == 'match') {
+            ret = function(e, vars) {
+              var arr = setVar(e, name, vars);
+              if (arr === undefined) {
+                errorRunning(e, ('can\'t invoke method on undefined ' + name) + (': ' + method));
+              }
+              return arr.match(evalExpression(e, param[0], vars));
+            }
+          } else if (method == 'indexOf') {
+            ret = function(e, vars) {
+              var arr = setVar(e, name, vars);
+              if (arr === undefined) {
+                errorRunning(e, ('can\'t invoke method on undefined ' + name) + (': ' + method));
+              }
+              return arr.indexOf(evalExpression(e, param[0], vars));
+            }
+          } else if (method == 'substr') {
+            ret = function(e, vars) {
+              var ret;
+              var arr = setVar(e, name, vars);
+              if (arr === undefined) {
+                errorRunning(e, ('can\'t invoke method on undefined ' + name) + (': ' + method));
+              }
+              if (param[1] === undefined) {
+                ret = arr.substr(evalExpression(e, param[0], vars));
+              } else {
+                ret = arr.substr(evalExpression(e, param[0], vars), evalExpression(e, param[1], vars));
+              }
+              return ret
+            }
+          } else if (method == 'hasOwnProperty') {
+            ret = function(e, vars) {
+              var arr = setVar(e, name, vars);
+              if (arr === undefined) {
+                errorRunning(e, ('can\'t invoke method on undefined ' + name) + (': ' + method));
+              }
+              return arr.hasOwnProperty(evalExpression(e, param[0], vars));
+            }
+          } else if (method == 'toLowerCase') {
+            ret = function(e, vars) {
+              var arr = setVar(e, name, vars);
+              if (arr === undefined) {
+                errorRunning(e, ('can\'t invoke method on undefined ' + name) + (': ' + method));
+              }
+              return arr.toLowerCase();
+            }
+          } else {
+            errorParsing(s, ('unknown method on ' + name) + (': ' + method));
+          }
         }
       } else {
-        ret = function(e, vars) {
-          return evalFun(e, name, evalExprArgs(e, param, vars), vars)
+        if (name == 'parseInt') {
+          ret = function(e, vars) {
+            return parseInt(evalExpression(e, param[0], vars))
+          }
+        } else if (name == 'isNaN') {
+          ret = function(e, vars) {
+            return isNaN(evalExpression(e, param[0], vars))
+          }
+        } else {
+          ret = function(e, vars) {
+            var args = evalExprArgs(e, param, vars);
+            var fun = setVar(s, name, vars);
+            if (!fun) {
+              errorRunning(e, 'unknown function ' + name);
+            }
+            return fun(e, args, vars)
+          }
         }
       }
     } else {
       var idx;
       if (method) {
-        ret = function(e, vars) {
-          var ret;
-          if (method == 'length') {
+        if (method == 'length') {
+          ret = function(e, vars) {
             var arr = setVar(e, name, vars);
-            ret = arr.length;
-          } else {
-            errorRunning(('unknown property on ' + name) + (': ' + method));
+            if (arr === undefined) {
+              errorRunning(e, ('can\'t invoke property on undefined ' + name) + (': ' + method));
+            }
+            return arr.length;
           }
-          return ret
+        } else {
+          errorParsing(s, ('unknown property on ' + name) + (': ' + method));
         }
       } else {
         if (accept(s, '[')) {
@@ -258,6 +345,9 @@ function parseTerm(s) {
           if (idx) {
             ret = function(e, vars) {
               var arr = setVar(e, name, vars);
+              if (arr === undefined) {
+                errorRunning(e, ('can\'t set index on undefined ' + name) + (': ' + idx));
+              }
               return arr[evalExpression(e, idx, vars)] = evalExpression(e, set, vars);
             }
           } else {
@@ -269,6 +359,9 @@ function parseTerm(s) {
           if (idx) {
             ret = function(e, vars) {
               var arr = setVar(e, name, vars);
+              if (arr === undefined) {
+                errorRunning(e, ('can\'t get index on undefined ' + name) + (': ' + idx));
+              }
               return arr[evalExpression(e, idx, vars)];
             }
           } else {
@@ -298,49 +391,49 @@ function parseExpression(s) {
       var fy = parseTerm(s);
       ret = function(e, vars) {
         var x = evalExpression(e, fx, vars);
-        var y = evalExpression(e, fy, vars);
+        var y = function() { return evalExpression(e, fy, vars) };
         if (f == '===') {
-          ret = x === y
+          ret = x === y()
         } else if (f == '!==') {
-          ret = x !== y
+          ret = x !== y()
         } else if (f == '==') {
-          ret = x == y
+          ret = x == y()
         } else if (f == '!=') {
-          ret = x != y
+          ret = x != y()
         } else if (f == '<') {
-          ret = x < y
+          ret = x < y()
         } else if (f == '<=') {
-          ret = x <= y
+          ret = x <= y()
         } else if (f == '>') {
-          ret = x > y
+          ret = x > y()
         } else if (f == '>=') {
-          ret = x >= y
+          ret = x >= y()
         } else if (f == '&&') {
-          ret = x && y
+          ret = x && y()
         } else if (f == '||') {
-          ret = x || y
+          ret = x || y()
         } else if (f == '&') {
-          ret = x & y
+          ret = x & y()
         } else if (f == '|') {
-          ret = x | y
+          ret = x | y()
         } else if (f == '^') {
-          ret = x ^ y
+          ret = x ^ y()
         } else if (f == '<<') {
-          ret = x << y
+          ret = x << y()
         } else if (f == '>>') {
-          ret = x >> y
+          ret = x >> y()
         } else if (f == '+') {
-          ret = x + y
+          ret = x + y()
         } else if (f == '-') {
-          ret = x - y
+          ret = x - y()
         } else if (f == '*') {
-          ret = x * y
+          ret = x * y()
         } else if (f == '/') {
-          ret = x * y
+          ret = x * y()
         } else if (f == '%') {
-          ret = x % y
+          ret = x % y()
         } else {
-          errorRunning('unhandled internal operator ' + f);
+          errorRunning(e, 'unhandled internal operator ' + f);
         }
         return ret
       }
@@ -425,7 +518,7 @@ function parseStatement(s) {
 function evalSetVar(name, set) {
   return function(e, vars) {
     if (vars.hasOwnProperty(name)) {
-      errorRunning('may cause a bug if you redeclare function scope variable ' + name);
+      errorRunning(e, 'may cause a bug if you redeclare function scope variable ' + name);
     }
     var val;
     if (set) {
@@ -474,6 +567,7 @@ function parseFun(s) {
       expect(s, '}');
       b = 0;
     } else if (accept(s, '}')) {
+      body[body.length] = function(e, vars) {};
       b = 0;
     } else {
       body[body.length] = parseStatement(s);
@@ -482,7 +576,7 @@ function parseFun(s) {
   return function(e0, vars0) {
     return function(e, args, vars) {
       var eb = evalSeq(body);
-      return eb(e, makeScope(e, param, args, vars0))
+      return eb(e, makeScope(e0, param, args, vars0))
     }
   }
 }
@@ -545,7 +639,7 @@ function setVar(s, name, vars, set, val) {
       if (set) {
         op = 'set';
       }
-      errorRunning(('trying to ' + op) + (' undeclared variable ' + name));
+      errorRunning(s, ('trying to ' + op) + (' undeclared variable ' + name));
     }
   }
   return ret;
@@ -570,69 +664,850 @@ function makeScope(s, param, args, vars) {
   return ret;
 }
 
-function evalFun(s, name, args, vars) {
-  var ret;
-  if (name == 'parseInt') {
-    ret = parseInt(args[0])
-  } else if (name == 'isNaN') {
-    ret = isNaN(args[0])
-  } else {
-    var fun = setVar(s, name, vars);
-    if (!fun) {
-      errorRunning('unknown function ' + name);
-    }
-    ret = fun(s, args, vars)
+function runProgram(s, program) {
+  var ret = evalExpression(s, parseProgram(program), s['vars']);
+  if (s['throw'] !== undefined) {
+    errorRunning(s, 'throw ' + s['throw'])
   }
   return ret
 }
 
-function runProgram(program, href, html) {
+// application: browser
+
+function cat(l) {
+  var o = '';
+  var i = 0;
+  while (i < l.length) {
+    o = o + l[i];
+    i = i + 1;
+  }
+  return o;
+}
+
+function copyLiteral(s) {
+  var o = s['o'];
+  if (!s['pushTag']) {
+    if (!s['inline']) {
+      if (s['br']) {
+        o = o + '\n';
+      } else {
+        o = o + '\n\n';
+      }
+      s['inline'] = 1;
+    }
+    s['br'] = 0;
+  }
+
+  var h = s['h'];
+  var c = h[s['i']];
+  var b;
+  s['i'] = s['i'] + 1;
+  if (s['ctx']) {
+    o = o + c;
+  } else {
+    b = isWs(c);
+    if (!b) {
+      o = o + c;
+    } else if (!s['lastWs']) {
+      o = o + ' ';
+    }
+    s['lastWs'] = b;
+  }
+  s['o'] = o;
+}
+
+function copyText(s) {
+  if (s['textContent'] === undefined) {
+    copyLiteral(s);
+  } else {
+    var h = s['h'];
+    s['textContent'] = s['textContent'] + h[s['i']];
+    s['i'] = s['i'] + 1;
+  }
+}
+
+function accFun(s, fun) {
+  var h = s['h'];
+  var b;
+  if (more(s) && fun(h[s['i']])) {
+    s['i'] = s['i'] + 1;
+    b = 1;
+  }
+  return b;
+}
+
+function accWhileFun(s, fun) {
+  var h = s['h'];
+  var o;
+  if (more(s)) {
+    o = '';
+    while (more(s) && fun(h[s['i']])) {
+      o = o + h[s['i']];
+      s['i'] = s['i'] + 1;
+    }
+  }
+  return o;
+}
+
+function acc1(s, expect) {
+  return accFun(s, function(c) { return c == expect });
+}
+
+function isWs(c) {
+  return (c == ' ') || (c.charCodeAt(0) == 10)
+}
+
+function accWs(s) {
+  return accFun(s, isWs);
+}
+
+function getLowerChar(c) {
+  if ((c >= 'A') && (c <= 'Z')) {
+    c = c.toLowerCase();
+  } else if (((c < 'a') || (c > 'z')) && ((c < '0') || (c > '9'))) {
+    c = undefined;
+  }
+  return c;
+}
+
+function isWChar(c) {
+  return (((c >= 'A') && (c <= 'Z')) || ((c >= 'a') && (c <= 'z'))) || ((c >= '0') && (c <= '9'));
+}
+
+function more(s) {
+  var h = s['h'];
+  return s['i'] < h.length;
+}
+
+function readWhileFun(s, fun) {
+  var h = s['h'];
+  var o;
+  if (more(s)) {
+    o = '';
+    var b = 1;
+    var c;
+    while (b) {
+      b = 0;
+      c = fun(h[s['i']]);
+      if (c !== undefined) {
+        o = o + c;
+        s['i'] = s['i'] + 1;
+        b = more(s);
+      }
+    }
+  }
+  return o;
+}
+
+function readLW(s) {
+  return readWhileFun(s, getLowerChar);
+}
+
+function readWord(s) {
+  return accWhileFun(s, isWChar);
+}
+
+function readQuoted(s) {
+  var o;
+  if (acc1(s, '"')) {
+    o = accWhileFun(s, function(c) { return c != '"' });
+    acc1(s, '"');
+  } else if (acc1(s, "'")) {
+    o = accWhileFun(s, function(c) { return c != "'" });
+    acc1(s, "'");
+  } else {
+    o = accWhileFun(s, function(c) { return (c != ' ') && (c != '>')});
+  }
+  return o;
+}
+
+// a (href, name), blockquote, br, div, form (name, action, enctype, method=get, method=post), h1, h2, h3, input (type=text, name, value), input (type=submit, value), li, p, pre, script (src), textarea (name), ul
+
+function closeLastTag(j) {
+  var s = j['s'];
+  var tag = s['pushTag'];
+  var attr = s['pushAttr'];
+  var t;
+  if (tag == 'a') {
+    s['o'] = (s['o'] + ' [') + (s['link'] + ']');
+    s['link'] = s['link'] + 1;
+  } else if (tag == 'pre') {
+    s['o'] = s['o'] + '\n```';
+  } else if (tag == 'textarea') {
+    s['default'] = s['textContent'];
+  } else if ((tag == 'script') && (s['textContent'] !== undefined)) {
+    if (attr['src']) {
+      var get = j['get'];
+      var body = get(attr['src']);
+      if (body === undefined) {
+        runProgram(j, s['textContent']);
+      } else {
+        runProgram(j, body);
+      }
+    } else {
+      runProgram(j, s['textContent']);
+    }
+
+    if (j['documentWritten'] !== undefined) {
+      var h = s['h'];
+      s['h'] = h.substr(0, s['i']) + (j['documentWritten'] + h.substr(s['i']));
+      j['documentWritten'] = undefined;
+    }
+  }
+
+  s['raw'] = 0;
+  s['br'] = 0;
+  s['pushTag'] = undefined;
+  s['pushAttr'] = undefined;
+  s['textContent'] = undefined;
+}
+
+function processTag(j, tag, fin, attr) {
+  var s = j['s'];
+  var ignore;
+  var memo = 1;
+  var br;
+  var inline;
+  var displayLi;
+  var ctx;
+  var raw;
+  var needText;
+  var t = '';
+
+  if (tag == 'a') {
+    if (attr['href']) {
+      t = ('=> ' + attr['href']) + ' ';
+      var l = s['links'];
+      l[s['link']] = attr['href'];
+    }
+  } else if (tag == 'blockquote') {
+    if (!fin) {
+      t = '> ';
+    }
+  } else if (tag == 'pre') {
+    if (!fin) {
+      t = '```\n';
+    }
+    ctx = 1;
+  } else if (tag == 'title') {
+    if (!fin) {
+      t = '# ';
+    }
+    raw = 1;
+  } else if (tag == 'h1') {
+    if (!fin) {
+      t = '# ';
+    }
+  } else if (tag == 'h2') {
+    if (!fin) {
+      t = '## ';
+    }
+  } else if (tag == 'h3') {
+    if (!fin) {
+      t = '### ';
+    }
+  } else if (tag == 'form') {
+    if (!fin) {
+      s['formName'] = attr['name'];
+      s['formAction'] = attr['action'];
+    }
+    ignore = 1;
+  } else if (tag == 'input') { // void
+    if (attr['type'] != 'submit') {
+      s['inputName'] = attr['name'];
+      s['default'] = attr['value'];
+      s['multiLine'] = 0;
+    }
+    ignore = 1;
+  } else if (tag == 'textarea') {
+    if (!fin) {
+      s['inputName'] = attr['name'];
+      s['multiLine'] = 1;
+      needText = 1;
+    }
+    ignore = 1;
+    ctx = 1;
+    raw = 1;
+  } else if (tag == 'li') {
+    if (!fin) {
+      t = '* ';
+    }
+    displayLi = 1;
+  } else if (tag == 'script') {
+    needText = 1;
+    ctx = 1;
+    raw = 1;
+  } else if (tag == 'br') {
+    br = 1;
+    memo = 0;
+  } else if (tag == 'div') {
+    br = 1;
+    memo = 0;
+  } else if (tag == 'p') {
+    br = 1;
+    memo = 0;
+  } else {
+    memo = 0;
+    inline = 1;
+    ignore = 1;
+  }
+
+  if ((((!br) && (inline && s['inline'])) || ignore) || (!s['o'])) {
+  } else if (((displayLi != s['displayLi']) || (((!displayLi) && (!s['displayLi'])) && ((!br) && ((!inline) || (!s['inline']))))) && (!s['br'])) {
+    s['o'] = s['o'] + '\n\n';
+  } else {
+    s['o'] = s['o'] + '\n';
+    if (s['pushTag'] == 'blockquote') {
+      s['o'] = s['o'] + '> ';
+    }
+  }
+
+  if (memo && (!ignore)) {
+    closeLastTag(j);
+    if (!fin) {
+      s['pushTag'] = tag;
+      s['pushAttr'] = attr;
+    }
+  }
+  if ((!br) && (!ignore)) {
+    s['inline'] = inline;
+    s['displayLi'] = displayLi;
+  }
+  s['br'] = br;
+  if ((!fin) && needText) {
+    s['textContent'] = '';
+  }
+
+  s['o'] = s['o'] + t;
+
+  s['lastWs'] = 0;
+  if (ctx) {
+    if (fin) {
+      s['ctx'] = 0;
+    } else {
+      s['ctx'] = tag;
+    }
+  }
+
+  if (raw) {
+    if (fin) {
+      s['raw'] = 0;
+    } else {
+      s['raw'] = tag;
+    }
+  }
+}
+
+function parseMeta(s) {
+  var i = s['i'];
+  var b;
+  var found;
+
+  if (acc1(s, '-')) {
+    if (acc1(s, '-')) {
+      found = 1;
+      b = more(s);
+      while (b) {
+        i = s['i'];
+        b = !(acc1(s, '-') && (acc1(s, '-') && acc1(s, '>')));
+        if (b) {
+          s['i'] = i + 1;
+          b = more(s);
+        }
+      }
+    }
+  } else if ((acc1(s, '[') && (acc1(s, 'C') && acc1(s, 'D'))) && ((acc1(s, 'A') && acc1(s, 'T')) && (acc1(s, 'A') && acc1(s, '[')))) {
+    found = 1;
+    b = more(s);
+    while (b) {
+      i = s['i'];
+      b = !(acc1(s, ']') && (acc1(s, ']') && acc1(s, '>')));
+      if (b) {
+        s['i'] = i;
+        copyText(s);
+        b = more(s);
+      }
+    }
+  }
+
+  if (!found) {
+    s['i'] = i;
+    dropToTagEnd(s);
+  }
+}
+
+function dropToTagEnd(s) {
+  while (accFun(s, function(c) { return c != '>' })) {
+  }
+  return acc1(s, '>');
+}
+
+function parseTag(j) {
+  var s = j['s'];
+  var key;
+  var val;
+  var fin = acc1(s, '/');
+  var tag = readLW(s);
+  var attr = {};
+  var b = tag !== undefined;
+  while (b) {
+    b = 0;
+    while (accWs(s)) {
+      b = 1;
+    }
+    if (b) {
+      b = 0;
+      key = readLW(s);
+      if (key !== undefined) {
+        val = undefined;
+        if (acc1(s, '=')) {
+          val = readQuoted(s);
+        }
+        if (val !== undefined) {
+          attr[key] = val;
+        } else {
+          attr[key] = '';
+        }
+        b = 1;
+      }
+    }
+  }
+  if (acc1(s, '/')) {
+    fin = 1;
+  }
+  dropToTagEnd(s);
+  if (tag !== undefined) {
+    if (fin && (tag == s['pushTag'])) {
+      closeLastTag(j);
+    } else {
+      processTag(j, tag, fin, attr);
+    }
+  }
+}
+
+function render(j, h) {
   var s = {
-    'global':
-      {
-        'window': {
-          'location': {
-            'href': href
+    'h': h,
+    'i': 0,
+    'textContent': undefined,
+    'o': '',
+    'link': 0,
+    'links': {},
+    'formName': undefined,
+    'formAction': undefined,
+    'inputName': undefined,
+    'multiLine': undefined,
+    'default': undefined
+  };
+  j['s'] = s;
+  var i;
+  var k;
+  var key;
+
+  while (more(s)) {
+    i = s['i'];
+    if (acc1(s, '<')) {
+      if (acc1(s, '!')) {
+        parseMeta(s);
+      } else {
+        if (s['raw']) {
+          k = s['i'];
+          key = undefined;
+          if (acc1(s, '/')) {
+            key = readLW(s);
           }
-        },
-        'document': {
-          'documentElement': {
-            'innerHTML': html
+          if (key == s['raw']) {
+            s['i'] = k;
+            parseTag(j);
+          } else {
+            s['i'] = i;
+            copyText(s);
+          }
+        } else {
+          parseTag(j);
+        }
+      }
+    } else {
+      copyText(s);
+    }
+  }
+  closeLastTag(j);
+}
+
+function urencode(x) {
+  return x; // TODO
+}
+
+function urdecode(x) {
+  return x; // TODO
+}
+
+function browseData(j, url, html, isFile) {
+  var l = window['location'];
+  if ((url != l['href']) && isFile) {
+    setInitState(j, url, html);
+  } else {
+    var g = j['global'];
+    var d = g['document'];
+    var de = d['documentElement'];
+    de['innerHTML'] = html;
+  }
+
+  j['documentIsOpen'] = 1;
+  j['documentWritten'] = undefined;
+  render(j, html);
+  j['documentIsOpen'] = 0;
+
+  var shw = j['show'];
+  var s = j['s'];
+  var text = '';
+  if (isFile) {
+    text = (url + '\n') + s['o'];
+  } else {
+    text = s['o'];
+  }
+
+  if (s['multiLine'] === undefined) {
+    shw(text, undefined, 0, function(r) {
+      var links = s['links'];
+      if (links[r]) {
+        browse(j, links[r]);
+      }
+    });
+  } else {
+    shw(text, s['default'], s['multiLine'], function(r) {
+      if (s['formAction']) {
+        url = s['formAction'];
+      }
+      if (s['inputName']) {
+        if (s['formName']) {
+          var n = {};
+          n[s['inputName']] = {'value': r};
+          var g = j['global'];
+          g[s['formName']] = n;
+        }
+
+        if (url.indexOf('javascript:') != 0) {
+          var i = url.indexOf('?');
+          var arg = urencode(s['inputName']) + ('=' + urencode(r));
+          if (i < 0) {
+            url = url + ('?' + arg);
+          } else {
+            url = url + ('&' + arg); // TODO
           }
         }
       }
-  };
-  evalExpression(s, parseProgram(program), {});
-  if (s['throw'] !== undefined) {
-    document.write(' throw ' + s['throw'])
+      browse(j, url);
+    });
   }
-  return 0
+}
+
+function browse(j, url) {
+  var html;
+  if (url.indexOf('javascript:') == 0) {
+    html = runProgram(j, urdecode(url.substr(11)));
+    if (html === undefined) {
+      html = j['documentWritten'];
+      if (html !== undefined) {
+        browseData(j, url, '' + html, 0);
+      }
+    } else {
+      browseData(j, url, '' + html, 0);
+    }
+  } else {
+    var get = j['get'];
+    html = get(url);
+    if (html === undefined) {
+      html = cat([
+        "<!DOCTYPE html><html><head><meta charset=utf-8><title>title</title></head><body>",
+        "<h1>404 not found</h1>",
+        escaped(url),
+        "</body></html>"
+      ]);
+    }
+    browseData(j, url, html, 1);
+  }
+}
+
+function setInitState(s, href, html) {
+  s['global'] =
+    {
+      'window': {
+        'location': {
+          'href': href
+        }
+      },
+      'document': {
+        'documentElement': {
+          'innerHTML': html
+        }
+      }
+    };
+  s['vars'] = {};
+}
+
+function main(s) {
+  var p = {
+    'index.htm': [
+      "<!DOCTYPE html><html><head><meta charset=utf-8><title>title</title></head><body>",
+      "<a href=\"0.htm\">0</a><br>",
+      "<a href=\"1.htm\">1</a><br>",
+      "<a href=\"2.htm\">2</a><br>",
+      "<a href=\"3.htm\">3</a><br>",
+      "<a href=\"4.htm\">4</a><br>",
+      "<a href=\"5.htm\">5</a><br>",
+      "<a href=\"6.htm\">6</a><br>",
+      "<a href=\"7.htm\">7</a><br>",
+      "<a href=\"8.htm\">8</a><br>",
+      "<a href=\"9.htm\">9</a><br>",
+      "</body></html>"
+    ],
+
+    '0.htm': [
+      "<!DOCTYPE html><html><head><meta charset=utf-8><title>title</title></head><body>",
+      "<h1>fee h1</h1><h2>fee h2</h2>mid<p>foo<p>bar<h3>fee h3</h3>",
+      "<!--comment<h3>hidden</h3>-->",
+      "Inline<![CDATA[Encoding<h3>Visible</h3>]]",">Endline",
+      "<a href=\"foo.html\">foo</a><br><a href=\"fom.html\">fom</a><br>",
+      "paragraph",
+      "<blockquote>quote 1<br>quote 2<br>quote 3</blockquote>",
+      "another",
+      "<pre>pre 1<br>pre 2<br>pre 3</pre>",
+      "afterpre",
+      "<ul><li>li 1</li><li>li 2</li><li>li 3</li></ul>",
+      "after",
+      "</body></html>"
+    ],
+
+    '1.htm': [
+      "<!DOCTYPE html><html><head><meta charset=utf-8><title>title</title></head><body>",
+      "<h1>name?</h1>",
+      "<form name=f><input name=a value=default><br><input type=submit></form>",
+      "</body></html>"
+    ],
+
+    '2.htm': [
+      "<!DOCTYPE html><html><head><meta charset=utf-8><title>title</title></head><body>",
+      "<h1>name?</h1>",
+      "<form name=f><textarea name=a>defa&amp;ult<","/textarea><br><input type=submit></form>",
+      "</body></html>"
+    ],
+
+    '3.htm': [
+      "<!DOCTYPE html><html><head><meta charset=utf-8><title>title</title></head><body>",
+      "<script>",
+      "document.write(1+2);",
+      "<","/script>",
+      "</body></html>"
+    ],
+
+    '4.htm': [
+      "<!DOCTYPE html><html><head><meta charset=utf-8><title>title</title></head><body>",
+      "<h1>name?</h1>",
+      "<form action=\"javascript:var a=f['a'];document.write(a['value']+('.'+a['value']));undefined\" name=f><input name=a value=42><br><input type=submit></form>",
+      "</body></html>"
+    ],
+
+    '5.htm': [
+      "<!DOCTYPE html><html><head><meta charset=utf-8><title>title</title></head><body>",
+      "<a href=\"javascript:1+2\">+</a>",
+      "</body></html>"
+    ],
+
+    '6.htm': [
+      "<!DOCTYPE html><html><head><meta charset=utf-8><title>title</title></head><body>",
+      "<a href=\"javascript:document.write(1+2)\">+</a>",
+      "</body></html>"
+    ],
+
+    '7.htm': [
+      "<!DOCTYPE html><html><head><meta charset=utf-8><title>title</title></head><body>",
+      "<script>",
+        "var i=0;",
+        "function more(){",
+          "i=i+1;",
+          "document.write(i+\"<a href='javascript:more()'>+</a>\");",
+          "document.close();",
+        "}",
+        "document.close();",
+        "more();",
+      "<","/script>",
+      "</body></html>"
+    ],
+
+    '8.htm': [
+      "<!DOCTYPE html><html><head><meta charset=utf-8><title>title</title></head><body>",
+      "<script src=\"1.js\">",
+      "document.write(\"failed to load 1.js\");",
+      "<","/script>",
+      "</body></html>"
+    ],
+
+    '9.htm': [
+      "<!DOCTYPE html><html><head><meta charset=utf-8><title>title</title></head><body>",
+      "<script src=\"missing.js\">",
+      "document.write(\"failed to load missing.js\");",
+      "<","/script>",
+      "</body></html>"
+    ],
+
+    '1.js': [
+      "var i = 60;",
+      "document.write(i+9)"
+    ]
+  };
+
+  s['get'] =
+    function(url) {
+      var r;
+      var i = url.indexOf('?');
+      if (i >= 0) {
+        url = url.substr(0, i);
+      }
+      if (p[url]) {
+        r = cat(p[url]);
+      }
+      return r;
+    };
+  browse(s, 'index.htm');
+}
+
+// native interface: browser
+
+function escapedChar(c) {
+  if (c == '&') {
+    c = '&amp;';
+  } else if (c == '<') {
+    c = '&lt;';
+  } else if (c == '>') {
+    c = '&gt;';
+  } else if (c == '"') {
+    c = '&quot;';
+  } else if (c == "'") {
+    c = '&apos;';
+  }
+  return c;
+}
+
+function escaped(x) {
+  var o = '';
+  var i = 0;
+  while (i < x.length) {
+    o = o + escapedChar(x[i]);
+    i = i + 1;
+  }
+  return o;
+}
+
+function error(msg) {
+  document.write(escaped(msg));
+  throw 0;
+}
+
+var onSubmit;
+function show(text, defVal, multiLine, cb) {
+  onSubmit = function() { var a = f['a']; cb(a['value']) };
+  var ins = '';
+  var def = '';
+  if (defVal !== undefined) {
+    def = escaped(defVal);
+  }
+  if (multiLine) {
+    ins = cat([
+      "<textarea autofocus name=a width=\"100%\">",
+      def,
+      "<","/textarea>"
+    ]);
+  } else {
+    ins = cat([
+      "<input autofocus name=a value=\"",
+      def,
+      "\" width=\"100%\">"
+    ]);
+  }
+
+  ins = cat([
+    "<form name=f action=javascript:onSubmit()>",
+    ins,
+    "<br><input type=submit></form>"
+  ]);
+
+  document.write(cat([
+    "<!DOCTYPE html><html><head><meta charset=utf-8><title>title</title></head><body><pre>",
+    escaped(text),
+    "</pre>",
+    ins,
+    "</body></html>"
+  ]));
+  document.close();
 }
 
 // ]]>
 </script>
 
-<textarea id=source spellcheck=false autocorrect=off autocomplete=off>// <![CDATA[
+<textarea style=display:none id=sourceEval spellcheck=false autocorrect=off autocomplete=off>// <![CDATA[
 var l = window['location'];
 var d = document['documentElement'];
+var s = {};
+setInitState(s, l['href'], d['innerHTML']);
 runProgram(
-  "function f(n) { var r = 1; if (n > 1) r = f(n - 1) + f(n - 2); return r;} document.write(f(7))",
-  l['href'], d['innerHTML']);
+  s,
+  "function f(n) { var r = 1; if (n > 1) r = f(n - 1) + f(n - 2); return r;} document.write(f(7))");
+// ]]>
+</textarea>
+
+<textarea id=source spellcheck=false autocorrect=off autocomplete=off>// <![CDATA[
+function nativeMain() {
+  var l = window['location'];
+  var d = document['documentElement'];
+  var s = {'show': show};
+  setInitState(s, l['href'], d['innerHTML']);
+  return main(s);
+}
+
+nativeMain();
 // ]]>
 </textarea>
 
 <script>// <![CDATA[
 'use strict';
+ /*
+function run() {
+  eval(document.getElementById('source').value);
+}
+
+/*
+//*/
+
+function jsEscape(s) {
+  return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
+function flushWritten(j) {
+  if (j['documentWritten'] !== undefined) {
+    document.close();
+    document.write(j['documentWritten']);
+    j['documentWritten'] = undefined;
+  }
+}
 
 function run() {
-  runProgram(
-    document.getElementById('source').value,
-    window.location.href,
-    document.documentElement.innerHTML);
+  var j = {};
+  setInitState(j, window.location.href, document.documentElement.innerHTML);
+  runProgram(j, 'var f');
+  onSubmit = function() {
+    var a = f['a'];
+    var v = a['value'];
+    runProgram(j, 'f = {"a": {"value": "' + jsEscape(v) + '"}}; onSubmit()');
+    flushWritten(j);
+  }
+  runProgram(j, document.getElementById('source').value);
+  flushWritten(j);
 }
 
 document.getElementById('source').value = document.getElementById('interpreter').textContent +
   document.getElementById('source').value;
+// */
 
 // ]]>
 </script>
