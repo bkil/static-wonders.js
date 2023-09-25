@@ -1,4 +1,8 @@
 *-inlined.html
 gen-bookmarklet.html
 userjs/*.html
+*._.css
+dist
 bk
+*.gz
+*.br
