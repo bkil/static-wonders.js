@@ -1,12 +1,13 @@
 // ==UserScript==
-// @name        GitHub header color per project
+// @name        VCS header color per project
 // @author      bkil
-// @description Pick a random color based on the project URL prefix and colour the top header
+// @description Pick a random color based on the project URL prefix and colour the top header. Currentnly supported: GitHub, GitLab, Codeberg
 // @namespace   bkil.hu
 // @match       https://github.com/*/*
-// @match       https://github.com/*/*
+// @match       https://gitlab.com/*/*
+// @match       https://codeberg.org/*/*
 // @grant       none
-// @version     2023.10.1
+// @version     2023.10.2
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -83,9 +84,18 @@ function init() {
   var project = getProject(window.location.href);
   var color1 = getHashColor(project);
   var color2 = getHashColor(project + project);
+
+  /* GitHub */
   applyColor(document.getElementById('repository-container-header'), color1, color2);
   applyColor(document.getElementsByClassName('js-header-wrapper')[0], color1, color2);
   applyColor(document.getElementsByClassName('footer')[0], color1, color2);
+
+  /* GitLab */
+  applyColor(document.getElementsByClassName('top-bar-fixed')[0], color1, color2);
+
+  /* Codeberg */
+  applyColor(document.getElementById('navbar'), color1, color2);
+  applyColor(document.getElementsByClassName('page-footer')[0], color1, color2);
 }
 
 init();
