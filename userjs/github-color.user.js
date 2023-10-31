@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name        VCS header color per project
 // @author      bkil
-// @description Pick a random color based on the project URL prefix and colour the top header. Currentnly supported: GitHub, GitLab, Codeberg
+// @description Pick a random color based on the project URL prefix and colour the top header. Currently supported: GitHub, GitLab, Codeberg
 // @namespace   bkil.hu
-// @match       https://github.com/*/*
-// @match       https://gitlab.com/*/*
-// @match       https://codeberg.org/*/*
+// @match       https://github.com/*
+// @match       https://gitlab.com/*
+// @match       https://codeberg.org/*
 // @grant       none
-// @version     2023.10.2
+// @version     2023.10.3
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -64,10 +64,10 @@ function nthIndexOf(needle, haystack, n) {
   return pos;
 }
 
-function getProject(url) {
-  var i = nthIndexOf('/', url, 4);
+function getPathComponents(url, n) {
+  var i = nthIndexOf('/', url, n);
   if (i < 0) {
-    i = url.length;
+    i = url.length + 1;
   }
   return url.substring(0, i - 1);
 }
@@ -81,19 +81,18 @@ function applyColor(elem, color1, color2) {
 }
 
 function init() {
-  var project = getProject(window.location.href);
-  var color1 = getHashColor(project);
-  var color2 = getHashColor(project + project);
+  var color1 = getHashColor(getPathComponents(window.location.href, 3));
+  var color2 = getHashColor(getPathComponents(window.location.href, 4));
 
-  /* GitHub */
+  // GitHub
   applyColor(document.getElementById('repository-container-header'), color1, color2);
   applyColor(document.getElementsByClassName('js-header-wrapper')[0], color1, color2);
   applyColor(document.getElementsByClassName('footer')[0], color1, color2);
 
-  /* GitLab */
+  // GitLab
   applyColor(document.getElementsByClassName('top-bar-fixed')[0], color1, color2);
 
-  /* Codeberg */
+  // Codeberg
   applyColor(document.getElementById('navbar'), color1, color2);
   applyColor(document.getElementsByClassName('page-footer')[0], color1, color2);
 }
