@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://crates.io/crates/*
 // @grant       none
-// @version     2023.10.1
+// @version     2023.10.2
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -37,9 +37,9 @@ function init() {
   }
   var end = nthIndexOf('/', url, 4);
   if (end < 0) {
-    end = url.length + 1;
+    end = url.length;
   }
-  var s = 'https://lib.rs/crates/' + url.substring(start + 1, end - 1);
+  var s = 'https://lib.rs/crates/' + url.substring(start + 1, end);
   window.location.href = s;
 }
 
