@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Rock-paper-scissors numerical strategy game</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='Example interactive app for Web0/JavaScript0' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=no-referrer>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta http-equiv=Content-Security-Policy content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+<style>
+html {
+  background-color: black;
+  color: white;
+}
+</style>
+</head>
+<body>
+<script>
+'use strict';
+var nl = String.fromCharCode(10);
+var bs = String.fromCharCode(92);
+
+function reload(text, haveInput) {
+  var typ = '';
+  if (document.doctype && (document.doctype.name !== undefined)) {
+    typ = '<!DOCTYPE ' + document.doctype.name + '>';
+  }
+
+  var head = '';
+  if (document.head && document.head.innerHTML && String.prototype && String.prototype.match) {
+    head = document.head.innerHTML;
+    var m = head.match('^((?:.|' + bs + 'n)*)<[^>]+http-equiv=["' + "'" + ']?Content-Security-Policy[^>]*>((?:.|' + bs + 'n)*)$');
+    if (m) {
+      head = m[1] + m[2];
+    }
+  }
+
+  var inp = '';
+  if (haveInput) {
+    inp = '<form name=f action="javascript:onSubmit()"><input name=t><input type=submit></form>';
+  }
+  document.close();
+  document.write(typ + '<html lang=en><head>' + head + '</head><body><pre>' + text + '</pre>' + inp + '</body></html>');
+  document.close();
+  if (window.f && (window.f.t && window.f.t.focus)) {
+    window.f.t.focus();
+  }
+}
+
+var random = new Object;
+random.seed = 44257;
+
+function getRandom(n) {
+  var x = random.seed;
+  x = x ^ (x >> 7);
+  x = x ^ (x << 9);
+  x = x ^ (x >> 13);
+  random.seed = x;
+  return x % n;
+}
+
+var dur = new Object;
+var tmp = new Object;
+
+function step() {
+  var i;
+  var p;
+
+  var old = new Array;
+  var q;
+  i = 0;
+  while (i < dur.p.length) {
+    p = dur.p[i];
+    q = new Object;
+    q.s0 = p.s0;
+    q.s1 = p.s1;
+    q.s2 = p.s2;
+    old[i] = q;
+    i = i + 1;
+  }
+
+  i = 0;
+  var j;
+  while (i < old.length) {
+    p = old[i];
+    j = 0;
+    while (j < dur.p.length) {
+      if (i !== j) {
+        q = dur.p[j];
+
+        if (p.s2) {
+          if (q.s0) {
+            if (getRandom(p.s2 + q.s0) < q.s0) {
+              q.s0 = q.s0 - 1;
+            }
+          } else if (q.s2) {
+            if (getRandom(p.s2 + q.s2) < q.s2) {
+              q.s2 = q.s2 - 1;
+            }
+          } else if (q.h) {
+            if (getRandom(8) < p.s2) {
+              q.h = q.h - 1;
+            }
+          }
+        }
+
+        if (p.s1) {
+          if (q.s2) {
+            if (getRandom(p.s1 + q.s2) < q.s2) {
+              q.s2 = q.s2 - 1;
+            }
+          } else if (q.s1) {
+            if (getRandom(p.s1 + q.s1) < q.s1) {
+              q.s1 = q.s1 - 1;
+            }
+          } else if (q.h) {
+            if (getRandom(8) < p.s1) {
+              q.h = q.h - 1;
+            }
+          }
+        }
+
+        if (p.s0) {
+          if (q.s1) {
+            if (getRandom(p.s0 + q.s1) < q.s1) {
+              q.s1 = q.s1 - 1;
+            }
+          } else if (q.s0) {
+            if (getRandom(p.s0 + q.s0) < q.s0) {
+              q.s0 = q.s0 - 1;
+            }
+          } else if (q.h) {
+            if (getRandom(8) < p.s0) {
+              q.h = q.h - 1;
+            }
+          }
+        }
+
+
+        if (p.s1 && (getRandom(p.s1 + q.s2) < q.s2)) {
+          q.s2 = q.s2 - 1;
+        }
+
+        if (p.s0 && (getRandom(p.s0 + q.s1) < q.s1)) {
+          q.s1 = q.s1 - 1;
+        }
+      }
+      j = j + 1;
+    }
+    i = i + 1;
+  }
+
+  i = 0;
+  while (i < dur.p.length) {
+    p = dur.p[i];
+    if (p.h) {
+      p.r = p.r + 1;
+    } else {
+      p.r = 0;
+    }
+    i = i + 1;
+  }
+
+  i = 0;
+  var built;
+  var r;
+  while (i < dur.p.length) {
+    p = dur.p[i];
+    if (p.h) {
+      built = 0;
+      if ((p.action === 1) && (p.r > 1)) {
+        p.s0 = p.s0 + 1;
+        p.r = p.r - 2;
+        built = 1;
+      } else if ((p.action === 2) && (p.r > 3)) {
+        p.s1 = p.s1 + 1;
+        p.r = p.r - 4;
+        built = 1;
+      } else if ((p.action === 3) && (p.r > 7)) {
+        p.s2 = p.s2 + 1;
+        p.r = p.r - 8;
+        built = 1;
+      }
+
+      if ((i > 0) && built) {
+        r = getRandom(7);
+        if (r < 1) {
+          p.action = 3;
+        } else if (r < 3) {
+          p.action = 2;
+        } else {
+          p.action = 1;
+        }
+      }
+    } else {
+      p.action = 4;
+    }
+
+    i = i + 1;
+  }
+}
+
+function onSubmit() {
+  var i;
+  var p;
+  try {
+    var l = new Object;
+    l.info = '';
+
+    if (tmp.started) {
+      var sel;
+      if (window.f.t.value === '') {
+        sel = 0;
+      } else {
+        sel = parseInt(window.f.t.value);
+        if (isNaN(sel)) {
+          sel = undefined;
+        }
+      }
+      if (sel === 0) {
+        step();
+      } else if (sel && (sel > 0) && (5 > sel)) {
+        p = dur.p[0];
+        p.action = sel;
+      }
+    } else {
+      tmp.started = 1;
+    }
+
+    l.info = l.info + 'Round ' + dur.round + nl;
+    dur.round = dur.round + 1;
+
+    var t0;
+    var t1;
+    var t2;
+    var allAlive = 0;
+    var lastAlive = 0;
+    i = 0;
+    while (i < dur.p.length) {
+      p = dur.p[i];
+      t0 = '';
+      t1 = '';
+      t2 = '';
+      if (p.action === 1) {
+        t0 = '*';
+      } else if (p.action === 2) {
+        t1 = '*';
+      } else if (p.action === 3) {
+        t2 = '*';
+      }
+      if (p.h) {
+        allAlive = allAlive + 1;
+        lastAlive = i;
+      }
+      l.info = l.info + 'Player ' + i + ': health ' + p.h + ', resources ' + p.r + ', scout' + t0 + ' ' + p.s0 + ' ' + ', bomber' + t1 + ' ' + p.s1 + ', destroyer' + t2 + ' ' + p.s2 + nl;
+      i = i + 1;
+    }
+    if (allAlive < 2) {
+      l.info = l.info + 'Game over.';
+      reload(l.info, 0);
+    } else {
+      l.info = l.info + 'Keys: 1=scout 2=bomber 3=destroyer 4=stop 0=finish';
+      reload(l.info, 1);
+    }
+  } catch (e) {
+    console.log(e + nl);
+    throw(e);
+  }
+  return undefined;
+}
+
+function init() {
+  dur.round = 0;
+  dur.p = new Array;
+  var i = 0;
+  while (i < 3) {
+    var p = new Object;
+    if (i === 0) {
+      p.action = 4;
+    } else {
+      p.action = getRandom(3) + 1;
+    }
+    p.h = 9;
+    p.r = 0;
+    p.s0 = 0;
+    p.s1 = 0;
+    p.s2 = 0;
+    dur.p[i] = p;
+    i = i + 1;
+  }
+  onSubmit();
+}
+
+init();
+</script>
+</body>
+</html>
