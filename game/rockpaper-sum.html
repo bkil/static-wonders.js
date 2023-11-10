@@ -17,6 +17,11 @@ html {
 </style>
 </head>
 <body>
+<div class=needJs>Please install a web browser supporting JavaScript or consider implementing a Web0/gemiweb browser supporting JavaScript0 yourself to view this content.
+<br>
+<a target=_blank href="https://gitlab.com/bkil/gemiweb">https://gitlab.com/bkil/gemiweb</a>
+</div>
+
 <script>
 'use strict';
 var nl = String.fromCharCode(10);
@@ -42,7 +47,7 @@ function reload(text, haveInput) {
     inp = '<form name=f action="javascript:onSubmit()"><input name=t><input type=submit></form>';
   }
   document.close();
-  document.write(typ + '<html lang=en><head>' + head + '</head><body><pre>' + text + '</pre>' + inp + '</body></html>');
+  document.write(typ + '<html lang=en><head>' + head + '<style>.needJs{display:none}</style></head><body><pre>' + text + '</pre>' + inp + '</body></html>');
   document.close();
   if (window.f && (window.f.t && window.f.t.focus)) {
     window.f.t.focus();
@@ -246,7 +251,7 @@ function onSubmit() {
         allAlive = allAlive + 1;
         lastAlive = i;
       }
-      l.info = l.info + 'Player ' + i + ': health ' + p.h + ', resources ' + p.r + ', scout' + t0 + ' ' + p.s0 + ' ' + ', bomber' + t1 + ' ' + p.s1 + ', destroyer' + t2 + ' ' + p.s2 + nl;
+      l.info = l.info + 'Player ' + i + ': health ' + p.h + ', resources ' + p.r + ', scout' + t0 + ' ' + p.s0 + ', bomber' + t1 + ' ' + p.s1 + ', destroyer' + t2 + ' ' + p.s2 + nl;
       i = i + 1;
     }
     if (allAlive < 2) {
@@ -258,7 +263,6 @@ function onSubmit() {
     }
   } catch (e) {
     console.log(e + nl);
-    throw(e);
   }
   return undefined;
 }
