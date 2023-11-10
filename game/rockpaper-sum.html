@@ -17,10 +17,9 @@ html {
 </style>
 </head>
 <body>
-<div class=needJs>Please install a web browser supporting JavaScript or consider implementing a Web0/gemiweb browser supporting JavaScript0 yourself to view this content.
+Please install a web browser that supports JavaScript or consider implementing a Web0/gemiweb browser with JavaScript0 yourself to view this content.
 <br>
 <a target=_blank href="https://gitlab.com/bkil/gemiweb">https://gitlab.com/bkil/gemiweb</a>
-</div>
 
 <script>
 'use strict';
@@ -47,7 +46,7 @@ function reload(text, haveInput) {
     inp = '<form name=f action="javascript:onSubmit()"><input name=t><input type=submit></form>';
   }
   document.close();
-  document.write(typ + '<html lang=en><head>' + head + '<style>.needJs{display:none}</style></head><body><pre>' + text + '</pre>' + inp + '</body></html>');
+  document.write(typ + '<html lang=en><head>' + head + '</head><body><pre>' + text + '</pre>' + inp + '</body></html>');
   document.close();
   if (window.f && (window.f.t && window.f.t.focus)) {
     window.f.t.focus();
@@ -68,6 +67,40 @@ function getRandom(n) {
 
 var dur = new Object;
 var tmp = new Object;
+
+function print() {
+  var i;
+  var p;
+  var l = new Object;
+  l.info = 'Round ' + dur.round + nl;
+
+  var t0;
+  var t1;
+  var t2;
+  i = 0;
+  while (i < dur.p.length) {
+    p = dur.p[i];
+    t0 = ' ';
+    t1 = ' ';
+    t2 = ' ';
+    if (p.action === 1) {
+      t0 = '*';
+    } else if (p.action === 2) {
+      t1 = '*';
+    } else if (p.action === 3) {
+      t2 = '*';
+    }
+    l.info = l.info + 'Player ' + i + ': health ' + p.h + ', resources ' + p.r + ', scout' + t0 + ' ' + p.s0 + ', bomber' + t1 + ' ' + p.s1 + ', destroyer' + t2 + ' ' + p.s2 + nl;
+    i = i + 1;
+  }
+  if (tmp.gameOver) {
+    l.info = l.info + 'Game over.';
+    reload(l.info, 0);
+  } else {
+    l.info = l.info + 'Keys: 1=scout 2=bomber 3=deflector 4=gather 5=automatic 0=next';
+    reload(l.info, 1);
+  }
+}
 
 function step() {
   var i;
@@ -150,15 +183,18 @@ function step() {
   }
 
   i = 0;
+  var allAlive = 0;
   while (i < dur.p.length) {
     p = dur.p[i];
     if (p.h) {
       p.r = p.r + 1;
+      allAlive = allAlive + 1;
     } else {
       p.r = 0;
     }
     i = i + 1;
   }
+  tmp.gameOver = allAlive < 2;
 
   i = 0;
   var built;
@@ -197,70 +233,36 @@ function step() {
 
     i = i + 1;
   }
+
+  dur.round = dur.round + 1;
+  print();
 }
 
 function onSubmit() {
-  var i;
-  var p;
   try {
-    var l = new Object;
-    l.info = '';
-
-    if (tmp.started) {
-      var sel;
-      if (window.f.t.value === '') {
-        sel = 0;
-      } else {
-        sel = parseInt(window.f.t.value);
-        if (isNaN(sel)) {
-          sel = undefined;
-        }
-      }
-      if (sel === 0) {
-        step();
-      } else if (sel && (sel > 0) && (5 > sel)) {
-        p = dur.p[0];
-        p.action = sel;
-      }
-    } else {
+    if (!tmp.started) {
       tmp.started = 1;
+      print();
+      return undefined;
+    }
+    if (window.f.t.value === '') {
+      step();
+      return undefined;
     }
 
-    l.info = l.info + 'Round ' + dur.round + nl;
-    dur.round = dur.round + 1;
+    var sel = parseInt(window.f.t.value);
+    if (isNaN(sel) || (0 > sel) || (sel > 5)) {
+      print();
+      return undefined;
+    }
 
-    var t0;
-    var t1;
-    var t2;
-    var allAlive = 0;
-    var lastAlive = 0;
-    i = 0;
-    while (i < dur.p.length) {
-      p = dur.p[i];
-      t0 = '';
-      t1 = '';
-      t2 = '';
-      if (p.action === 1) {
-        t0 = '*';
-      } else if (p.action === 2) {
-        t1 = '*';
-      } else if (p.action === 3) {
-        t2 = '*';
-      }
-      if (p.h) {
-        allAlive = allAlive + 1;
-        lastAlive = i;
-      }
-      l.info = l.info + 'Player ' + i + ': health ' + p.h + ', resources ' + p.r + ', scout' + t0 + ' ' + p.s0 + ', bomber' + t1 + ' ' + p.s1 + ', destroyer' + t2 + ' ' + p.s2 + nl;
-      i = i + 1;
+    if (sel === 5) {
+      tmp.auto = !tmp.auto;
+    } else if (sel) {
+      var p = dur.p[0];
+      p.action = sel;
     }
-    if (allAlive < 2) {
-      l.info = l.info + 'Game over.';
-      reload(l.info, 0);
-    } else {
-      l.info = l.info + 'Keys: 1=scout 2=bomber 3=destroyer 4=stop 0=finish';
-      reload(l.info, 1);
-    }
+    step();
   } catch (e) {
     console.log(e + nl);
   }
@@ -268,6 +270,19 @@ function onSubmit() {
 }
 
 function init() {
+  tmp.gameOver = 0;
+  tmp.auto = 0;
+
+  function g(self) {
+    if (!tmp.gameOver) {
+      if (tmp.auto) {
+        step();
+      }
+      setTimeout(function() { self(self) }, 2000);
+    }
+  }
+  setTimeout(function() { g(g) }, 2000);
+
   dur.round = 0;
   dur.p = new Array;
   var i = 0;
@@ -289,7 +304,7 @@ function init() {
   onSubmit();
 }
 
-init();
+setTimeout(init, 0);
 </script>
 </body>
 </html>
