@@ -26,7 +26,7 @@ Please install a web browser that supports JavaScript or consider implementing a
 var nl = String.fromCharCode(10);
 var bs = String.fromCharCode(92);
 
-function reload(text, haveInput) {
+function reload(text) {
   var typ = '';
   if (document.doctype && (document.doctype.name !== undefined)) {
     typ = '<!DOCTYPE ' + document.doctype.name + '>';
@@ -41,12 +41,8 @@ function reload(text, haveInput) {
     }
   }
 
-  var inp = '';
-  if (haveInput) {
-    inp = '<form name=f action="javascript:onSubmit()"><input name=t><input type=submit></form>';
-  }
   document.close();
-  document.write(typ + '<html lang=en><head>' + head + '</head><body><pre>' + text + '</pre>' + inp + '</body></html>');
+  document.write(typ + '<html lang=en><head>' + head + '</head><body>' + text + '</body></html>');
   document.close();
   if (window.f && (window.f.t && window.f.t.focus)) {
     window.f.t.focus();
@@ -54,128 +50,198 @@ function reload(text, haveInput) {
 }
 
 var random = new Object;
-random.seed = 44257;
+random.seed = (new Date) % 65536;
 
 function getRandom(n) {
   var x = random.seed;
   x = x ^ (x >> 7);
   x = x ^ (x << 9);
-  x = x ^ (x >> 13);
+  x = (x ^ (x >> 13)) & 65535;
   random.seed = x;
   return x % n;
+}
+
+function printPlayer(out, who) {
+  if (who === 0) {
+    out = out + 'You';
+  } else {
+    out = out + 'Player ' + String.fromCharCode(65 + who);
+  }
+  return out;
+}
+
+function printBar(out, char, x) {
+  var i = 0;
+  while (i < x) {
+    out = out + char;
+    i = i + 1;
+  }
+  return out + ' ' + x;
 }
 
 var dur = new Object;
 var tmp = new Object;
 
+function printShip(out, which) {
+  var i = 0;
+  var p;
+  var name;
+  var char;
+  if (which === 0) {
+    name = 'scout';
+    char = 's';
+  } else if (which === 1) {
+    name = 'Bomber';
+    char = 'B';
+  } else {
+    name = 'defender';
+    char = 'd';
+  }
+
+  if (!tmp.showForm) {
+    if (tmp.gameOver) {
+      out = out + name + '';
+    } else {
+      out = out + '<a href=javascript:key(' + (which + 1) + ')>build ' + name + '</a>';
+    }
+  }
+
+  out = out + '<ul>';
+  while (i < dur.p.length) {
+    p = dur.p[i];
+    out = out + '<li>.';
+    out = printBar(out, char, p.s[which]);
+    if (p.action === (which + 1)) {
+      out = out + '+';
+    }
+    out = out + ' ';
+    if (tmp.showForm) {
+      out = out + name + ' ';
+    }
+    out = printPlayer(out, i);
+    out = out + '</li>';
+    i = i + 1;
+  }
+  return out + '</ul>';
+}
+
 function print() {
   var i;
   var p;
-  var l = new Object;
-  l.info = 'Round ' + dur.round + nl;
+  var out = '';
+  if (!tmp.gameOver && !tmp.showForm) {
+    out = out + '<a href=javascript:key(0)>next round</a><br>';
+  }
+  out = out + 'Round ' + dur.round + '<br>';
+  out = printShip(out, 0);
+  out = printShip(out, 1);
+  out = printShip(out, 2);
+  if (!tmp.gameOver && !tmp.showForm) {
+    out = out + '<a href=javascript:key(4)>stop building</a>';
+  }
 
-  var t0;
-  var t1;
-  var t2;
+  out = out + '<ul>';
   i = 0;
   while (i < dur.p.length) {
     p = dur.p[i];
-    t0 = ' ';
-    t1 = ' ';
-    t2 = ' ';
-    if (p.action === 1) {
-      t0 = '*';
-    } else if (p.action === 2) {
-      t1 = '*';
-    } else if (p.action === 3) {
-      t2 = '*';
-    }
-    l.info = l.info + 'Player ' + i + ': health ' + p.h + ', resources ' + p.r + ', scout' + t0 + ' ' + p.s0 + ', bomber' + t1 + ' ' + p.s1 + ', destroyer' + t2 + ' ' + p.s2 + nl;
+    out = out + '<li>.';
+    out = printBar(out, '%', p.h);
+    out = out + ' base health, ' + p.r + ' resources for ';
+    out = printPlayer(out, i);
+    out = out + '</li>';
     i = i + 1;
   }
+  out = out + '</ul>';
+
+  if (!tmp.gameOver && !tmp.showForm) {
+    out = out + '<a href=javascript:key(5)>';
+    if (tmp.auto) {
+      out = out + 'pause';
+    } else {
+      out = out + 'resume';
+    }
+    out = out + ' automatic stepping</a><br>';
+  }
+
+  if (!tmp.showForm) {
+    out = out + '<a href=javascript:key(6)>show form input</a><br>';
+  }
+
   if (tmp.gameOver) {
-    l.info = l.info + 'Game over.';
-    reload(l.info, 0);
-  } else {
-    l.info = l.info + 'Keys: 1=scout 2=bomber 3=deflector 4=gather 5=automatic 0=next';
-    reload(l.info, 1);
+    out = out + 'Game over.';
+    if (!tmp.showForm) {
+      out = out + '<br><a href=javascript:key(7)>restart</a>';
+    }
+  }
+
+  if (tmp.showForm) {
+    out = out + '<br>Keys: 0=next 1=scout 2=Bomber 3=defender 4=idle 5=auto 6=links 7=restart';
+    out = out + '<form name=f action="javascript:onSubmit()"><input name=t><input type=submit></form>';
+  }
+
+  reload(out);
+}
+
+function build(player, ship, cost) {
+  if ((player.action !== (ship + 1)) || (player.r < cost)) {
+    return 0;
+  }
+  player.s[ship] = player.s[ship] + 1;
+  player.r = player.r - cost;
+  return 1;
+}
+
+function hit(old, next, who, hqMiss) {
+  var dest = (who + 1) % 3;
+  if (old.s[who]) {
+    if (next.s[dest]) {
+      if (getRandom(old.s[who] + next.s[dest]) < next.s[dest]) {
+        next.s[dest] = next.s[dest] - 1;
+      }
+    } else if (next.s[who]) {
+      if ((2 * getRandom(old.s[who] + next.s[who])) < next.s[who]) {
+        next.s[who] = next.s[who] - 1;
+      }
+    } else if (next.h) {
+      if (getRandom(hqMiss) < old.s[who]) {
+        next.h = next.h - 1;
+      }
+    }
   }
 }
 
 function step() {
-  var i;
-  var p;
+  if (tmp.gameOver) {
+    print();
+    return 0;
+  }
 
-  var old = new Array;
+  var p;
   var q;
-  i = 0;
+  var old = new Array;
+  var i = 0;
   while (i < dur.p.length) {
     p = dur.p[i];
     q = new Object;
-    q.s0 = p.s0;
-    q.s1 = p.s1;
-    q.s2 = p.s2;
+    q.s = new Array;
+    q.s[0] = p.s[0];
+    q.s[1] = p.s[1];
+    q.s[2] = p.s[2];
     old[i] = q;
     i = i + 1;
   }
 
-  i = 0;
   var j;
+  i = 0;
   while (i < old.length) {
     p = old[i];
     j = 0;
     while (j < dur.p.length) {
       if (i !== j) {
         q = dur.p[j];
-
-        if (p.s2) {
-          if (q.s0) {
-            if (getRandom(p.s2 + q.s0) < q.s0) {
-              q.s0 = q.s0 - 1;
-            }
-          } else if (q.s2) {
-            if ((2 * getRandom(p.s2 + q.s2)) < q.s2) {
-              q.s2 = q.s2 - 1;
-            }
-          } else if (q.h) {
-            if (getRandom(4) < p.s2) {
-              q.h = q.h - 1;
-            }
-          }
-        }
-
-        if (p.s1) {
-          if (q.s2) {
-            if (getRandom(p.s1 + q.s2) < q.s2) {
-              q.s2 = q.s2 - 1;
-            }
-          } else if (q.s1) {
-            if ((2 * getRandom(p.s1 + q.s1)) < q.s1) {
-              q.s1 = q.s1 - 1;
-            }
-          } else if (q.h) {
-            if (getRandom(2) < p.s1) {
-              q.h = q.h - 1;
-            }
-          }
-        }
-
-        if (p.s0) {
-          if (q.s1) {
-            if (getRandom(p.s0 + q.s1) < q.s1) {
-              q.s1 = q.s1 - 1;
-            }
-          } else if (q.s0) {
-            if ((2 * getRandom(p.s0 + q.s0)) < q.s0) {
-              q.s0 = q.s0 - 1;
-            }
-          } else if (q.h) {
-            if (getRandom(8) < p.s0) {
-              q.h = q.h - 1;
-            }
-          }
-        }
-
+        hit(p, q, 0, 8);
+        hit(p, q, 1, 2);
+        hit(p, q, 2, 4);
       }
       j = j + 1;
     }
@@ -202,20 +268,7 @@ function step() {
   while (i < dur.p.length) {
     p = dur.p[i];
     if (p.h) {
-      built = 0;
-      if ((p.action === 1) && (p.r > 1)) {
-        p.s0 = p.s0 + 1;
-        p.r = p.r - 2;
-        built = 1;
-      } else if ((p.action === 2) && (p.r > 3)) {
-        p.s1 = p.s1 + 1;
-        p.r = p.r - 4;
-        built = 1;
-      } else if ((p.action === 3) && (p.r > 7)) {
-        p.s2 = p.s2 + 1;
-        p.r = p.r - 8;
-        built = 1;
-      }
+      built = build(p, 0, 2) | build(p, 1, 4) | build(p, 2, 8);
 
       if ((i > 0) && built) {
         r = getRandom(7);
@@ -238,38 +291,7 @@ function step() {
   print();
 }
 
-function onSubmit() {
-  try {
-    if (!tmp.started) {
-      tmp.started = 1;
-      print();
-      return undefined;
-    }
-    if (window.f.t.value === '') {
-      step();
-      return undefined;
-    }
-
-    var sel = parseInt(window.f.t.value);
-    if (isNaN(sel) || (0 > sel) || (sel > 5)) {
-      print();
-      return undefined;
-    }
-
-    if (sel === 5) {
-      tmp.auto = !tmp.auto;
-    } else if (sel) {
-      var p = dur.p[0];
-      p.action = sel;
-    }
-    step();
-  } catch (e) {
-    console.log(e + nl);
-  }
-  return undefined;
-}
-
-function init() {
+function restart() {
   tmp.gameOver = 0;
   tmp.auto = 0;
 
@@ -295,13 +317,59 @@ function init() {
     }
     p.h = 9;
     p.r = 0;
-    p.s0 = 0;
-    p.s1 = 0;
-    p.s2 = 0;
+    p.s = new Array;
+    p.s[0] = 0;
+    p.s[1] = 0;
+    p.s[2] = 0;
     dur.p[i] = p;
     i = i + 1;
   }
-  onSubmit();
+  print();
+}
+
+function key(k) {
+  if ((0 > k) || (k > 7)) {
+    print();
+  } else if (k === 7) {
+    restart();
+  } else if (k === 6) {
+    tmp.showForm = !tmp.showForm;
+    print();
+  } else if (k === 5) {
+    tmp.auto = !tmp.auto;
+    print();
+  } else {
+    if (k) {
+      var p = dur.p[0];
+      p.action = k;
+    }
+    step();
+  }
+}
+
+function onSubmit() {
+  try {
+    if (window.f.t.value === '') {
+      step();
+      return undefined;
+    }
+
+    var sel = parseInt(window.f.t.value);
+    if (isNaN(sel)) {
+      print();
+      return undefined;
+    }
+    key(sel);
+  } catch (e) {
+    console.log(e + nl);
+    throw(e);
+  }
+  return undefined;
+}
+
+function init() {
+  tmp.showForm = 0;
+  restart();
 }
 
 setTimeout(init, 0);
