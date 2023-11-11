@@ -63,9 +63,9 @@ function getRandom(n) {
 
 function printPlayer(out, who) {
   if (who === 0) {
-    out = out + 'You';
+    out = out + 'Me';
   } else {
-    out = out + 'Player ' + String.fromCharCode(65 + who);
+    out = out + 'Bot-' + String.fromCharCode(65 + who);
   }
   return out;
 }
@@ -76,7 +76,7 @@ function printBar(out, char, x) {
     out = out + char;
     i = i + 1;
   }
-  return out + ' ' + x;
+  return out;
 }
 
 var dur = new Object;
@@ -84,7 +84,6 @@ var tmp = new Object;
 
 function printShip(out, which) {
   var i = 0;
-  var p;
   var name;
   var char;
   if (which === 0) {
@@ -98,31 +97,37 @@ function printShip(out, which) {
     char = 'd';
   }
 
-  if (!tmp.showForm) {
-    if (tmp.gameOver) {
-      out = out + name + '';
-    } else {
-      out = out + '<a href=javascript:key(' + (which + 1) + ')>build ' + name + '</a>';
-    }
+  if (tmp.gameOver || tmp.showForm) {
+    out = out + name + '';
+  } else {
+    out = out + '<a href=javascript:key(' + (which + 1) + ')>build ' + name + '</a>';
   }
 
-  out = out + '<ul>';
+  var p;
+  var width;
+  var maxWidth = 5;
+  out = out + '<pre>';
   while (i < dur.p.length) {
     p = dur.p[i];
-    out = out + '<li>.';
-    out = printBar(out, char, p.s[which]);
-    if (p.action === (which + 1)) {
-      out = out + '+';
-    }
-    out = out + ' ';
-    if (tmp.showForm) {
-      out = out + name + ' ';
+    if (i !== 0) {
+      out = out + ' ';
     }
     out = printPlayer(out, i);
-    out = out + '</li>';
+    out = out + ' ' + (p.s[which]) + ' ';
+    width = p.s[which];
+    if (width > maxWidth) {
+      width = maxWidth;
+    }
+    out = printBar(out, char, width);
+    if (p.action === (which + 1)) {
+      out = out + '+';
+    } else {
+      out = out + ' ';
+    }
+    out = printBar(out, ' ', (maxWidth - width) + 1);
     i = i + 1;
   }
-  return out + '</ul>';
+  return out + '</pre>';
 }
 
 function print() {
@@ -145,8 +150,8 @@ function print() {
   while (i < dur.p.length) {
     p = dur.p[i];
     out = out + '<li>.';
-    out = printBar(out, '%', p.h);
-    out = out + ' base health, ' + p.r + ' resources for ';
+    out = printBar(out, '.', p.h);
+    out = out + ' ' + p.h + ' health, ' + p.r + ' funds ';
     out = printPlayer(out, i);
     out = out + '</li>';
     i = i + 1;
