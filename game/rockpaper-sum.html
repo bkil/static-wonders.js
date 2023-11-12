@@ -300,16 +300,6 @@ function restart() {
   tmp.gameOver = 0;
   tmp.auto = 0;
 
-  function g(self) {
-    if (!tmp.gameOver) {
-      if (tmp.auto) {
-        step();
-      }
-      setTimeout(function() { self(self) }, 2000);
-    }
-  }
-  setTimeout(function() { g(g) }, 2000);
-
   dur.round = 0;
   dur.p = new Array;
   var i = 0;
@@ -333,6 +323,13 @@ function restart() {
 }
 
 function key(k) {
+  function g(self) {
+    if (tmp.auto && !tmp.gameOver) {
+      step();
+      setTimeout(function() { self(self) }, 2000);
+    }
+  }
+
   if ((0 > k) || (k > 7)) {
     print();
   } else if (k === 7) {
@@ -342,6 +339,9 @@ function key(k) {
     print();
   } else if (k === 5) {
     tmp.auto = !tmp.auto;
+    if (tmp.auto && !tmp.gameOver) {
+      setTimeout(function() { g(g) }, 2000);
+    }
     print();
   } else {
     if (k) {
