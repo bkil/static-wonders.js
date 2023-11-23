@@ -7,7 +7,7 @@
 // @match       https://gitlab.com/*
 // @match       https://codeberg.org/*
 // @grant       none
-// @version     2023.10.3
+// @version     2023.10.4
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -52,12 +52,12 @@ function getHashColor(text) {
 }
 
 function nthIndexOf(needle, haystack, n) {
-  var pos = 0;
+  var pos = -1;
   var i = 0;
-  while ((n >= i) && (pos > -1)) {
-    pos = haystack.indexOf(needle, pos);
-    if (pos > -1) {
-      pos = pos + 1;
+  while (n >= i) {
+    pos = haystack.indexOf(needle, pos + 1);
+    if (pos < 0) {
+      return pos;
     }
     i = i + 1;
   }
@@ -67,9 +67,9 @@ function nthIndexOf(needle, haystack, n) {
 function getPathComponents(url, n) {
   var i = nthIndexOf('/', url, n);
   if (i < 0) {
-    i = url.length + 1;
+    i = url.length;
   }
-  return url.substring(0, i - 1);
+  return url.substring(0, i);
 }
 
 function applyColor(elem, color1, color2) {
