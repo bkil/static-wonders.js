@@ -6,8 +6,9 @@
 // @match       https://*.*/notice/*
 // @match       https://*.*/notes/*
 // @match       https://*.*/@*/*
+// @match       https://*.*/@*
 // @grant       none
-// @version     2023.5.1
+// @version     2023.11.1
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -19,7 +20,7 @@
 'use strict';
 
 function main() {
-  const sites = /^\/(notice\/[0-9A-Za-z]{18}|@[^\/]+\/[0-9]+|notes\/[0-9a-z]{10})$/;
+  const sites = /^\/(notice\/[0-9A-Za-z]{18}|@[^\/]+(\/[0-9]+)?|notes\/[0-9a-z]{10})$/;
   if (window.location.hash || window.location.search || !window.location.pathname.match(sites)) {
     return
   }
@@ -69,14 +70,20 @@ function addTitleDescription(result) {
   result.appendChild(el);
 
   const feed = document.createElement('details');
+  feed.open = true;
   const sum = document.createElement('summary');
   sum.textContent = '(click to view whole user feed)';
-  addRssEntries(feed, longDesc, shortDesc);
-  result.appendChild(feed);
+  feed.appendChild(sum);
+  if (addRssEntries(feed, longDesc, shortDesc)) {
+    result.appendChild(feed);
+  }
 }
 
 function addRssEntries(feed, longDesc, shortDesc) {
-  const rss = document.querySelector('link[rel="alternate"][type="application/atom+xml"]')?.href;
+  const rss = (
+    document.querySelector('link[rel="alternate"][type="application/atom+xml"]') ??
+    document.querySelector('link[rel="alternate"][type="application/rss+xml"]')
+  )?.href;
   const err = function() { result.textContent = 'RSS entry not found'; };
   if (rss) {
     fetch(rss,
@@ -84,8 +91,8 @@ function addRssEntries(feed, longDesc, shortDesc) {
         const j = (new DOMParser()).parseFromString(r, 'text/xml');
         shortDesc = shortDesc.replace(/\.\.\.$/, '');
         const rich = document.createElement('div');
-        foreach(j.querySelectorAll('entry'), function(entry) {
-          const content = entry.querySelector('content')?.textContent;
+        foreach(j.querySelectorAll('entry, item'), function(entry) {
+          const content = entry.querySelector('content, description')?.textContent;
           if (content) {
             rich.innerHTML = sanitizeHtmlDesc(content);
             if (rich.textContent.startsWith(shortDesc)) {
@@ -102,6 +109,7 @@ function addRssEntries(feed, longDesc, shortDesc) {
       err
     );
   }
+  return !!rss;
 }
 
 function sanitizeHtmlDesc(html) {
@@ -110,11 +118,16 @@ function sanitizeHtmlDesc(html) {
 
 function render(result, entry) {
   const url = document.createElement('a');
-  url.href = entry.querySelector('id')?.textContent;
+  url.href = entry.querySelector('id')?.textContent ??
+    entry.querySelector('link')?.textContent;
   url.target = '_blank';
-  url.textContent = (entry.querySelector('updated') ?? entry.querySelector('published'))?.textContent ?? 'link';
+  url.textContent = (
+    entry.querySelector('updated') ??
+    entry.querySelector('published') ??
+    entry.querySelector('pubDate')
+  )?.textContent ?? 'link';
 
-  const content = entry.querySelector('content')?.textContent;
+  const content = entry.querySelector('content, description')?.textContent;
   const body = document.createElement('div');
   body.innerHTML  =
     content
@@ -122,8 +135,10 @@ function render(result, entry) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
+    .replace(/&lt;a href=&quot;([^&]+)&quot;(?:[^&]|&quot;)*&gt;(.*?)&lt;\/a&gt;/g, '<a href="$1" target="_blank" rel="noreferrer noopener">$2</a>')
     .replace(/(&)amp;(#(?:[0-9]+|$[0-9a-f]+);)/g, '$1$2')
-    .replace(/&lt;br\/?&gt;/g, '<br>');
+    .replace(/&lt;(?:\/?span)\b(?:[^&]|&quot;)*&gt;/g, '')
+    .replace(/&lt;(?:(br) ?\/?|(\/?p))&gt;/g, '<$1$2>');
 
   result.innerHTML = '';
   result.appendChild(url);
