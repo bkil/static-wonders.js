@@ -54,6 +54,9 @@ random.seed = (new Date) % 65536;
 
 function getRandom(n) {
   var x = random.seed;
+  if (!x) {
+    x = x + 1;
+  }
   x = x ^ (x >> 7);
   x = x ^ (x << 9);
   x = (x ^ (x >> 13)) & 65535;
