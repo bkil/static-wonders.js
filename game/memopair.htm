@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Memory pair matching game</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='Example interactive app for Web0/JavaScript0' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=no-referrer>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta http-equiv=Content-Security-Policy content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+<style>
+html {
+  background-color: black;
+  color: white;
+}
+</style>
+</head>
+<body>
+Please install a web browser that supports JavaScript or consider implementing a Web0/gemiweb browser with JavaScript0 yourself to view this content.
+<br>
+<a target=_blank href="https://gitlab.com/bkil/gemiweb">https://gitlab.com/bkil/gemiweb</a>
+
+<script>
+'use strict';
+var nl = String.fromCharCode(10);
+var bs = String.fromCharCode(92);
+
+function reload(text) {
+  var typ = '';
+  if (document.doctype && (document.doctype.name !== undefined)) {
+    typ = '<!DOCTYPE ' + document.doctype.name + '>';
+  }
+
+  var head = '';
+  if (document.head && document.head.innerHTML && String.prototype && String.prototype.match) {
+    head = document.head.innerHTML;
+    var m = head.match('^((?:.|' + bs + 'n)*)<[^>]+http-equiv=["' + "'" + ']?Content-Security-Policy[^>]*>((?:.|' + bs + 'n)*)$');
+    if (m) {
+      head = m[1] + m[2];
+    }
+  }
+
+  document.close();
+  document.write(typ + '<html lang=en><head>' + head + '</head><body>' + text + '</body></html>');
+  document.close();
+  if (window.f && (window.f.t && window.f.t.focus)) {
+    window.f.t.focus();
+  }
+}
+
+var random = new Object;
+random.seed = (new Date) % 65536;
+
+function getRandom(n) {
+  var x = random.seed;
+  x = x ^ (x >> 7);
+  x = x ^ (x << 9);
+  x = (x ^ (x >> 13)) & 65535;
+  random.seed = x;
+  return x % n;
+}
+
+var dur = new Object;
+var tmp = new Object;
+
+function print() {
+  var j;
+  var out = '';
+  var i = 0;
+  var col = dur.startCol;
+  while (dur.place.length > i) {
+    if (!tmp.showForm && (dur.pairs > dur.foundPairs)) {
+      out = out + '<a href=javascript:key(' + i + ')>';
+    }
+    j = 0;
+    while (col > j) {
+      out = out + '. ';
+      j = j + 1;
+    }
+    if ((i === dur.pick1) || (i === dur.pick2) || dur.found[i]) {
+      out = out + dur.place[i];
+    } else {
+      out = out + i;
+    }
+    if (!tmp.showForm && (dur.pairs > dur.foundPairs)) {
+      out = out + '</a>';
+    }
+    out = out + '<br>';
+    col = (col + dur.stepCol) % dur.cols;
+    i = i + 1;
+  }
+
+  var elapsed = ((new Date - dur.startTime) / 1000) | 0;
+  out = out + dur.foundPairs + ' pairs in ' + dur.round + ' turns, ' + elapsed + 'sec, game ' + dur.game + '<br>';
+  if (tmp.showForm) {
+    out = out + 'Keys: 0..9=flip 10=links 11=new game';
+    out = out + '<form name=f action="javascript:onSubmit()"><input name=t><input type=submit></form>';
+  } else {
+    out = out + '<a href=javascript:key(10)>Show form</a><br>';
+    out = out + '<a href=javascript:key(11)>New game</a>';
+  }
+
+  reload(out);
+}
+
+function restart() {
+  dur.round = 0;
+  dur.foundPairs = 0;
+  dur.startTime = new Date;
+  dur.startCol = getRandom(5);
+  dur.stepCol = getRandom(2) + 2;
+  dur.pick1 = -1;
+  dur.pick2 = -1;
+
+  var wholeSet = tmp.levels[dur.level];
+  dur.level = (dur.level + 1) % tmp.levels.length;
+  var pickedSet = '';
+
+  var freeChar;
+  var c;
+  var pick;
+  var j;
+  var i = 0;
+  while (dur.pairs > i) {
+    freeChar = '';
+    j = 0;
+    while (wholeSet.length > j) {
+      c = wholeSet.charAt(j);
+      if (0 > pickedSet.indexOf(c)) {
+        freeChar = freeChar + c;
+      }
+      j = j + 1;
+    }
+
+    pick = getRandom(freeChar.length);
+    pickedSet = pickedSet + freeChar.charAt(pick);
+    i = i + 1;
+  }
+
+  var cards = 2 * dur.pairs;
+  var place = new Array;
+  i = 0;
+  while (cards > i) {
+    place[i] = '';
+    i = i + 1;
+  }
+
+  var freePlace;
+  i = 0;
+  while (cards > i) {
+    freePlace = new Array;
+    j = 0;
+    while (place.length > j) {
+      if (place[j].length === 0) {
+        freePlace[freePlace.length] = j;
+      }
+      j = j + 1;
+    }
+    pick = getRandom(freePlace.length);
+    j = freePlace[pick];
+    place[j] = pickedSet.charAt(i >> 1);
+    dur.found[j] = 0;
+    i = i + 1;
+  }
+  dur.place = place;
+  dur.game = dur.game + 1;
+  print();
+}
+
+function key(k) {
+  if ((0 > k) || (k > 11)) {
+    print();
+  } else if (k === 10) {
+    tmp.showForm = !tmp.showForm;
+    print();
+  } else if (k === 11) {
+    restart();
+  } else if (dur.found[k]) {
+    print();
+  } else if (0 > dur.pick1) {
+    dur.pick1 = k;
+    print();
+  } else if (k === dur.pick1) {
+    print();
+  } else {
+    dur.pick2 = k;
+    if (dur.place[dur.pick1] === dur.place[dur.pick2]) {
+      dur.found[dur.pick1] = 1;
+      dur.found[dur.pick2] = 1;
+      dur.foundPairs = dur.foundPairs + 1;
+    }
+    dur.round = dur.round + 1;
+    print();
+    dur.pick1 = -1;
+    dur.pick2 = -1;
+  }
+}
+
+function onSubmit() {
+  if (window.f.t.value === '') {
+    return undefined;
+  }
+  var sel = parseInt(window.f.t.value);
+  if (isNaN(sel)) {
+    print();
+    return undefined;
+  }
+  key(sel);
+  return undefined;
+}
+
+function init() {
+  tmp.showForm = 0;
+  var l = new Array;
+  l[0] = '"`~^' + "'";
+  l[1] = '()<>[]{}';
+  l[2] = '@#$&%|';
+  l[3] = '!?,:;=';
+  l[4] = '+-*/_' + bs;
+  tmp.levels = l;
+
+  dur.found = new Array;
+  dur.pairs = 5;
+  dur.cols = 5;
+  dur.game = 0;
+  dur.level = getRandom(l.length);
+  restart();
+}
+
+setTimeout(init, 0);
+</script>
+</body>
+</html>
