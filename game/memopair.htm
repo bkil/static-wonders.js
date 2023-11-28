@@ -94,7 +94,7 @@ function print() {
     i = i + 1;
   }
 
-  var elapsed = ((new Date - dur.startTime) / 1000) | 0;
+  var elapsed = ((new Date / 1000) | 0) - dur.startTime;
   out = out + dur.foundPairs + ' pairs in ' + dur.round + ' turns, ' + elapsed + 'sec, game ' + dur.game + '<br>';
   if (tmp.showForm) {
     out = out + 'Keys: 0..9=flip 10=links 11=new game';
@@ -110,7 +110,7 @@ function print() {
 function restart() {
   dur.round = 0;
   dur.foundPairs = 0;
-  dur.startTime = new Date;
+  dur.startTime = (new Date / 1000) | 0;
   dur.startCol = getRandom(5);
   dur.stepCol = getRandom(2) + 2;
   dur.pick1 = -1;
