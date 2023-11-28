@@ -98,7 +98,7 @@ function print() {
   out = out + dur.foundPairs + ' pairs in ' + dur.round + ' turns, ' + elapsed + 'sec, game ' + dur.game + '<br>';
   if (tmp.showForm) {
     out = out + 'Keys: 0..9=flip 10=links 11=new game';
-    out = out + '<form name=f action="javascript:onSubmit()"><input name=t><input type=submit></form>';
+    out = out + '<form name=f action="javascript:onSubmit()"><input name=t type=number min=0 max=11 placeholder=0..11 required><input type=submit></form>';
   } else {
     out = out + '<a href=javascript:key(10)>Show form</a><br>';
     out = out + '<a href=javascript:key(11)>New game</a>';
