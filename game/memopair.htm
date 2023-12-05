@@ -111,7 +111,7 @@ function restart() {
   dur.round = 0;
   dur.foundPairs = 0;
   dur.startTime = (new Date / 1000) | 0;
-  dur.startCol = getRandom(5);
+  dur.startCol = getRandom(dur.cols);
   dur.stepCol = getRandom(2) + 2;
   dur.pick1 = -1;
   dur.pick2 = -1;
