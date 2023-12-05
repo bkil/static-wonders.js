@@ -4,7 +4,7 @@
   <meta charset=utf-8>
   <title>Rock-paper-scissors numerical strategy game</title>
   <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
-  <meta property='og:description' content='Example interactive app for Web0/JavaScript0' name='description'>
+  <meta property='og:description' content='Example interactive app for Web0/JavaScript0/gemiweb' name='description'>
   <meta name=viewport content='width=device-width, initial-scale=1'>
   <meta name=referrer content=no-referrer>
   <meta http-equiv=x-dns-prefetch-control content=off>
@@ -17,10 +17,6 @@ html {
 </style>
 </head>
 <body>
-Please install a web browser that supports JavaScript or consider implementing a Web0/gemiweb browser with JavaScript0 yourself to view this content.
-<br>
-<a target=_blank href="https://gitlab.com/bkil/gemiweb">https://gitlab.com/bkil/gemiweb</a>
-
 <script>
 'use strict';
 var nl = String.fromCharCode(10);
@@ -377,7 +373,29 @@ function init() {
   restart();
 }
 
-setTimeout(init, 0);
+init();
 </script>
+
+<h2>Gameplay</h2>
+This is a simplified abstract tactical strategy simulation game inspired by PAX Britannica. You control one ship yard (Me) while the computer controls two other opponents: Bot-B and Bot-C. Each player gains +1 resource every round. Your goal is to destroy the ship yard of the opponents.
+
+<h2>Commands</h2>
+You can select the default ship type to build continuously or you can tell your shipyard to temporarily stop and gather resources.
+<p>
+You can select "Resume automatic stepping" for real time live action so you don't have to click to progress every round.
+<p>
+You can switch the user interface to expert mode offering form input catering keyboard users. Type 6 and press enter to switch back to clickable links.
+
+<h2>Ships</h2>
+<ul>
+<li>Scout: costs 2, damages: 1/2 bomber, 1/4 scout, 1/8 shipyard</li>
+<li>Bomber: costs 4, damages: 1/2 defender, 1/4 bomber, 1/2 shipyard</li>
+<li>Defender: costs 8, damages: 1/2 scout, 1/4 defender, 1/4 shipyard</li>
+</ul>
+
+<h2>Requirements</h2>
+You can install a web browser that supports at least JavaScript 1.0 to play this game or you may consider implementing a Web0/gemiweb browser with JavaScript0 yourself according to the following specification:
+<p>
+<a target=_blank href="https://gitlab.com/bkil/gemiweb">https://gitlab.com/bkil/gemiweb</a>
 </body>
 </html>

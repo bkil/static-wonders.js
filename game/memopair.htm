@@ -4,7 +4,7 @@
   <meta charset=utf-8>
   <title>Memory pair matching game</title>
   <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
-  <meta property='og:description' content='Example interactive app for Web0/JavaScript0' name='description'>
+  <meta property='og:description' content='Flip two cards at a time to eliminate matching characters. Example interactive app for Web0/JavaScript0/gemiweb' name='description'>
   <meta name=viewport content='width=device-width, initial-scale=1'>
   <meta name=referrer content=no-referrer>
   <meta http-equiv=x-dns-prefetch-control content=off>
@@ -17,10 +17,6 @@ html {
 </style>
 </head>
 <body>
-Please install a web browser that supports JavaScript or consider implementing a Web0/gemiweb browser with JavaScript0 yourself to view this content.
-<br>
-<a target=_blank href="https://gitlab.com/bkil/gemiweb">https://gitlab.com/bkil/gemiweb</a>
-
 <script>
 'use strict';
 var nl = String.fromCharCode(10);
@@ -231,7 +227,22 @@ function init() {
   restart();
 }
 
-setTimeout(init, 0);
+init();
 </script>
+
+<h2>Gameplay</h2>
+You are initially presented with the numbered side of shuffled playing cards.
+The flip side depicts a punctuation character.
+There are five pairs of cards whose flip side matches.
+<p>
+Select two cards to flip at a time.
+You need to remember what the other side of each card shows.
+The goal is to eliminate each pair of matching cards by flipping them together.
+
+<h2>Requirements</h2>
+You can install a web browser that supports at least JavaScript 1.0 to play this game or you may consider implementing a Web0/gemiweb browser with JavaScript0 yourself according to the following specification:
+<p>
+<a target=_blank href="https://gitlab.com/bkil/gemiweb">https://gitlab.com/bkil/gemiweb</a>
+
 </body>
 </html>
