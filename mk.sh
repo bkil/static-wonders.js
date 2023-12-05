@@ -9,7 +9,7 @@ userjs/mk.sh
   cat index.head.html.tpl
 
   {
-    git ls-files | grep "\.html$"
+    git ls-files | grep -E "\.html?$"
     for DIR in crypto jump userjs; do
       find "$DIR" -mtime -1 -type f -iname '*.html'
     done
