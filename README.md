@@ -6,6 +6,8 @@ See a generated file listing here:
 
 * https://bkil.gitlab.io/static-wonders.js/
 
+## References
+
 ### FOSS resources
 
 * https://github.com/mdn/content
