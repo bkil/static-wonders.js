@@ -471,7 +471,7 @@ function forEach(l, f) {
 
 var providers = [
   {
-    url: 'https://cartodb-basemaps-b.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png',
+    url: 'https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png',
     name: 'CartoDB-Basemaps Fastly.net Positron',
     maxZoom: 16,
     maxZoomHTTP: 19,
@@ -479,16 +479,6 @@ var providers = [
     size: 256,
     etag: true,
     comment: 'date & age, 180d cache, poi-0, street-2',
-  },
-  {
-    url: 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png',
-    name: 'Stamen Toner Fastly.net',
-    maxZoom: 15,
-    maxZoomHTTP: 17,
-    cors: true,
-    size: 256,
-    etag: true,
-    comment: 'date & age, 30d cache, poi-0, street-0',
   },
   {
     url: 'https://tile.openstreetmap.de/{z}/{x}/{y}.png',
@@ -584,18 +574,19 @@ var providers = [
     comment: 'etag, no last-modified, 1d cache, poi-0, street-0',
   },
   {
-    url: 'https://cartodb-basemaps-b.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png',
+    url: 'https://cartodb-basemaps-a.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png',
     name: 'Carto-Basemaps Fastly.net Dark Matter',
     maxZoom: 16,
     maxZoomHTTP: 19,
     cors: true,
+    forceHttps: true,
     size: 256,
     etag: true,
     comment: 'date & age, 180d cache, poi-0, street-2',
   },
   {
-    url: 'https://cartodb-basemaps-b.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png',
-    name: 'CartoDB-Basemaps Fastly.net',
+    url: 'https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png',
+    name: 'CartoDB-Basemaps Fastly.net Light',
     maxZoom: 15,
     maxZoomHTTP: 19,
     cors: true,
@@ -636,16 +627,6 @@ var providers = [
     comment: 'adaptively serves webp on the same URL!, bad last-modified, 14d cache, poi-2, street-1',
   },
   {
-    url: 'https://a.tile.hosted.thunderforest.com/komoot-2/{z}/{x}/{y}.png',
-    name: 'ThunderForest.com Komoot',
-    maxZoom: 16,
-    maxZoomHTTP: 20,
-    cors: true,
-    size: 256,
-    etag: true,
-    comment: 'no last-modified, 20min-6h cache, poi-0, street-1',
-  },
-  {
     url: 'https://tiles1.sigma-dc-control.com/layer5/{z}/{x}/{y}.png',
     name: 'Sigma-dc-control.com cycle',
     maxZoom: 19,
@@ -653,16 +634,6 @@ var providers = [
     size: 256,
     etag: true,
     comment: 'no last-modified, 6d cache, poi-4, street-1',
-  },
-  {
-    url: 'https://map1.mappy.net/map/1.0/slab/standard_hd/256/{z}/{x}/{y}',
-    name: 'Mappy.net',
-    maxZoom: 18,
-    maxZoomHTTP: 19,
-    cors: true,
-    size: 256,
-    etag: true,
-    comment: 'good last-modified, 1d cache, poi-1, street-2',
   },
   {
     url: 'https://gauss.openstreetmap.de/tilesbw/osmde/{z}/{x}/{y}.png',
