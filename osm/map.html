@@ -148,6 +148,7 @@ div[data-c="buttonBL"], div[data-c="buttonBR"] {
 var widget;
 var tileFallbackTimeout = 900;
 var tileSize = 256;
+var cookieFailure;
 
 var x, y, z;
 var cache = {};
@@ -421,10 +422,18 @@ function saveStats() {
     }
   }
   var str = btoa(JSON.stringify(coreStats));
+  var cookieText = 'httpTimes=' + str + '; Max-Age=604800; SameSite=Lax';
   try {
-    document.cookie = 'httpTimes=' + str + '; Max-Age=604800; SameSite=Lax';
+    document.cookie = cookieText;
+    if (!document.cookie.length) {
+      throw 'failed to save cookie';
+    }
   } catch (e) {
-    console.log(e);
+    if (!cookieFailure) {
+      console.log(cookieText);
+      console.log(e);
+      cookieFailure = true;
+    }
   }
 }
 
