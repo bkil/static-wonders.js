@@ -291,7 +291,7 @@ function render() {
     cached.style.left = cached.style.top = 0;
     div.appendChild(cached);
   } else {
-    loadImage(div, sortedProviders.filter(function(p){ return haveTile(p, z); } ));
+    loadImage(div, x, y, z, sortedProviders.filter(function(p){ return haveTile(p, z); } ));
 
     sortedProviders.slice().reverse().forEach(function(provider) {
       var fX = x, fY = y, fZoom = z, fSize = tileSize, dX = 0, dY = 0;
@@ -321,7 +321,7 @@ function render() {
   }
 }
 
-function loadImage(placeholder, possibleFallbacks) {
+function loadImage(placeholder, x, y, z, possibleFallbacks) {
   loadCount++;
   var initialLoadCount = loadCount;
   var loaded, remainingFallbacks = possibleFallbacks.reverse();
