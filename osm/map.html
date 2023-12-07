@@ -153,6 +153,7 @@ var cookieFailure;
 var x, y, z;
 var cache = {};
 var stats;
+var loadCount = 0;
 
 function init() {
   if (window.location.href.toLowerCase().indexOf('https://') !== 0) {
@@ -321,6 +322,8 @@ function render() {
 }
 
 function loadImage(placeholder, possibleFallbacks) {
+  loadCount++;
+  var initialLoadCount = loadCount;
   var loaded, remainingFallbacks = possibleFallbacks.reverse();
   var providerName = widget.getElementsByClassName('provider')[0];
   providerName.textContent = '';
@@ -336,7 +339,7 @@ function loadImage(placeholder, possibleFallbacks) {
           loadNextImage();
         }
       }
-    };
+    }
 
     var provider = remainingFallbacks.pop();
     if (!provider) {
@@ -353,7 +356,9 @@ function loadImage(placeholder, possibleFallbacks) {
     img.onload = function() {
       cache[url] = img;
       updateStats(provider.url, z, +new Date() - startTime);
-      providerName.textContent += ', ' + provider.name;
+      if (loadCount === initialLoadCount) {
+        providerName.textContent += ', ' + provider.name;
+      }
       if (!loaded) {
         loaded = true;
         placeholder.appendChild(img);
