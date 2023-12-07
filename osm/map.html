@@ -322,6 +322,8 @@ function render() {
 
 function loadImage(placeholder, possibleFallbacks) {
   var loaded, remainingFallbacks = possibleFallbacks.reverse();
+  var providerName = widget.getElementsByClassName('provider')[0];
+  providerName.textContent = '';
 
   function loadNextImage() {
     var fallbackTimer;
@@ -351,9 +353,9 @@ function loadImage(placeholder, possibleFallbacks) {
     img.onload = function() {
       cache[url] = img;
       updateStats(provider.url, z, +new Date() - startTime);
+      providerName.textContent += ', ' + provider.name;
       if (!loaded) {
         loaded = true;
-        widget.getElementsByClassName('provider')[0].textContent = ', ' + provider.name;
         placeholder.appendChild(img);
       }
       startFallback();
