@@ -153,7 +153,6 @@ var cookieFailure;
 var x, y, z;
 var cache = {};
 var stats;
-var loaded;
 
 function init() {
   if (window.location.href.toLowerCase().indexOf('https://') !== 0) {
@@ -365,13 +364,20 @@ function loadImage(placeholder, possibleFallbacks) {
       updateStats(provider.url, z, undefined);
       startFallback();
     };
-
     img.src = url;
-    fallbackTimer = window.setTimeout(startFallback, tileFallbackTimeout);
+
+    var timeout = getLatency(provider, z);
+    var next = remainingFallbacks[remainingFallbacks.length - 1];
+    var nextTimeout;
+    if (next && (nextTimeout = getLatency(next, z))) {
+      timeout = timeout ? Math.min(timeout, nextTimeout) : nextTimeout;
+    }
+    timeout = timeout ? Math.min(tileFallbackTimeout, 2 * timeout) : tileFallbackTimeout;
+    fallbackTimer = window.setTimeout(startFallback, timeout);
   }
 
   loadNextImage();
-};
+}
 
 function pickRandom(a) {
   return a.length ? a[Math.random() * a.length | 0] : undefined;
