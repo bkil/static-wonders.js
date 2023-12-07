@@ -281,8 +281,7 @@ function render() {
   div = widget.getElementsByClassName('tiles')[0];
   div.innerHTML = '';
 
-  var sortedProviders = providers.slice();
-  sortedProviders.sort(function(a, b) { return comparePrecedence(a, b, z); });
+  var sortedProviders = getSortedProviders(z);
   var cached = sortedProviders
     .map(function(p) { return cache[subTemplate(p.url, x, y, z)]; })
     .filter(function(p) { return p; })
@@ -374,9 +373,26 @@ function loadImage(placeholder, possibleFallbacks) {
   loadNextImage();
 };
 
-function comparePrecedence(a, b, z) {
-  var updated;
-  var get = function(url) {
+function pickRandom(a) {
+  return a.length ? a[Math.random() * a.length | 0] : undefined;
+}
+
+function getLatency(provider, z) {
+  var u = provider.url;
+  return stats[u].zoom[z] ? stats[u].zoom[z] : stats[u].average ? stats[u].average : undefined;
+}
+
+function getSortedProviders(z) {
+  var statsUpdated;
+  var haveTiming = [];
+  var noTiming = [];
+  var i;
+  var url;
+  for (i in providers) {
+    if (!haveTile(providers[i], z)) {
+      continue;
+    }
+    url = providers[i].url;
     if (!stats[url]) {
       stats[url] = {};
     }
@@ -384,17 +400,53 @@ function comparePrecedence(a, b, z) {
       stats[url].zoom = {};
     }
     if (!stats[url].precedence) {
-      stats[url].precedence = 1000 + Math.random() * 1000;
-      updated = true;
+      var delay = url.indexOf('http://') === 0 ? 1000 : 2000;
+      stats[url].precedence = delay + Math.random() * 1000;
+      statsUpdated = true;
     }
-    return stats[url].zoom[z] ? stats[url].zoom[z] : stats[url].average ? stats[url].average : stats[url].precedence;
-  };
-  var precA = get(a.url);
-  var precB = get(b.url);
-  if (updated) {
+
+    if (stats[url].zoom[z] || stats[url].average) {
+      haveTiming.push(i);
+    } else {
+      noTiming.push(i);
+    }
+  }
+  if (statsUpdated) {
     saveStats();
   }
-  return precA < precB ? -1 : precA > precB ? 1 : 0;
+
+  var dice = (Math.random() * 8) | 0;
+  var winner;
+  if (dice < 2) {
+    if (dice < 1) {
+      i = pickRandom(haveTiming);
+    } else {
+      i = pickRandom(noTiming);
+    }
+    if (i !== undefined) {
+      winner = providers[i].url;
+    }
+  }
+
+  function getWeight(provider) {
+    if (!haveTile(provider, z)) {
+      return 1e9;
+    }
+    if (provider.url === winner) {
+      return -1;
+    }
+    var time = getLatency(provider, z);
+    return time ? time : stats[provider.url].precedence;
+  };
+  function comparePrecedence(a, b) {
+    var precA = getWeight(a);
+    var precB = getWeight(b);
+    return precA < precB ? -1 : precA > precB ? 1 : 0;
+  };
+  var sortedProviders = providers.slice();
+  sortedProviders.sort(comparePrecedence);
+
+  return sortedProviders;
 }
 
 function updateStats(url, z, time) {
