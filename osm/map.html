@@ -354,7 +354,8 @@ function loadImage(placeholder, possibleFallbacks) {
     };
 
     img.onerror = function() {
-      cache[url] = false;
+      cache[url] = undefined;
+      updateStats(provider.url, z, undefined);
       startFallback();
     };
 
@@ -395,8 +396,17 @@ function updateStats(url, z, time) {
   if (!stats[url].zoom) {
     stats[url].zoom = {};
   }
-  stats[url].zoom[z] = stats[url].zoom[z] ? 0.8 * stats[url].zoom[z] + 0.2 * time : time;
-  stats[url].average = stats[url].average ? 0.8 * stats[url].average + 0.2 * time : time;
+  if (time) {
+    stats[url].zoom[z] = stats[url].zoom[z] ? 0.8 * stats[url].zoom[z] + 0.2 * time : time;
+    stats[url].average = stats[url].average ? 0.8 * stats[url].average + 0.2 * time : time;
+  } else {
+    if (stats[url].zoom[z]) {
+      stats[url].zoom[z] *= 1.25;
+    }
+    if (stats[url].average) {
+      stats[url].average *= 1.25;
+    }
+  }
   saveStats();
 }
 
