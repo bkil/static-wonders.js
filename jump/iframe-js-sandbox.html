@@ -54,11 +54,13 @@
 <body>
   <details>
     <summary>JavaScript?</summary>
-    <button type=button>Update HTML</button>
-    <label>URL<input id=url maxlength=8192></label>
-    <label>HTML<textarea id=html maxlength=16384></textarea></label>
-    <label>CSS<textarea id=css maxlength=16384></textarea></label>
-    <label>JS<textarea id=js maxlength=16384></textarea></label>
+    <form action='#'>
+      <input type=submit value='Update HTML'>
+      <label>URL<input name=url id=url maxlength=8192></label>
+      <label>HTML<textarea name=html id=html maxlength=16384></textarea></label>
+      <label>CSS<textarea name=css id=css maxlength=16384></textarea></label>
+      <label>JS<textarea name=js id=js maxlength=16384></textarea></label>
+    </form>
   </details>
 
   <iframe
@@ -76,13 +78,14 @@
 'use strict';
 
 function init() {
-  document.getElementsByTagName('button')[0].onclick = saveToAnchor;
+  document.forms[0].onsubmit = saveToAnchor;
   window.onhashchange = loadFromAnchor;
   loadFromAnchor();
   document.getElementsByTagName('summary')[0].innerHTML = 'Click to edit frontend';
 }
 
-function saveToAnchor() {
+function saveToAnchor(e) {
+  e.preventDefault();
   const p = new URLSearchParams;
   const url = document.getElementById('url').value;
   const html = document.getElementById('html').value;
@@ -107,7 +110,8 @@ function saveToAnchor() {
 }
 
 function loadFromAnchor() {
-  const p = new URLSearchParams(window.location.hash.substring(1));
+  const search = window.location.hash.substring(1);
+  const p = new URLSearchParams(search ? search : window.location.search);
   const url = p.get('url');
   const html = p.get('html');
   const css = p.get('css');
@@ -123,6 +127,7 @@ function loadFromAnchor() {
     if (match) {
       renderInline(preview, null, null, match[1]);
     } else {
+      preview.removeAttribute('srcdoc');
       preview.src = url;
     }
   } else if (html || css || js) {
