@@ -8,7 +8,7 @@
 // @match       https://*.*/@*/*
 // @match       https://*.*/@*
 // @grant       none
-// @version     2023.11.1
+// @version     2023.12.1
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -20,7 +20,7 @@
 'use strict';
 
 function main() {
-  const sites = /^\/(notice\/[0-9A-Za-z]{18}|@[^\/]+(\/[0-9]+)?|notes\/[0-9a-z]{10})$/;
+  const sites = /^\/(notice\/[0-9A-Za-z]{18}|@[^\/]+(\/([0-9]+)?)?|notes\/[0-9a-z]{10})$/;
   if (window.location.hash || window.location.search || !window.location.pathname.match(sites)) {
     return
   }
