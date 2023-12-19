@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>set exclusive category filter radio 1</title>
+  <link rel="shortcut icon" type="image/x-icon" href="data:image/x-icon;,">
+  <meta property='og:description' content='CSS-only interface demonstration' name='description'>
+  <meta name=viewport content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-DNS-Prefetch-Control" content="off">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name=referrer content=no-referrer>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob: mediastream:; webrtc 'block'; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src data: blob: 'unsafe-inline' 'unsafe-eval'; base-uri 'none'; form-action 'self'; navigate-to 'none';">
+
+<style>
+[name="t"]:not(:checked) + * {
+  opacity:70%;
+}
+[name="t"]:not(:checked) + * + select {
+  visibility: hidden;
+  pointer-events: none;
+}
+</style>
+
+</head>
+<body>
+
+<form name=r action=#>
+
+<input type=radio name=t value=s id=s checked= autofocus=>
+<label for=s>stackage</label>
+
+<input type=radio name=t value=h id=h>
+<label for=h>haskell-platform</label>
+
+<input type=radio name=t value=i id=i>
+<label for=i>included-with-ghc</label>
+
+<input type=radio name=t value=p id=p>
+<label for=p>Package</label>
+<select name=P>
+<option>ascii</option>
+<option>parsec</option>
+<option>type-fun</option>
+</select>
+
+<input type=radio name=t value=c id=c>
+<label for=c>Category</label>
+<select name=C>
+<option>Compression</option>
+<option>Data</option>
+<option>GUI</option>
+</select>
+
+<input type=submit value=Search>
+</form>
+
+<script>
+r.onsubmit = function(e) {
+  e.preventDefault();
+  alert(r.t.value + ' ' + r.P.value + ' ' + r.C.value);
+}
+</script>
+
+</body>
+</html>
