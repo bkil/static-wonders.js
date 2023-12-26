@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://boardgamegeek.com/*
 // @grant       none
-// @version     2022.5.7
+// @version     2023.12.1
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -101,8 +101,10 @@ function getJson() {
     .replace(/^GEEK\.([a-zA-Z0-9_]+) = /, '"$1":')
     .replace(/(;\s*GEEK\.([a-zA-Z0-9_]+) = )'([^']*)'/g, '$1"$2"')
     .replace(/;\s*GEEK\.([a-zA-Z0-9_]+) = /g, ',"$1":')
-    .replace(/\n\s*'([^']*)': *'([^']*)'(,?)/g, '"$1":"$2"$3')
-    .replace(/;\n$/g, '}');
+    .replace(/\n\s*'([^']*)'\s*:\s*'([^']*)'(,?)/g, '"$1":"$2"$3')
+    .replace(/,(\s*\n\s*})/, '$1')
+    .replace(/;\n$/g, '}')
+    ;
 
   try {
     return JSON.parse(line);
