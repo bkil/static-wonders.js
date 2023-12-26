@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>set exclusive category filter radio 3</title>
+  <link rel="shortcut icon" type="image/x-icon" href="data:image/x-icon;,">
+  <meta property='og:description' content='CSS-only interface demonstration' name='description'>
+  <meta name=viewport content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-DNS-Prefetch-Control" content="off">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name=referrer content=no-referrer>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob: mediastream:; webrtc 'block'; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src data: blob: 'unsafe-inline' 'unsafe-eval'; base-uri 'none'; form-action 'self'; navigate-to 'none';">
+
+<style>
+#F {
+  display: inline-block;
+  vertical-align: middle;
+}
+[name="t"]:not(:checked) + label {
+  opacity: 70%;
+}
+[name="t"]:checked ~ #F .F {
+  display: none;
+}
+</style>
+
+</head>
+<body>
+
+<form name=r action=#>
+
+<label for=q>Keywords</label>
+<input name=q id=q autofocus=>
+<input type=submit value=Search>
+
+<input type=radio name=t value=s id=s checked>
+<label for=s>stackage</label>
+
+<input type=radio name=t value=h id=h>
+<label for=h>haskell-platform</label>
+
+<input type=radio name=t value=i id=i>
+<label for=i>included-with-ghc</label>
+
+<fieldset id=F>
+
+<input type=radio name=t value=f id=f>
+<label for=f>Filters:</label>
+
+<label for=P class=F>Package</label>
+<select name=P id=P class=F>
+<option selected>-</option>
+<option>ascii</option>
+<option>parsec</option>
+<option>type-fun</option>
+</select>
+
+<label for=C class=F>Category</label>
+<select name=C id=C class=F>
+<option selected>-</option>
+<option>Compression</option>
+<option>Data</option>
+<option>GUI</option>
+</select>
+</fieldset>
+</form>
+
+<script>
+r.onsubmit = function(e) {
+  e.preventDefault();
+  alert(r.t.value + ' ' + P.value + ' ' + C.value + ' ' + q.value);
+}
+</script>
+
+</body>
+</html>
