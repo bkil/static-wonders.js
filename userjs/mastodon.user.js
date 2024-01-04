@@ -8,7 +8,7 @@
 // @match       https://*.*/@*/*
 // @match       https://*.*/@*
 // @grant       none
-// @version     2023.12.1
+// @version     2023.12.2
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -69,6 +69,13 @@ function addTitleDescription(result) {
   el.textContent = alt;
   result.appendChild(el);
 
+  const greet = document.getElementsByTagName('noscript')[0];
+  if (greet) {
+    el = document.createElement('div');
+    el.innerHTML = sanitizeHtml(greet.textContent).replaceAll('&lt;br&gt;', '<br>');
+    result.appendChild(el);
+  }
+
   const feed = document.createElement('details');
   feed.open = true;
   const sum = document.createElement('summary');
@@ -116,6 +123,15 @@ function sanitizeHtmlDesc(html) {
   return html.replace(/<br\/?>/g, ' ').replace(/<[^<>]*>/g, '');
 }
 
+function sanitizeHtml(html) {
+  return html
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    ;
+}
+
 function render(result, entry) {
   const url = document.createElement('a');
   url.href = entry.querySelector('id')?.textContent ??
@@ -130,11 +146,7 @@ function render(result, entry) {
   const content = entry.querySelector('content, description')?.textContent;
   const body = document.createElement('div');
   body.innerHTML  =
-    content
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+    sanitizeHtml(content)
     .replace(/&lt;a href=&quot;([^&]+)&quot;(?:[^&]|&quot;)*&gt;(.*?)&lt;\/a&gt;/g, '<a href="$1" target="_blank" rel="noreferrer noopener">$2</a>')
     .replace(/(&)amp;(#(?:[0-9]+|$[0-9a-f]+);)/g, '$1$2')
     .replace(/&lt;(?:\/?span)\b(?:[^&]|&quot;)*&gt;/g, '')
@@ -191,7 +203,10 @@ function addStyle() {
     '#splash { display: none }' +
     'img { max-width: 100%; font-size: xx-small }' +
     'blockquote { border-left: 1px solid; padding-left: 1em; margin-left: 1em }' +
-    '.entry { border-top: 1px solid }'
+    '.entry { border-top: 1px solid }' +
+    // Pleroma
+    'body.hidden { display: initial }' +
+    'body { color: initial }'
     ;
   document.body.appendChild(style);
 }
