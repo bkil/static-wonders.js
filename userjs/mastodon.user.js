@@ -8,7 +8,7 @@
 // @match       https://*.*/@*/*
 // @match       https://*.*/@*
 // @grant       none
-// @version     2023.12.2
+// @version     2023.12.3
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -204,6 +204,8 @@ function addStyle() {
     'img { max-width: 100%; font-size: xx-small }' +
     'blockquote { border-left: 1px solid; padding-left: 1em; margin-left: 1em }' +
     '.entry { border-top: 1px solid }' +
+    // Mastodon
+    'body { background-color: initial }' +
     // Pleroma
     'body.hidden { display: initial }' +
     'body { color: initial }'
