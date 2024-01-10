@@ -8,7 +8,7 @@
 // @match       https://*.*/@*/*
 // @match       https://*.*/@*
 // @grant       none
-// @version     2023.12.3
+// @version     2023.12.4
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -20,7 +20,7 @@
 'use strict';
 
 function main() {
-  const sites = /^\/(notice\/[0-9A-Za-z]{18}|@[^\/]+(\/([0-9]+)?)?|notes\/[0-9a-z]{10})$/;
+  const sites = /^\/(notice\/[0-9A-Za-z]{18}|@[^\/]+(\/([0-9]+)?)?|notes\/([0-9a-z]{10}|[0-9a-z]{16}))$/;
   if (window.location.hash || window.location.search || !window.location.pathname.match(sites)) {
     return
   }
@@ -208,7 +208,10 @@ function addStyle() {
     'body { background-color: initial }' +
     // Pleroma
     'body.hidden { display: initial }' +
-    'body { color: initial }'
+    'body { color: initial }' +
+    // FireFish (MissKey?)
+    '::selection { color: initial; background-color: #080 }' +
+    ''
     ;
   document.body.appendChild(style);
 }
