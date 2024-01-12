@@ -2,7 +2,7 @@
 
 escape_file() {
   cat "$@" |
-  LC_ALL=c gawk '
+  LC_ALL=c gawk -b '
     BEGIN {
       RS="(.)";
       for(i=0; i < 256; i++) {
