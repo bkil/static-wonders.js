@@ -39,7 +39,7 @@ String.prototype.split = String.prototype.split || function(s) {
     from = i + s.length;
     i = this.indexOf(s, from);
   }
-  a[j] = this.substring(from, s.length);
+  a[j] = this.substring(from, this.length);
   return a;
 };
 
@@ -64,6 +64,8 @@ function escapeJson(s) {
   return o + '"';
 }
 
+var w = new Object;
+
 function parseEntryWithRegex(str, id) {
   var cs = '[ ' + String.fromCharCode(9) + nl + ']*';
   var g = str.match(
@@ -81,11 +83,39 @@ function parseEntryWithRegex(str, id) {
     return '';
   }
 
+  var tasks = g[3].split(' ');
+  var i = 0;
+  var desc = '';
+  var tags = '"amenity":"social_facility"';
+  var pri = -1;
+  var task;
+  while (i < tasks.length) {
+    task = w[tasks[i]];
+    if (task) {
+      if (desc.length) {
+        desc = desc + ';' + task.desc;
+      } else {
+        desc = task.desc;
+      }
+      if (task.pri > pri) {
+        pri = task.pri;
+        tags = task.tags;
+      }
+    }
+    i = i + 1;
+  }
+  tags = tags + ',';
+  if (desc.length) {
+    desc = '"description":' + escapeJson(desc) + ',';
+  }
+
   return '{"type":"Feature",' +
     '"geometry":{"type":"Point","coordinates":[' + g[2] + ',' + g[1] + ']},' +
     '"properties":{' +
     '"id":' + escapeJson(id) + ',' +
     '"name":' + escapeJson(g[4]) + ',' +
+    desc +
+    tags +
     '"addr:postcode":' + escapeJson(g[5]) + ',' +
     '"addr:city":' + escapeJson(g[6]) + ',' +
     '"addr:full":' + escapeJson(g[7]) + ',' +
@@ -148,7 +178,7 @@ function escapeHtml(h) {
 function loaded() {
   if ((typeof document !== 'undefined') && document.documentElement && document.documentElement.innerHTML) {
     var o = parseMaltaiHuMap(document.documentElement.innerHTML);
-    document.write('<style>pre{white-space:pre-wrap}</style><pre>' + escapeHtml(o.ok) + '</pre>' + escapeHtml(o.err));
+    document.write('<style>pre{white-space:pre-wrap}html{overflow-wrap:anywhere;line-break:anywhere}</style><pre>' + escapeHtml(o.ok) + '</pre>' + escapeHtml(o.err));
   } else if (typeof fetch !== 'undefined') {
     var f = fetch(dataUrl);
     f = f.then(function(r){ return r.text() });
@@ -167,11 +197,43 @@ function loaded() {
   }
 }
 
+function entry(desc, pri, tags) {
+  var o = new Object;
+  o.desc = desc;
+  o.pri = pri;
+  o.tags = tags;
+  return o;
+}
+
 function init() {
   if ((typeof window !== 'undefined') && window.location && window.location.href && (window.location.href.indexOf(baseUrl + '/') !== 0)) {
     window.location.href = dataUrl;
     return 0;
   }
+
+  w['feladat23'] = entry('adomány', 2, '"amenity":"social_facility","social_facility":"food_bank"');
+  w['feladat3'] = entry('Egészségügyi szolgáltatások', 5, '"amenity":"social_facility","social_facility":"ambulatory_care"');
+  w['feladat24'] = entry('élelmiszermentés', 4, '"amenity":"social_facility","social_facility":"food_bank"');
+  w['feladat13'] = entry('Foglalkoztatás', 3, '"amenity":"social_facility","social_facility":"workshop"');
+  w['feladat4'] = entry('Fogyatékkal élő emberek ellátása', 5, '"amenity":"social_facility","social_facility:for":"disabled","social_facility":"assisted_living"');
+  w['feladat5'] = entry('Gyermekek és családok ellátása', 5, '"amenity":"social_facility","social_facility:for":"juvenile","social_facility":"group_home"');
+  w['feladat6'] = entry('Hajléktalan emberek ellátása', 5, '"amenity":"social_facility","social_facility:for":"homeless","social_facility":"shelter"');
+  w['feladat7'] = entry('Idős emberek ellátása', 4, '"amenity":"social_facility","social_facility:for":"senior","social_facility":"group_home"');
+  w['feladat19'] = entry('Jelenlét Program', 2, '"amenity":"social_facility","social_facility:for":"underprivileged","social_facility":"outreach"');
+  w['feladat21'] = entry('KORONAVÍRUS', 0, '"amenity":"social_facility"');
+  w['feladat17'] = entry('Külföldi misszió', 0, '"amenity":"social_facility"');
+  w['feladat8'] = entry('Lakossági szolgáltatások', 1, '"amenity":"social_facility","social_facility":"outreach"');
+  w['feladat9'] = entry('Módszertani intézmények', 1, '"amenity":"social_facility","social_facility":"outreach"');
+  w['feladat10'] = entry('Oktatás', 1, '"amenity":"school"');
+  w['feladat25'] = entry('Raktár', 1, '"amenity":"social_facility","social_facility":"food_bank"');
+  w['feladat16'] = entry('Regionális Központ', 1, '"amenity":"social_facility","social_facility":"outreach"');
+  w['feladat22'] = entry('szállás', 1, '"tourism":"guest_house"');
+  w['feladat11'] = entry('Szenvedélybeteg emberek ellátása', 4, '"amenity":"social_facility","social_facility:for":"drug_addicted","social_facility":"group_home"');
+  w['feladat14'] = entry('Szociális Szövetkezet', 0, '"amenity":"social_facility"');
+  w['feladat18'] = entry('Támogatott program', 0, '"amenity":"social_facility"');
+  w['feladat12'] = entry('Vegyes profilú intézmények', 1, '"amenity":"social_facility","social_facility":"outreach"');
+  w['feladat15'] = entry('Vészhelyzet-kezelés', 3, '"amenity":"social_facility","social_facility:for":"victim","social_facility":"outreach"');
+
   setTimeout(loaded, 0);
 }
 
