@@ -1,4 +1,5 @@
 #!/bin/sh
+. "`dirname "$0"`/html.inc.sh" # escape_file
 
 main() {
   local O FILE TIME NAME BASE BLET BODY
@@ -58,28 +59,6 @@ EOF
     echo "</ul>"
     cat_tail
   } > "$O"/gen-bookmarklet.html
-}
-
-escape_file() {
-  local ESCAPED
-  cat "$@" |
-  awk '
-    BEGIN {
-      RS="(.)";
-      for(i=0; i < 256; i++) {
-        ord[sprintf("%c", i)] = i;
-      }
-      ok = "!()+,-./0123456789:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ^_abcdefghijklmnopqrstuvwxyz{|}~";
-    }
-    {
-      if (index(ok, RT) > 0) {
-        printf("%c", RT);
-      } else {
-        printf("%%%02x", ord[RT]);
-      }
-    }
-  ' |
-  sed -r "s~\)$~%29~"
 }
 
 cat_bookmarklet_head() {
