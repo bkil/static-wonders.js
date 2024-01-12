@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://maltai.hu/tevekenysegkereso
 // @grant       none
-// @version     2024.1.1
+// @version     2024.1.2
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js

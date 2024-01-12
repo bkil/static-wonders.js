@@ -2,7 +2,7 @@ image: alpine:latest
 pages:
   stage: deploy
   before_script:
-  - apk update && apk add brotli git
+  - apk update && apk add brotli git gawk
   script:
   - ./mk.sh
   - find . -type f -regex '.*\.\(htm\|html\|txt\|text\|js\|css\|json\|dz\|index\|csv\)$\|.*/LICENSE$' -exec gzip -9 -f -k {} \;
