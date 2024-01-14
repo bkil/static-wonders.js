@@ -3,10 +3,9 @@
 // @author      bkil
 // @description Minimal viewer of files on GitHub
 // @namespace   bkil.hu
-// @match       https://github.com/*/blob/*
-// @match       https://github.com/*/tree/*
+// @match       https://github.com/*/*
 // @grant       none
-// @version     2023.9.2
+// @version     2024.1.1
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -20,9 +19,15 @@
 function init() {
   var res = document.querySelector('[app-name="react-code-view"]')
   if (!res) {
+    res = document.querySelector('[partial-name="repos-overview"]');
+  }
+  if (!res) {
     return
   }
   var script = res.querySelector('script[data-target="react-app.embeddedData"]');
+  if (!script) {
+    script = res.querySelector('script[data-target="react-partial.embeddedData"]');
+  }
   if (!script) {
     return
   }
@@ -35,21 +40,44 @@ function init() {
     return
   }
 
-  if (j && j.payload) {
-    if (j.payload.blob && j.payload.blob.rawBlob) {
-      res.appendChild(getPre(j.payload.blob.rawBlob));
-    } else if (j.payload.blob && j.payload.blob.rawLines) {
-      res.appendChild(getPre(j.payload.blob.rawLines.join('\n')));
-    } else if (j.payload.blob && j.payload.blob.richText) {
-      processRich(res, j.payload.blob.richText);
-    } else {
-      if (j.payload.fileTree && j.payload.fileTree['']) {
-        processDirectory(res, j.payload.fileTree[''].items);
+  var payload = j ? j.payload ? j.payload : j.props ? j.props.initialPayload ? j.props.initialPayload : null : null : null;
+  if (payload) {
+    if (payload.blob && payload.blob.rawBlob) {
+      res.appendChild(getPre(payload.blob.rawBlob));
+    } else if (payload.blob && payload.blob.rawLines) {
+      res.appendChild(getPre(payload.blob.rawLines.join('\n')));
+    } else if (payload.blob && payload.blob.richText) {
+      processRich(res, payload.blob.richText);
+    }
+
+    if (payload.overview && payload.overview.overviewFiles) {
+      var d;
+      var h;
+      var f;
+      var i = 0;
+      while (i < payload.overview.overviewFiles.length) {
+        f = payload.overview.overviewFiles[i];
+        d = document.createElement('div');
+        h = document.createElement('div');
+        h.textContent = f.path;
+        d.appendChild(document.createElement('hr'));
+        d.appendChild(h);
+        processRich(d, f.richText);
+        res.appendChild(d);
+        i = i + 1;
       }
-      if (j.payload.tree) {
-        res.appendChild(document.createElement('hr'));
-        processDirectory(res, j.payload.tree.items);
-      }
+    }
+
+    if (payload.tree) {
+      processDirectory(res, payload.tree.items);
+    }
+
+    if (payload.fileTree && payload.fileTree['']) {
+      var bq = document.createElement('blockquote');
+      bq.style.opacity = 0.5;
+      bq.appendChild(document.createElement('hr'));
+      processDirectory(bq, payload.fileTree[''].items);
+      res.appendChild(bq);
     }
   }
 
@@ -90,9 +118,12 @@ function processDirectory(out, dir) {
   if (!Array.isArray(dir)) {
     return
   }
-  var pre = window.location.href.replace(/^(https:\/\/github\.com(?:\/[^\/]+){2}).*$/, '$1');
-  var ref = window.location.href.replace(/^https:\/\/github\.com(?:\/[^\/]+){3}\/([^\/]+)\/.*$/, '$1');
-
+  var r = window.location.href.match('^(https://github\.com/[^/]+/[^/]+)(/?|/(tree|blob)/([^/]+)/.*)$');
+  if (!r) {
+    return
+  }
+  var pre = r[1];
+  var ref = r[4] ? r[4] : 'master';
   var list = document.createElement('ul');
   dir.forEach(function(item) {
     var a = document.createElement('a');
