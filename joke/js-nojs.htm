@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title>Error showing content</title>
+ <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+</head>
+<body>
+ <h1>You must have JavaScript enabled to view this page</h1>
+
+ <script>
+   function loaded() {
+     document.write(
+       '<!DOCTYPE html><html><head><title>Error showing content</title>' +
+       '<link rel="shortcut icon" type=image/x-icon href=data:image/x-icon;,></head><body>' +
+       '<h1>You must have JavaScript disabled to view this page</h1></body></html>');
+   }
+   setTimeout(loaded, 0);
+ </script>
+
+</body>
+</html>
