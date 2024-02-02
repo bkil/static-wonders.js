@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Flash card spaced repetition knowledge trainer quiz</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='Answer quiz questions to learn facts. Example interactive app for Web0/JavaScript0/gemiweb' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=no-referrer>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+<style>
+html {
+  background-color: black;
+  color: white;
+}
+</style>
+</head>
+<body>
+
+You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a Web0/gemiweb browser with JavaScript0 yourself according to the following specification:
+<p>
+<a target=_blank href="https://gitlab.com/bkil/gemiweb">https://gitlab.com/bkil/gemiweb</a>
+
+<h2>javascript: URI</h2>
+<h3>Support</h3>
+DOM0 NS2
+
+<h2>document.cookie</h2>
+<h3>Support</h3>
+DOM0 NS2
+
+<h2>document.write</h2>
+<h3>Support</h3>
+DOM0 NS2
+
+<h2>window.location.href</h2>
+<h3>Support</h3>
+DOM0 NS2
+
+<h2>setInterval</h2>
+<h3>Support</h3>
+DOM0+ NS4
+
+<h2>Document.createElement</h2>
+<h3>Support</h3>
+DOM1 IE5 NS6
+
+<h2>stytle.cssText</h2>
+<h3>Support</h3>
+DOM2
+
+<h2>addEventListener</h2>
+<h3>Support</h3>
+DOM2
+
+<h2>XPathEvaluator createExpression</h2>
+<h3>Support</h3>
+DOM3
+
+<h2>String indexOf</h2>
+<h3>Support</h3>
+JS1 NS2
+<h3>Special result</h3>
+-1
+
+<h2>String toUpperCase</h2>
+<h3>Support</h3>
+JS1 NS2
+<h3>Special result</h3>
+none
+
+<h2>String substring</h2>
+<h3>Support</h3>
+JS1 NS2
+<h3>Special result</h3>
+''
+
+<h2>String charAt</h2>
+<h3>Support</h3>
+JS1 NS2
+<h3>Special result</h3>
+''
+
+<h2>parseInt</h2>
+<h3>Support</h3>
+JS1 NS2
+<h3>Special result</h3>
+NaN
+
+<h2>setTimeout</h2>
+<h3>Support</h3>
+JS1 NS2
+
+<h2>for-in</h2>
+<h3>Support</h3>
+JS1 NS2
+<h3>Special result</h3>
+none
+
+<h2>eval</h2>
+<h3>Support</h3>
+JS1 NS2
+<h3>Special result</h3>
+throw, undefined
+
+<h2>Date.parse</h2>
+<h3>Support</h3>
+JS1 NS2
+<h3>Special result</h3>
+NaN
+
+<h2>Date toJSON</h2>
+<h3>Support</h3>
+ES5
+<h3>Special result</h3>
+null, throw
+
+<h2>Math.min</h2>
+<h3>Support</h3>
+JS1 NS2
+<h3>Special result</h3>
+Infinity, NaN
+
+<h2>object reference cycles</h2>
+<h3>Support</h3>
+JS1 NS2
+
+<h2>&gt;&gt;&gt;</h2>
+<h3>Support</h3>
+JS1 NS2
+<h3>Special result</h3>
+none
+
+<h2>,</h2>
+<h3>Support</h3>
+JS1 NS2
+<h3>Special result</h3>
+none
+
+<h2>isNaN</h2>
+<h3>Support</h3>
+JS1 NS2
+<h3>Special result</h3>
+none
+
+<h2>?:</h2>
+<h3>Support</h3>
+JS1 NS2
+<h3>Special result</h3>
+none
+
+<h2>escape</h2>
+<h3>Support</h3>
+JS1 NS2 (ES1 browser)
+<h3>Special result</h3>
+none
+
+<h2>unescape</h2>
+<h3>Support</h3>
+JS1 NS2 (ES1 browser)
+<h3>Special result</h3>
+none
+
+<h2>String charCodeAt</h2>
+<h3>Support</h3>
+ES1
+<h3>Special result</h3>
+NaN
+
+<h2>String.fromCharCode</h2>
+<h3>Support</h3>
+ES1
+<h3>Special result</h3>
+none
+
+<h2>String split</h2>
+<h3>Support</h3>
+ES1
+<h3>Special result</h3>
+[], [''], throw
+
+<h2>Array join</h2>
+<h3>Support</h3>
+ES1
+<h3>Special result</h3>
+none
+
+<h2>Array reverse</h2>
+<h3>Support</h3>
+ES1
+<h3>Special result</h3>
+none
+
+<h2>Array sort</h2>
+<h3>Support</h3>
+ES1
+<h3>Special result</h3>
+throw
+
+<h2>Function</h2>
+<h3>Support</h3>
+ES1
+<h3>Special result</h3>
+throw
+
+<h2>Number toString(radix)</h2>
+<h3>Support</h3>
+ES1
+<h3>Special result</h3>
+throw
+
+<h2>String substr</h2>
+<h3>Support</h3>
+ES3 browser
+<h3>Special result</h3>
+''
+
+<h2>Array concat</h2>
+<h3>Support</h3>
+ES3
+<h3>Special result</h3>
+none
+
+<h2>Array push</h2>
+<h3>Support</h3>
+ES3
+<h3>Special result</h3>
+none
+
+<h2>Array pop</h2>
+<h3>Support</h3>
+ES3
+<h3>Special result</h3>
+undefined
+
+<h2>Array shift</h2>
+<h3>Support</h3>
+ES3
+<h3>Special result</h3>
+undefined
+
+<h2>Array unshift</h2>
+<h3>Support</h3>
+ES3
+<h3>Special result</h3>
+none
+
+<h2>Array splice</h2>
+<h3>Support</h3>
+ES3
+<h3>Special result</h3>
+[]
+
+<h2>Array slice</h2>
+<h3>Support</h3>
+ES3
+<h3>Special result</h3>
+[]
+
+<h2>Object hasOwnProperty</h2>
+<h3>Support</h3>
+ES3
+<h3>Special result</h3>
+none
+
+<h2>String slice</h2>
+<h3>Support</h3>
+ES3
+<h3>Special result</h3>
+''
+
+<h2>String localeCompare</h2>
+<h3>Support</h3>
+ES3
+<h3>Special result</h3>
+-0, 0
+
+<h2>String match</h2>
+<h3>Support</h3>
+ES3
+<h3>Special result</h3>
+null, throw
+
+<h2>String replace</h2>
+<h3>Support</h3>
+ES3
+<h3>Special result</h3>
+throw
+
+<h2>String search</h2>
+<h3>Support</h3>
+ES3
+<h3>Special result</h3>
+-1, throw
+
+<h2>function(){}</h2>
+<h3>Support</h3>
+ES3
+
+<h2>[]</h2>
+<h3>Support</h3>
+ES3
+
+<h2>{a:9}</h2>
+<h3>Support</h3>
+ES3
+
+<h2>encodeURI</h2>
+<h3>Support</h3>
+ES3
+<h3>Special result</h3>
+throw
+
+<h2>decodeURI</h2>
+<h3>Support</h3>
+ES3
+<h3>Special result</h3>
+throw
+
+<h2>===</h2>
+<h3>Support</h3>
+ES3
+
+<h2>instanceOf</h2>
+<h3>Support</h3>
+ES3
+<h3>Special result</h3>
+throw
+
+<h2>throw</h2>
+<h3>Support</h3>
+ES3
+
+<h2>do-while</h2>
+<h3>Support</h3>
+ES3
+
+<h2>switch-case-default</h2>
+<h3>Support</h3>
+ES3
+
+<h2>use strict</h2>
+<h3>Support</h3>
+ES5
+
+<h2>Array.isArray</h2>
+<h3>Support</h3>
+ES5
+<h3>Special result</h3>
+none
+
+<h2>Array every</h2>
+<h3>Support</h3>
+ES5
+<h3>Special result</h3>
+throw
+
+<h2>Array filter</h2>
+<h3>Support</h3>
+ES5
+<h3>Special result</h3>
+throw
+
+<h2>Array map</h2>
+<h3>Support</h3>
+ES5
+<h3>Special result</h3>
+throw
+
+<h2>Array reduce</h2>
+<h3>Support</h3>
+ES5
+<h3>Special result</h3>
+throw
+
+<h2>Array some</h2>
+<h3>Support</h3>
+ES5
+<h3>Special result</h3>
+throw
+
+<h2>Array forEach</h2>
+<h3>Support</h3>
+ES5
+<h3>Special result</h3>
+throw
+
+<h2>Object.defineProperty</h2>
+<h3>Support</h3>
+ES5
+<h3>Special result</h3>
+throw
+
+<h2>Object.freeze</h2>
+<h3>Support</h3>
+ES5
+
+<h2>Object.keys</h2>
+<h3>Support</h3>
+ES5
+<h3>Special result</h3>
+throw
+
+<h2>String trim</h2>
+<h3>Support</h3>
+ES5
+<h3>Special result</h3>
+none
+
+<h2>JSON.parse</h2>
+<h3>Support</h3>
+ES5
+<h3>Special result</h3>
+throw
+
+<h2>JSON.stringify</h2>
+<h3>Support</h3>
+ES5
+<h3>Special result</h3>
+null, throw, undefined
+
+<h2>[9,]</h2>
+<h3>Support</h3>
+ES5
+
+<h2>{x:9,}</h2>
+<h3>Support</h3>
+ES5
+
+<h2>const</h2>
+<h3>Support</h3>
+ES6
+
+<h2>let</h2>
+<h3>Support</h3>
+ES6
+
+<h2>Array from</h2>
+<h3>Support</h3>
+ES6
+
+<h2>set Object __proto__</h2>
+<h3>Support</h3>
+ES6 browser
+<h3>Special result</h3>
+throw, undefined
+
+<h2>ArrayBuffer slice</h2>
+<h3>Support</h3>
+ES6
+<h3>Special result</h3>
+throw
+
+<h2>DataView getUint8</h2>
+<h3>Support</h3>
+ES6
+<h3>Special result</h3>
+throw
+
+<h2>Generator</h2>
+<h3>Support</h3>
+ES6
+
+<h2>Promise.race</h2>
+<h3>Support</h3>
+ES6
+
+<h2>Reflect.construct</h2>
+<h3>Support</h3>
+ES6
+<h3>Special result</h3>
+throw
+
+<h2>Proxy.revocable</h2>
+<h3>Support</h3>
+ES6
+<h3>Special result</h3>
+throw
+
+<h2>import</h2>
+<h3>Support</h3>
+ES6
+
+<h2>=&gt;</h2>
+<h3>Support</h3>
+ES6
+
+<h2>[x]=[9]</h2>
+<h3>Support</h3>
+ES6
+<h3>Special result</h3>
+throw
+
+<h2>String.raw</h2>
+<h3>Support</h3>
+ES6
+
+<h2>Uint8Array.from</h2>
+<h3>Support</h3>
+ES6
+<h3>Special result</h3>
+throw
+
+<h2>WeakMap set</h2>
+<h3>Support</h3>
+ES6
+<h3>Special result</h3>
+throw
+
+<h2>Symbol.keyFor</h2>
+<h3>Support</h3>
+ES6
+<h3>Special result</h3>
+throw, undefined
+
+<h2>super</h2>
+<h3>Support</h3>
+ES6
+
+<h2>`${x}`</h2>
+<h3>Support</h3>
+ES6
+
+<h2>[...[1,2]]</h2>
+<h3>Support</h3>
+ES6
+<h3>Special result</h3>
+throw
+
+<h2>for-of</h2>
+<h3>Support</h3>
+ES6
+<h3>Special result</h3>
+throw
+
+<h2>??</h2>
+<h3>Support</h3>
+ES7
+
+<h2>?.</h2>
+<h3>Support</h3>
+ES11
+
+<script>
+'use strict';
+if (typeof tmp === 'undefined') {
+  var tmp = new Object;
+}
+
+var nl = String.fromCharCode(10);
+
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  } else {
+    var o = '';
+    while ((from < th.length) && (from < to)) {
+      o = o + th.charAt(from);
+      from = from + 1;
+    }
+    return o;
+  }
+}
+
+// ES1, NS3
+function String_split(th, d) {
+  if (th.split) {
+    return th.split(d);
+  } else {
+    var a = new Array;
+    var j = 0;
+    var from = 0;
+    var i = th.indexOf(d, from);
+    while (i >= 0) {
+      a[j] = String_substring(th, from, i);
+      j = j + 1;
+      from = i + d.length;
+      i = th.indexOf(d, from);
+    }
+    a[j] = String_substring(th, from, th.length);
+    return a;
+  }
+}
+
+// ES5
+function String_trim(th) {
+  if (th.trim) {
+    return th.trim();
+  } else {
+    function isWs(i) {
+      var n = th.charCodeAt(i);
+      return (n === 32) || (n === 9) || (n === 10);
+    }
+    var i = 0;
+    while ((i < th.length) && isWs(i)) {
+      i = i + 1;
+    }
+    var j = th.length - 1;
+    while ((j >= i) && isWs(j)) {
+      j = j - 1;
+    }
+    return String_substring(th, i, j + 1);
+  }
+}
+
+// ES5
+function Object_keys(o) {
+  if (Object.keys) {
+    return Object.keys(o);
+  } else {
+    var k = new Array;
+    var i;
+    for (i in o) {
+      k[k.length] = i;
+    }
+    return k;
+  }
+}
+
+function getRandom(n) {
+  var x = tmp.random;
+  if (!x) {
+    x = 1;
+  }
+  x = x ^ (x >> 7);
+  x = x ^ (x << 9);
+  x = (x ^ (x >> 13)) & 65535;
+  tmp.random = x;
+  return x % n;
+}
+
+function indexAfter(haystack, needle, from) {
+  var i = haystack.indexOf(needle, from);
+  if (i >= 0) {
+    i = i + needle.length;
+  }
+  return i;
+}
+
+function removeAfter(s, t) {
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, 0, i);
+  }
+  return s;
+}
+
+function writeHtml(text) {
+  if (tmp.docClosed) {
+    var typ = 'html';
+    if (document.doctype && document.doctype.name) {
+      typ = document.doctype.name;
+    }
+
+    var before = '';
+    if (document.documentElement && document.documentElement.innerHTML) {
+      before = removeAfter(document.documentElement.innerHTML, '<body>');
+    }
+    document.write('<!DOCTYPE ' + typ + '><html lang=en>' + before + '<body>' + text + '<' + '/body></html>');
+    document.close();
+  } else {
+    document.write(text);
+  }
+
+  if (window.f && (window.f.t && window.f.t.focus)) {
+    window.f.t.focus();
+  }
+}
+
+function resetQuiz() {
+  var i;
+  var j;
+  var topic;
+  var fact;
+  for (i in tmp.card) {
+    topic = tmp.card[i];
+    for (j in topic) {
+      fact = topic[j];
+      fact.seen = 0;
+    }
+  }
+  tmp.score = 0;
+  tmp.quizRounds = 0;
+}
+
+function getRandomFact() {
+  var i;
+  var j;
+  var topic;
+  var fact;
+  if (tmp.quizRounds >= tmp.factCount) {
+    resetQuiz();
+  }
+
+  var n = getRandom(tmp.factCount - tmp.quizRounds);
+  for (i in tmp.card) {
+    topic = tmp.card[i];
+    for (j in topic) {
+      fact = topic[j];
+      if (!fact.seen) {
+        if (!n) {
+          fact.seen = 1;
+          tmp.quizRounds = tmp.quizRounds + 1;
+          var a = new Array;
+          a[0] = i;
+          a[1] = j;
+          return a;
+        }
+        n = n - 1;
+      }
+    }
+  }
+  throw 'unreachable';
+}
+
+function getRandomElements(a, k, skip) {
+  var d = new Object;
+  var o = new Array;
+  var i;
+  var r;
+  while (k > 0) {
+    i = getRandom(a.length - o.length - 1);
+    r = -1;
+    while (i >= 0) {
+      r = r + 1;
+      if (r >= a.length) {
+        throw 'unreachable';
+      }
+      if (!d[r] && (a[r] !== skip)) {
+        i = i - 1;
+      }
+    }
+    o[o.length] = a[r];
+    d[r] = 1;
+    k = k - 1;
+  }
+  return o;
+}
+
+function renderQuiz(t) {
+  var topic;
+  var fact;
+  if (tmp.quizTopic && tmp.quizFact) {
+    topic = tmp.card[tmp.quizTopic];
+    fact = topic[tmp.quizFact];
+    if (tmp.quizSelect === tmp.quizAnswer) {
+      t = t + '<' + 'h2>Yes</h2>';
+      tmp.score = tmp.score + 1;
+    } else {
+      t = t + '<' + 'h2>No</h2>';
+      t = t +
+        tmp.quizTopic + ' ' + tmp.quizFact + ': ' + (fact.a) + '<p>';
+    }
+  }
+
+  var a = getRandomFact();
+  topic = tmp.card[a[0]];
+  fact = topic[a[1]];
+  tmp.quizTopic = a[0];
+  tmp.quizFact = a[1];
+
+  t = t + '<' + 'h2>' + a[0] + '</h2><h3>' + a[1] + '?' + '</h3>';
+  var conf = tmp.confuse[a[1]];
+  conf = getRandomElements(Object_keys(conf), 4, fact.a);
+  tmp.quizAnswer = getRandom(conf.length + 1);
+  var i = 0;
+  var j = 0;
+  while ((i + j) < (conf.length + 1)) {
+    t = t + '<a href=javascript:answerQuiz(' + (i + j) + ')>';
+    if ((i + j) === tmp.quizAnswer) {
+      t = t + (fact.a);
+      j = j + 1;
+    } else {
+      t = t + conf[i];
+      i = i + 1;
+    }
+    t = t + '</a><br>';
+  }
+  t = t + '<p><a href=javascript:modeQuizEnd()>End quiz</a><br>';
+  tmp.quizSelect = -1;
+  return t;
+}
+
+function renderQuizEnd(t) {
+  var r = tmp.quizRounds - 1;
+  if (r <= 1) {
+    r = 1;
+  }
+  var q = ((100 * tmp.score) / r) | 0;
+  t = t + '<' + 'h2>Score</h2>' + q + '% (' + tmp.score + ' of ' + r + ')';
+  resetQuiz();
+  return t;
+}
+
+function renderReview(t) {
+  var head;
+  var topic;
+  var card;
+  var q;
+  t = t + tmp.factCount + ' facts';
+
+  for (head in tmp.card) {
+    topic = tmp.card[head];
+    for (q in topic) {
+      card = topic[q];
+      t = t + '<' + 'h2>' + head + '<br>' + q + '?' + '</h2>' + (card.a);
+    }
+  }
+  return t;
+}
+
+function renderMenu(t) {
+  t = t +
+    '<' + 'h2>Menu</h2>' +
+    '<a href=javascript:modeQuiz()>Take a new quiz</a><br>' +
+    '<a href=javascript:modeReview()>Review data</a><br>';
+  return t;
+}
+
+function render() {
+  var t = '';
+  if (tmp.mode === 1) {
+    t = renderQuiz(t);
+  } else if (tmp.mode === 3) {
+    t = renderReview(t);
+  } else if (tmp.mode === 4) {
+    t = renderQuizEnd(t);
+  } else {
+    t = renderMenu(t);
+  }
+  if ((tmp.mode >= 2) && (tmp.mode <= 4)) {
+    t = t + '<p><a href=javascript:modeMenu()>Return to menu</a>';
+  }
+  writeHtml(t);
+}
+
+function answerQuiz(i) {
+  tmp.quizSelect = i;
+  render();
+}
+
+function modeQuiz() {
+  tmp.mode = 1;
+  render();
+}
+
+function modeReview() {
+  tmp.mode = 3;
+  render();
+}
+
+function modeQuizEnd() {
+  tmp.mode = 4;
+  render();
+}
+
+function modeMenu() {
+  tmp.mode = 0;
+  tmp.quizTopic = 0;
+  render();
+}
+
+function loadHtml(h) {
+  var confuse = new Object;
+  var cards = new Object;
+  h = removeAfter(h, '<script>');
+  var cs = String_split(h, '<' + 'h2>');
+  var i = 1;
+  var j;
+  var topic;
+  var fs;
+  var as;
+  var asq;
+  var asa;
+  var conf;
+  var card;
+  var factCount = 0;
+
+  while (i < cs.length) {
+    fs = cs[i];
+    fs = String_split(fs, '<' + 'h3>');
+    if (fs.length > 1) {
+      topic = removeAfter(fs[0], '<' + '/h2>');
+      topic = String_trim(topic);
+      j = 1;
+      while (j < fs.length) {
+        as = fs[j];
+        as = String_split(as, '<' + '/h3>');
+        if (as.length === 2) {
+          asq = as[0];
+          asq = String_trim(asq);
+          asa = as[1];
+          asa = String_trim(asa);
+
+          conf = confuse[asq];
+          if (conf) {
+            if (conf[asa]) {
+              conf[asa] = conf[asa] + 1;
+            } else {
+              conf[asa] = 1;
+            }
+          } else {
+            conf = new Object;
+            conf[asa] = 1;
+            confuse[asq] = conf;
+          }
+
+          card = new Object;
+          card.a = asa;
+          conf = cards[topic];
+          if (conf) {
+            conf[asq] = card;
+          } else {
+            conf = new Object;
+            conf[asq] = card;
+            cards[topic] = conf;
+          }
+          factCount = factCount + 1;
+        }
+        j = j + 1;
+      }
+    }
+    i = i + 1;
+  }
+
+  tmp.card = cards;
+  tmp.factCount = factCount;
+  tmp.confuse = confuse;
+}
+
+function loaded() {
+  loadHtml(document.documentElement.innerHTML);
+  render();
+}
+
+function init() {
+  if (tmp.docClosed) {
+    return 0;
+  }
+  tmp.random = (new Date) % 65536;
+  tmp.mode = 3;
+  if (window.location.href.indexOf('#') > -1) {
+    tmp.mode = 0;
+  } else {
+    window.location.href = window.location.href + '#';
+  }
+  tmp.quizRounds = 0;
+  tmp.score = 0;
+  tmp.i = 0;
+
+  writeHtml('processing in progress');
+  tmp.docClosed = 1;
+  setTimeout(loaded, 0);
+}
+
+init();
+</script>
+</body>
+</html>
