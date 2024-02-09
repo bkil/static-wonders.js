@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://github.com/*/*
 // @grant       none
-// @version     2024.1.2
+// @version     2024.2.1
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -17,17 +17,11 @@
 'use strict';
 
 function init() {
-  var res = document.querySelector('[app-name="react-code-view"]')
-  if (!res) {
-    res = document.querySelector('[partial-name="repos-overview"]');
-  }
+  var res = document.querySelector('[app-name="react-code-view"], [app-name="commits"], [partial-name="repos-overview"]');
   if (!res) {
     return
   }
-  var script = res.querySelector('script[data-target="react-app.embeddedData"]');
-  if (!script) {
-    script = res.querySelector('script[data-target="react-partial.embeddedData"]');
-  }
+  var script = res.querySelector('script[data-target="react-app.embeddedData"], script[data-target="react-partial.embeddedData"]');
   if (!script) {
     return
   }
@@ -48,6 +42,8 @@ function init() {
       res.appendChild(getPre(payload.blob.rawLines.join('\n')));
     } else if (payload.blob && payload.blob.richText) {
       processRich(res, payload.blob.richText);
+    } else if (payload.commitGroups) {
+      processCommits(res, payload.commitGroups);
     }
 
     if (payload.overview && payload.overview.overviewFiles) {
@@ -114,6 +110,29 @@ function processRich(out, text) {
     .replace(/&amp;amp;/g, '&amp;')
     ;
   out.appendChild(div);
+}
+
+function processCommits(out, cs) {
+  cs.forEach(function(cg) {
+    var h2 = document.createElement('h2');
+    h2.textContent = cg.title;
+    out.appendChild(h2);
+
+    (cg.commits ? cg.commits : []).forEach(function(c) {
+      var h3 = document.createElement('h3');
+      h3.textContent = c.committedDate;
+      out.appendChild(h3);
+      var a = document.createElement('a');
+      a.href = '../commit/' + c.oid;
+      a.textContent = c.shortMessage;
+      out.appendChild(a);
+
+      processRich(out, c.bodyMessageHtml);
+      var as = document.createElement('div');
+      as.innerText = c.oid + ' ' + c.authors.map(function(as){ return as.login; }).join(', ');
+      out.appendChild(as);
+    });
+  });
 }
 
 function processDirectory(out, dir) {
