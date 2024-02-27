@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://github.com/*/*
 // @grant       none
-// @version     2024.2.1
+// @version     2024.2.2
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -42,8 +42,8 @@ function init() {
       res.appendChild(getPre(payload.blob.rawLines.join('\n')));
     } else if (payload.blob && payload.blob.richText) {
       processRich(res, payload.blob.richText);
-    } else if (payload.commitGroups) {
-      processCommits(res, payload.commitGroups);
+    } else if (payload.currentCommit || payload.commitGroups) {
+      processCommits(res, payload);
     }
 
     if (payload.overview && payload.overview.overviewFiles) {
@@ -112,8 +112,8 @@ function processRich(out, text) {
   out.appendChild(div);
 }
 
-function processCommits(out, cs) {
-  cs.forEach(function(cg) {
+function processCommits(out, j) {
+  (j.commitGroups ? j.commitGroups : []).forEach(function(cg) {
     var h2 = document.createElement('h2');
     h2.textContent = cg.title;
     out.appendChild(h2);
@@ -123,16 +123,69 @@ function processCommits(out, cs) {
       h3.textContent = c.committedDate;
       out.appendChild(h3);
       var a = document.createElement('a');
-      a.href = '../commit/' + c.oid;
+      a.href = 'commit/' + c.oid;
       a.textContent = c.shortMessage;
       out.appendChild(a);
 
-      processRich(out, c.bodyMessageHtml);
+      processRich(out, c.bodyMessageHtml.replaceAll('\n', '<br>'));
       var as = document.createElement('div');
       as.innerText = c.oid + ' ' + c.authors.map(function(as){ return as.login; }).join(', ');
       out.appendChild(as);
     });
   });
+
+  if (j.filters && j.filters.pagination) {
+    var p = j.filters.pagination;
+    var commit;
+    var cur;
+    var prev;
+    var next;
+    var field;
+
+    if (p.startCursor) {
+      field = p.startCursor.split(' ');
+      if (field.length === 2) {
+        commit = field[0];
+        cur = parseInt(field[1]);
+        prev = cur >= 36 ? cur - 36 : 0;
+      }
+    }
+    if (p.endCursor) {
+      field = p.endCursor.split(' ');
+      if (field.length === 2) {
+        commit = field[0];
+        next = parseInt(field[1]);
+      }
+    }
+
+    function link(page) {
+      if (!commit) {
+        return;
+      }
+      var a = new URL(window.location.href);
+      if (commit && page) {
+        a.search = 'after=' + encodeURIComponent(commit) + '+' + encodeURIComponent(page);
+      } else {
+        a.search = '';
+      }
+      var ae = document.createElement('a');
+      ae.textContent = 'Commit ' + page;
+      ae.href = a.href;
+      var div = document.createElement('div');
+      div.appendChild(ae);
+      out.appendChild(div);
+    }
+
+    if (cur) {
+      link(0);
+    }
+    if (prev && p.hasPreviousPage) {
+      link(prev);
+    }
+    if (next && p.hasNextPage) {
+      link(next);
+    }
+  }
 }
 
 function processDirectory(out, dir) {
