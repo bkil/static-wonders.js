@@ -88,8 +88,13 @@ function JSON_parse(s) {
           c = String.fromCharCode((hex2dec(s.charAt(i + 4)) << 4) + hex2dec(s.charAt(i + 5)));
           i = i + 6;
         } else if (((i + 1) < s.length) && (n === 92)) {
-          c = s.charAt(i + 1);
-          i = i + 2;
+          nextCh();
+          if (n === 110) {
+            c = String.fromCharCode(10);
+          } else {
+            c = s.charAt(i);
+          }
+          i = i + 1;
         } else {
           c = s.charAt(i);
           i = i + 1;
