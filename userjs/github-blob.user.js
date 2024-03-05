@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://github.com/*/*
 // @grant       none
-// @version     2024.2.2
+// @version     2024.3.1
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -188,6 +188,10 @@ function processCommits(out, j) {
   }
 }
 
+function encodePath(path) {
+  return encodeURIComponent(path).replaceAll('%2F', '/');
+}
+
 function processDirectory(out, dir) {
   if (!Array.isArray(dir)) {
     return
@@ -202,10 +206,10 @@ function processDirectory(out, dir) {
   dir.forEach(function(item) {
     var a = document.createElement('a');
     if (item.contentType === 'directory') {
-      a.href = pre + '/tree/' + ref + '/' + item.path;
+      a.href = pre + '/tree/' + encodeURIComponent(ref) + '/' + encodePath(item.path);
       a.textContent = item.path + '/';
     } else {
-      a.href = pre + '/blob/' + ref + '/' + item.path;
+      a.href = pre + '/blob/' + encodeURIComponent(ref) + '/' + encodePath(item.path);
       a.textContent = item.path;
     }
     var li = document.createElement('li');
