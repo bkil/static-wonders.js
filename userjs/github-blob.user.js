@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://github.com/*/*
 // @grant       none
-// @version     2024.3.1
+// @version     2024.3.2
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -100,7 +100,7 @@ function processRich(out, text) {
     .replace(/&lt;\/span&gt;/g, '')
     .replace(/&lt;svg(?: (?:[^&]|&amp;|&quot;)*?)?&gt;.*?&lt;\/svg&gt;/g, ' svg ')
     .replace(/&lt;g-emoji class=&quot;g-emoji&quot; alias=&quot;\w+&quot; fallback-src=&quot;[^&]+&quot;&gt;([^&]+?)&lt;\/g-emoji&gt;/g, '$1')
-    .replace(/&lt;(\/?(?:h[1-6]|strong|em|b|i|details|summary|pre|code|blockquote|ul|ol|li|br|hr|p|table|thead|tbody|th|tr|td|sub|sup))(?: align=&quot;center&quot;| tabindex=&quot;-1&quot;| dir=&quot;auto&quot;| start=&quot;[0-9]+&quot;|( id=)&quot;user-content-([0-9A-Za-z_-]+)&quot;)*&gt;/g, '<$1$2$3>')
+    .replace(/&lt;(\/?(?:h[1-6]|strong|em|b|i|details|summary|pre|code|blockquote|ul|ol|li|br|hr|p|table|thead|tbody|th|tr|td|sub|sup))(?: align=&quot;center&quot;| class=&quot;heading-element&quot;| tabindex=&quot;-1&quot;| dir=&quot;auto&quot;| start=&quot;[0-9]+&quot;|( id=)&quot;user-content-([0-9A-Za-z_-]+)&quot;)*&gt;/g, '<$1$2$3>')
     .replace(/&lt;a( id=)&quot;user-content-([0-9A-Za-z_-]+)&quot;&gt;(.+?)&lt;\/a&gt;/g, '<a$1$2 href="#$2"> link </a> $3')
     .replace(/&lt;a(?:( id=)&quot;user-content-([0-9A-Za-z_-]+)&quot;)?(?: (?:[^&]|&amp;|&quot;)*?)? href=&quot;#((?:[^&]|&amp;)*)&quot;(?:[^&]|&amp;|&quot;)*?&gt;(.+?)&lt;\/a&gt;/g, '<a$1$2 href="#$3">$4</a>')
     .replace(/&lt;a(?:( id=)&quot;user-content-([0-9A-Za-z_-]+)&quot;)?(?: (?:[^&]|&amp;|&quot;)*?)? href=&quot;((?:[^&]|&amp;)*)&quot;(?:[^&]|&amp;|&quot;)*?&gt;(.+?)&lt;\/a&gt;/g, '<a$1$2 href="$3" target=_blank rel=noreferrer>$4</a>')
