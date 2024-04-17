@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Markov-chain text generator</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='Random phrases from n-gram statistics. Example interactive JavaScript0 app for GemiWeb0' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=no-referrer>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline' 'unsafe-eval'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+<style>
+html {
+  background-color: black;
+  color: white;
+  overflow-wrap: anywhere;
+}
+
+html, body {
+  margin: 0;
+}
+
+textarea {
+  min-width: calc(100% - 1rem);
+  max-width: calc(100% - 1rem);
+  height: calc(50vh - 2rem);
+  min-height: 2rem;
+  max-height: calc(100vh - 2rem);
+}
+</style>
+</head>
+<body
+><form width='100%' name=f action='javascript:app.submit()'
+><input type=submit name=s value=Random
+><a target=_blank href="https://gitlab.com/bkil/gemiweb">gitlab.com/bkil/gemiweb</a
+><br
+><textarea width='100%' cols=40 rows=24 name=t spellcheck=false autocorrect=off autocomplete=off
+>// You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the above specification.
+'use strict';
+
+var tmp = new Object;
+
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  } else {
+    var o = '';
+    var c;
+    if (to > th.length) {
+      to = th.length;
+    }
+    from = from - 1;
+    to = to - 1;
+    while (to > from) {
+      c = th.charAt(from = from + 1);
+      o = o + c;
+    }
+    return o;
+  }
+}
+
+function removeAfter(s, t) {
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, 0, i);
+  }
+  return s;
+}
+
+function writeHtml(text) {
+  if (tmp.docClosed) {
+    var typ = 'html';
+    if (document.doctype && document.doctype.name) {
+      typ = document.doctype.name;
+    }
+
+    var before = '';
+    if (document.documentElement && document.documentElement.innerHTML) {
+      before = removeAfter(document.documentElement.innerHTML, '<body>');
+    }
+    document.write('<!DOCTYPE ' + typ + '><html lang=en>' + before + '<body>' + text + '<' + '/body></html>');
+    document.close();
+  } else {
+    document.write(text);
+  }
+  if (window.f && (window.f.s && window.f.s.focus)) {
+    window.f.s.focus();
+  }
+}
+
+function updateGram(key, next) {
+  var o = tmp.gram[key];
+  if (!o) {
+    o = new Array;
+    tmp.gram[key] = o;
+  }
+  o[o.length] = next;
+}
+
+function learnGrams(s) {
+  tmp.gram = new Object;
+  var i = 0;
+  var x;
+  var y = '';
+  var z = '';
+
+  tmp.inText = s;
+  while (i < s.length) {
+    while (s.charCodeAt(i) === 32) {
+      i = i + 1;
+    }
+    x = y;
+    y = z;
+    z = s.charAt(i);
+
+    i = i + 1;
+    updateGram(x + y + z, i);
+    updateGram(y + z, i);
+    updateGram(z, i);
+  }
+}
+
+function escapeHtmlChar(c) {
+  var n = c.charCodeAt(0);
+  if (n === 34) {
+    return '&' + 'quot;';
+  } else if (n === 38) {
+    return '&' + 'amp;';
+  } else if (n === 39) {
+    return '&' + 'apos;';
+  } else if (n === 60) {
+    return '&' + 'lt;';
+  } else if (n === 62) {
+    return '&' + 'gt;';
+  } else {
+    return c;
+  }
+}
+
+// JS1
+function getRandom(n) {
+  var x = tmp.random;
+  x = x ^ (x >> 7);
+  x = x ^ (x << 9);
+  x = (x ^ (x >> 13)) & 65535;
+  tmp.random = x;
+  return x % n;
+}
+
+function generateGrams(len) {
+  var i = getRandom(len);
+  var s = tmp.inText;
+  var t = '';
+  var o;
+  var n;
+  var x;
+  var y = '';
+  var z = '';
+  var c;
+  var n;
+  var word = 0;
+
+  while (len) {
+    if ((n = s.charCodeAt(i)) === 32) {
+      t = t + ' ';
+      word = 1;
+      while (s.charCodeAt(i = i + 1) === 32) {
+        if (word) {
+          t = t + '&' + 'nbsp;';
+        } else {
+          t = t + ' ';
+        }
+        word = !word;
+      }
+      word = 0;
+    } else {
+      word = word + 1;
+      if ((word > 32) || ((word > 13) && (65 > n) || ((n > 90) && (97 > n)) || (n > 122))) {
+        t = t + ' ';
+        word = 0;
+      }
+    }
+
+    x = y;
+    y = z;
+    z = s.charAt(i);
+
+    n = z.charCodeAt(0);
+    if (n === 10) {
+      c = '<br>';
+    } else {
+      c = escapeHtmlChar(z);
+    }
+    t = t + c;
+
+    o = tmp.gram[x + y + z];
+    if (!o) {
+      o = tmp.gram[y + z];
+      if (!o) {
+        o = tmp.gram[z];
+      }
+    }
+    if (o) {
+      i = o[getRandom(o.length)];
+    }
+    if (i >= s.length) {
+      i = 0;
+    }
+
+    len = len - 1;
+  }
+  return t;
+}
+
+function escapeHtml(s) {
+  var i = 0;
+  var t = '';
+  var c;
+  while (i < s.length) {
+    c = escapeHtmlChar(s.charAt(i));
+    t = t + c;
+    i = i + 1;
+  }
+  return t;
+}
+
+function submit() {
+  var s = window.f.t.value;
+  learnGrams(s);
+  var t = generateGrams(2 * s.length);
+  t = '<p>' + t;
+  if (tmp.docClosed) {
+    t = '<form name=f action="javascript:app.submit()"><input type=submit name=s value=Random><a target=_blank href="https://gitlab.com/bkil/gemiweb">gitlab.com/bkil/gemiweb</a><br><textarea name=t>' +
+      escapeHtml(s) +
+      '<' + '/textarea></form>' +
+      t;
+  }
+  writeHtml(t);
+}
+
+function init() {
+  tmp.random = (new Date) % 65536;
+  if (!tmp.random) {
+    tmp.random = 1;
+  }
+
+  submit();
+  tmp.docClosed = 1;
+  var app = new Object;
+  app.submit = submit;
+  return app;
+}
+
+init();</textarea
+></form>
+
+<script>
+'use strict';
+var app = eval(window.f.t.value);
+</script>
+
+</body>
+</html>
