@@ -10,9 +10,12 @@
   <meta http-equiv=x-dns-prefetch-control content=off>
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline' 'unsafe-eval'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
 <style>
-html {
+html, textarea {
   background-color: black;
   color: white;
+}
+
+html {
   overflow-wrap: anywhere;
 }
 
@@ -101,20 +104,25 @@ function updateGram(key, next) {
 function learnGrams(s) {
   tmp.gram = new Object;
   var i = 0;
-  var x;
+  var w;
+  var x = '';
   var y = '';
   var z = '';
 
   tmp.inText = s;
   while (i < s.length) {
-    while (s.charCodeAt(i) === 32) {
-      i = i + 1;
+    if (s.charCodeAt(i) === 32) {
+      while (s.charCodeAt(i = i + 1) === 32) {
+      }
+      i = i - 1;
     }
+    w = x;
     x = y;
     y = z;
     z = s.charAt(i);
 
     i = i + 1;
+    updateGram(w + x + y + z, i);
     updateGram(x + y + z, i);
     updateGram(y + z, i);
     updateGram(z, i);
@@ -154,7 +162,8 @@ function generateGrams(len) {
   var t = '';
   var o;
   var n;
-  var x;
+  var w;
+  var x = '';
   var y = '';
   var z = '';
   var c;
@@ -162,7 +171,15 @@ function generateGrams(len) {
   var word = 0;
 
   while (len) {
-    if ((n = s.charCodeAt(i)) === 32) {
+    w = x;
+    x = y;
+    y = z;
+    z = s.charAt(i);
+
+    n = z.charCodeAt(0);
+    if (n === 10) {
+      t = t + '<br>';
+    } else if (n === 32) {
       t = t + ' ';
       word = 1;
       while (s.charCodeAt(i = i + 1) === 32) {
@@ -180,25 +197,18 @@ function generateGrams(len) {
         t = t + ' ';
         word = 0;
       }
-    }
-
-    x = y;
-    y = z;
-    z = s.charAt(i);
-
-    n = z.charCodeAt(0);
-    if (n === 10) {
-      c = '<br>';
-    } else {
       c = escapeHtmlChar(z);
+      t = t + c;
     }
-    t = t + c;
 
-    o = tmp.gram[x + y + z];
-    if (!o) {
-      o = tmp.gram[y + z];
+    o = tmp.gram[w + x + y + z];
+    if (!o || ((o.length === 1) && !getRandom(4))) {
+      o = tmp.gram[x + y + z];
       if (!o) {
-        o = tmp.gram[z];
+        o = tmp.gram[y + z];
+        if (!o) {
+          o = tmp.gram[z];
+        }
       }
     }
     if (o) {
