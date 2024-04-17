@@ -30,13 +30,14 @@ textarea {
   min-height: 2rem;
   max-height: calc(100vh - 2rem);
 }
+
+input {
+  margin-right: 0.5rem;
+}
 </style>
 </head>
 <body
 ><form width='100%' name=f action='javascript:app.submit()'
-><input type=submit name=s value=Random
-><a target=_blank href="https://gitlab.com/bkil/gemiweb">gitlab.com/bkil/gemiweb</a
-><br
 ><textarea width='100%' cols=40 rows=24 name=t spellcheck=false autocorrect=off autocomplete=off
 >// You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the above specification.
 'use strict';
@@ -243,9 +244,9 @@ function submit() {
   var t = generateGrams(2 * s.length);
   t = '<p>' + t;
   if (tmp.docClosed) {
-    t = '<form name=f action="javascript:app.submit()"><input type=submit name=s value=Random><a target=_blank href="https://gitlab.com/bkil/gemiweb">gitlab.com/bkil/gemiweb</a><br><textarea name=t>' +
+    t = '<form name=f action="javascript:app.submit()"><textarea name=t>' +
       escapeHtml(s) +
-      '<' + '/textarea></form>' +
+      '<' + '/textarea><br><input type=submit name=s value=Shuffle><a target=_blank href="https://gitlab.com/bkil/gemiweb">gitlab.com/bkil/gemiweb</a></form>' +
       t;
   }
   writeHtml(t);
@@ -265,6 +266,9 @@ function init() {
 }
 
 init();</textarea
+><br
+><input type=submit name=s value=Shuffle
+><a target=_blank href="https://gitlab.com/bkil/gemiweb">gitlab.com/bkil/gemiweb</a
 ></form>
 
 <script>
