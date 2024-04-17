@@ -175,26 +175,30 @@ function generateGrams(len) {
     x = y;
     y = z;
     z = s.charAt(i);
-
+    i = i + 1;
+    if (i >= s.length) {
+      i = 0;
+    }
     n = z.charCodeAt(0);
+
     if (n === 10) {
       t = t + '<br>';
       word = 0;
     } else if (n === 32) {
       t = t + ' ';
-      word = 1;
+      word = 0;
+      i = i - 1;
       while (s.charCodeAt(i = i + 1) === 32) {
-        if (word) {
+        if (word = !word) {
           t = t + '&' + 'nbsp;';
         } else {
           t = t + ' ';
         }
-        word = !word;
       }
       word = 0;
     } else {
       word = word + 1;
-      if ((word > 32) || ((word > 13) && (65 > n) || ((n > 90) && (97 > n)) || (n > 122))) {
+      if ((word > 32) || ((word > 13) && ((65 > n) || ((n > 90) && (97 > n)) || (n > 122)))) {
         t = t + ' ';
         word = 0;
       }
@@ -214,9 +218,6 @@ function generateGrams(len) {
     }
     if (o) {
       i = o[getRandom(o.length)];
-    }
-    if (i >= s.length) {
-      i = 0;
     }
 
     len = len - 1;
