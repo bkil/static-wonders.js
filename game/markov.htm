@@ -202,7 +202,7 @@ function generateGrams(len) {
       word = 0;
     } else {
       word = word + 1;
-      if ((word > 32) || ((word > 13) && ((65 > n) || ((n > 90) && (97 > n)) || (n > 122)))) {
+      if ((word > 32) || ((word > 13) && ((65 > n) || ((n > 90) && (97 > n)) || ((n > 122) && (127 > n))))) {
         t = t + ' ';
         word = 0;
       }
