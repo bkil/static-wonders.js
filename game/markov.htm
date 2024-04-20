@@ -103,6 +103,9 @@ function updateGram(key, next) {
 }
 
 function learnGrams(s) {
+  if (tmp.inText === s) {
+    return 0;
+  }
   tmp.gram = new Object;
   var i = 0;
   var w;
@@ -110,7 +113,6 @@ function learnGrams(s) {
   var y = '';
   var z = '';
 
-  tmp.inText = s;
   while (i < s.length) {
     if (s.charCodeAt(i) === 32) {
       while (s.charCodeAt(i = i + 1) === 32) {
@@ -128,6 +130,7 @@ function learnGrams(s) {
     updateGram(y + z, i);
     updateGram(z, i);
   }
+  tmp.inText = s;
 }
 
 function escapeHtmlChar(c) {
