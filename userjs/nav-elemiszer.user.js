@@ -5,8 +5,8 @@
 // @namespace   bkil.hu
 // @match       https://nav.gov.hu/adatbazisok/elemiszer_ertekesites
 // @grant       none
-// @version     2024.4.1
-// @license     SPDX-License-Identifier: CC-BY-SA-4.0
+// @version     2024.4.2
+// @license     SPDX-License-Identifier: MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
 // @supportURL  https://gitlab.com/bkil/static-wonders.js/issues
