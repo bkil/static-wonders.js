@@ -12,12 +12,12 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob: mediastream:; webrtc 'block'; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src data: blob: 'unsafe-inline' 'unsafe-eval'; base-uri 'none'; form-action 'self'; navigate-to 'none';">
 
 <style>
+[name="t"]:not(:checked) + label {
+  opacity: 70%;
+}
 #F {
   display: inline-block;
   vertical-align: middle;
-}
-[name="t"]:not(:checked) + label {
-  opacity: 70%;
 }
 [name="t"]:checked ~ #F .F {
   display: none;
@@ -27,10 +27,10 @@
 </head>
 <body>
 
-<form name=r action=#>
+<form name=r>
 
 <label for=q>Keywords</label>
-<input name=q id=q autofocus=>
+<input name=q id=q autofocus>
 <input type=submit value=Search>
 
 <input type=radio name=t value=s id=s checked>
@@ -68,7 +68,7 @@
 <script>
 r.onsubmit = function(e) {
   e.preventDefault();
-  alert(r.t.value + ' ' + P.value + ' ' + C.value + ' ' + q.value);
+  alert(r.t.value + ' ' + r.P.value + ' ' + r.C.value + ' ' + r.q.value);
 }
 </script>
 

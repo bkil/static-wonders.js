@@ -30,14 +30,14 @@
 </head>
 <body>
 
-<form name=r action=#>
+<form name=r>
 
 <label for=q>Keywords</label>
-<input name=q id=q autofocus=>
+<input name=q id=q autofocus>
 <input type=submit value=Search>
 
 <div id=o>
-<input type=radio name=t value=s id=s checked=>
+<input type=radio name=t value=s id=s checked>
 <label for=s>stackage</label>
 
 <input type=radio name=t value=h id=h>
@@ -72,7 +72,7 @@
 <script>
 r.onsubmit = function(e) {
   e.preventDefault();
-  alert(r.t.value + ' ' + P.value + ' ' + C.value + ' ' + q.value);
+  alert(r.t.value + ' ' + r.P.value + ' ' + r.C.value + ' ' + r.q.value);
 }
 </script>
 
