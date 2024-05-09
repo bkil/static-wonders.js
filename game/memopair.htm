@@ -23,23 +23,27 @@ var nl = String.fromCharCode(10);
 var bs = String.fromCharCode(92);
 
 function reload(text) {
-  var typ = '';
-  if (document.doctype && (document.doctype.name !== undefined)) {
-    typ = '<!DOCTYPE ' + document.doctype.name + '>';
-  }
-
-  var head = '';
-  if (document.head && document.head.innerHTML && String.prototype && String.prototype.match) {
-    head = document.head.innerHTML;
-    var m = head.match('^((?:.|' + bs + 'n)*)<[^>]+http-equiv=["' + "'" + ']?Content-Security-Policy[^>]*>((?:.|' + bs + 'n)*)$');
-    if (m) {
-      head = m[1] + m[2];
+  if (tmp.docClosed) {
+    var typ = '';
+    if (document.doctype && (document.doctype.name !== undefined)) {
+      typ = '<!DOCTYPE ' + document.doctype.name + '>';
     }
-  }
 
-  document.close();
-  document.write(typ + '<html lang=en><head>' + head + '</head><body>' + text + '</body></html>');
-  document.close();
+    var head = '';
+    if (document.head && document.head.innerHTML && String.prototype && String.prototype.match) {
+      head = document.head.innerHTML;
+      var m = head.match('^((?:.|' + bs + 'n)*)<[^>]+http-equiv=["' + "'" + ']?Content-Security-Policy[^>]*>((?:.|' + bs + 'n)*)$');
+      if (m) {
+        head = m[1] + m[2];
+      }
+    }
+
+    document.close();
+    document.write(typ + '<html lang=en><head>' + head + '</head><body>' + text + '</body></html>');
+    document.close();
+  } else {
+    document.write(text);
+  }
   if (window.f && (window.f.t && window.f.t.focus)) {
     window.f.t.focus();
   }
@@ -225,6 +229,7 @@ function init() {
   dur.game = 0;
   dur.level = getRandom(l.length);
   restart();
+  tmp.docClosed = 1;
 }
 
 init();
