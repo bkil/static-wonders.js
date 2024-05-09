@@ -362,8 +362,8 @@ function loaded() {
       'html,body,pre{margin:0;padding:0}</style><pre>' +
       escapeHtml(o.ok) + '</pre><pre>' + escapeHtml(o.err)) + '</pre>';
     document.close();
-  } else if (typeof fetch !== 'undefined') {
-    var f = fetch(dataUrl);
+  } else if ((typeof window !== 'undefined') && window.location && window.location.href && (typeof fetch !== 'undefined')) {
+    var f = fetch(window.location.href);
     f = f.then(function(r){ return r.text() });
     f = f.then(function(h) {
       var o = parseHtml(h);
