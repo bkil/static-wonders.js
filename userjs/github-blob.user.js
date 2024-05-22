@@ -5,7 +5,7 @@
 // @namespace   bkil.hu
 // @match       https://github.com/*/*
 // @grant       none
-// @version     2024.3.2
+// @version     2024.5.1
 // @license     MIT
 // @homepageURL https://gitlab.com/bkil/static-wonders.js
 // @homepageURL https://github.com/bkil/static-wonders.js
@@ -123,13 +123,13 @@ function processCommits(out, j) {
       h3.textContent = c.committedDate;
       out.appendChild(h3);
       var a = document.createElement('a');
-      a.href = 'commit/' + c.oid;
+      a.href = '../../commit/' + c.oid;
       a.textContent = c.shortMessage;
       out.appendChild(a);
 
       processRich(out, c.bodyMessageHtml.replaceAll('\n', '<br>'));
       var as = document.createElement('div');
-      as.innerText = c.oid + ' ' + c.authors.map(function(as){ return as.login; }).join(', ');
+      as.innerText = c.oid + ' ' + c.authors.map(function(as){ return as.login ? as.login : as.displayName; }).join(', ');
       out.appendChild(as);
     });
   });
