@@ -160,6 +160,9 @@ function getRandom(n) {
 }
 
 function generateGrams(len) {
+  if (!len) {
+    return '';
+  }
   var i = getRandom(len);
   var s = tmp.inText;
   var t = '';
