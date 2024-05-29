@@ -255,14 +255,10 @@ function saveFont() {
 }
 
 function init() {
-  if (tmp.docClosed) {
-    return 0;
-  }
   tmp.cell = '█';
   tmp.input = 'hello';
   tmp.maxX = 3;
   tmp.maxY = 4;
-  parseFont();
   tmp.docClosed = 1;
 }
 
