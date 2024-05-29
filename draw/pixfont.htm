@@ -27,50 +27,14 @@ pre {
 </style>
 </head>
 <body><h2
+>Usage</h2
+>You can review and edit the font containing how each character looks like on a 3 by 4 grid. You can then type in some text in the next step. It will be rendered as a large ASCII-art banner.<h2
+>Requirements</h2
+>You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
+><a target=_blank href=https://gitlab.com/bkil/gemiweb
+>https://gitlab.com/bkil/gemiweb</a
+><h2
 >Edit font</h2
-><form name=f action='javascript:saveFont()'
-><textarea rows=9 cols=49 name=t role=img>
-    @   @ @ @@@  @@ @ @ @@   @   @  @          
-    @   @ @     @@   @@  @  @   @    @  @@   @ 
-            @ @  @@ @@  @ @     @    @  @@  @@@
-    @       @ @ @@  @ @ @@       @  @        @ 
-
-              @  @   @  @@  @@  @   @@@  @@ @@@
-    @@@      @  @ @ @@    @  @@ @ @ @@  @@    @
- @           @  @ @  @  @@    @ @@@   @ @ @  @ 
-@       @   @    @  @@@ @@@ @@    @ @@   @   @ 
-
-@@@  @       @              @@   @@  @  @@   @@
- @  @ @ @        @  @@@ @    @@ @ @ @ @ @@@ @  
-@ @  @@      @  @        @      @   @@@ @ @ @  
-@@@ @@  @   @    @  @@@ @    @   @@ @ @ @@   @@
-
-@@  @@@ @@@  @@ @ @ @@@  @@ @ @ @   @@@ @@  @@@
-@ @ @@  @   @   @@@  @    @ @@  @   @@@ @ @ @ @
-@ @ @   @@@ @ @ @@@  @    @ @ @ @   @ @ @ @ @ @
-@@  @@@ @    @@ @ @ @@@ @@  @ @ @@@ @ @ @ @ @@@
-
-@@@ @@@ @@  @@  @@@ @ @ @ @ @ @ @ @ @ @ @@@ @@ 
-@ @ @ @ @ @ @    @  @ @ @ @ @ @  @  @@@  @@ @  
-@@@ @@@ @@   @   @  @ @ @ @ @@@ @ @  @  @@  @  
-@     @ @ @ @@   @  @@@  @  @@@ @ @  @  @@@ @@ 
-
-@   @@   @      @   @@  @         @  @@  @@  @@
- @   @  @ @      @   @@ @@   @@  @@ @ @ @   @ @
- @   @              @ @ @ @ @   @ @ @@  @@   @@
-  @ @@      @@@      @@ @@   @@  @@  @@ @   @@@
-
-@   @     @ @   @                @   @       @ 
-@           @ @ @   @@@ @@  @@@ @ @ @ @ @@  @  
-@@@ @     @ @@  @   @@@ @ @ @ @ @@   @@ @ @  @ 
-@ @ @   @@  @ @  @  @ @ @ @ @@@ @     @ @   @  
-
- @                      @@   @@ @   @@  @ @ @@@
-@@@ @ @ @ @ @ @ @ @ @ @  @   @  @    @   @  @@@
- @  @ @ @ @ @@@  @   @@ @   @@  @    @@     @@@
- @@ @@@  @  @@@ @ @ @@  @@    @ @   @       @@@</textarea
-><input type=submit
-></form
 ><script>
 'use strict';
 var tmp = new Object;
@@ -303,15 +267,48 @@ function init() {
 }
 
 init();
-if (typeof setTimeout !== 'undefined') {
-  setTimeout(init, 0);
-}
 </script
-><h2
->Usage</h2
->You can review and edit the font containing how each character looks like on a 3 by 4 grid. You can then type in some text in the next step. It will be rendered as a large ASCII-art banner.<h2
->Requirements</h2
->You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
-><a target=_blank href=https://gitlab.com/bkil/gemiweb
->https://gitlab.com/bkil/gemiweb</a
+><form name=f action='javascript:saveFont()'
+><textarea rows=9 cols=49 name=t role=img>
+    @   @ @ @@@  @@ @ @ @@   @   @  @          
+    @   @ @     @@   @@  @  @   @    @  @@   @ 
+            @ @  @@ @@  @ @     @    @  @@  @@@
+    @       @ @ @@  @ @ @@       @  @        @ 
+
+              @  @   @  @@  @@  @   @@@  @@ @@@
+    @@@      @  @ @ @@    @  @@ @ @ @@  @@    @
+ @           @  @ @  @  @@    @ @@@   @ @ @  @ 
+@       @   @    @  @@@ @@@ @@    @ @@   @   @ 
+
+@@@  @       @              @@   @@  @  @@   @@
+ @  @ @ @        @  @@@ @    @@ @ @ @ @ @@@ @  
+@ @  @@      @  @        @      @   @@@ @ @ @  
+@@@ @@  @   @    @  @@@ @    @   @@ @ @ @@   @@
+
+@@  @@@ @@@  @@ @ @ @@@  @@ @ @ @   @@@ @@  @@@
+@ @ @@  @   @   @@@  @    @ @@  @   @@@ @ @ @ @
+@ @ @   @@@ @ @ @@@  @    @ @ @ @   @ @ @ @ @ @
+@@  @@@ @    @@ @ @ @@@ @@  @ @ @@@ @ @ @ @ @@@
+
+@@@ @@@ @@  @@  @@@ @ @ @ @ @ @ @ @ @ @ @@@ @@ 
+@ @ @ @ @ @ @    @  @ @ @ @ @ @  @  @@@  @@ @  
+@@@ @@@ @@   @   @  @ @ @ @ @@@ @ @  @  @@  @  
+@     @ @ @ @@   @  @@@  @  @@@ @ @  @  @@@ @@ 
+
+@   @@   @      @   @@  @         @  @@  @@  @@
+ @   @  @ @      @   @@ @@   @@  @@ @ @ @   @ @
+ @   @              @ @ @ @ @   @ @ @@  @@   @@
+  @ @@      @@@      @@ @@   @@  @@  @@ @   @@@
+
+@   @     @ @   @                @   @       @ 
+@           @ @ @   @@@ @@  @@@ @ @ @ @ @@  @  
+@@@ @     @ @@  @   @@@ @ @ @ @ @@   @@ @ @  @ 
+@ @ @   @@  @ @  @  @ @ @ @ @@@ @     @ @   @  
+
+ @                      @@   @@ @   @@  @ @ @@@
+@@@ @ @ @ @ @ @ @ @ @ @  @   @  @    @   @  @@@
+ @  @ @ @ @ @@@  @   @@ @   @@  @    @@     @@@
+ @@ @@@  @  @@@ @ @ @@  @@    @ @   @       @@@</textarea
+><input type=submit
+></form
 ></body></html>
