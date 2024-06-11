@@ -16,8 +16,11 @@ html, input {
 }
 
 pre {
+  display: inline-block;
   background-color: #111;
   border: 1px solid;
+  margin: 0.5em;
+  padding: 0.5em;
 }
 </style>
 </head>
@@ -144,19 +147,19 @@ function render(msg) {
 
   if (tmp.win || tmp.lost) {
     if (tmp.win) {
-      h = h + 'The pet is safe.';
+      h = h + '<br>The pet is safe.';
     } else {
-      h = h + 'The pet ran away.';
+      h = h + '<br>The pet ran away.';
     }
-    h = h + '<p><a href="javascript:restart()">Restart</a>';
+    h = h + ' <a href="javascript:restart()">Restart</a>';
   } else if (tmp.inline) {
-    h = h + '<p><a href="javascript:setInline(0)">Switch inline links to form input</a>';
+    h = h + '<br><a href="javascript:setInline(0)">Switch inline links to form input</a>';
   } else {
-    h = h + '<form name=f action="javascript:submitStep()"><input name=t><input type=submit></form>';
-    h = h + '<p><a href="javascript:setInline(1)">Switch form to inline links</a>';
+    h = h + '<form name=f autocomplete=off action="javascript:submitStep()">Select coordinate<input name=t type=number min=11 max=99 placeholder=11..99 minlength=2 maxlength=2 size=2><input type=submit></form>';
+    h = h + '<a href="javascript:setInline(1)">Switch form to inline links</a>';
   }
   if (msg) {
-    h = h + '<p>' + msg;
+    h = h + '<br>' + msg;
   }
   writeHtml(h);
 }
@@ -194,7 +197,7 @@ function generate() {
   tmp.board = o;
 }
 
-function decide(xy0, x, y, t) {
+function markNeighbor(xy0, x, y, t) {
   var w = tmp.width;
   if ((0 > x) || (0 > y) || (x >= w) || (y >= tmp.height)) {
     return 1;
@@ -255,12 +258,12 @@ function stepNumber(index) {
     xy = (y * w) + x;
     xi = x + (y & 1);
 
-    if (decide(xy, x - 1, y, t) ||
-      decide(xy, xi, y - 1, t) ||
-      decide(xy, xi - 1, y - 1, t) ||
-      decide(xy, x + 1, y, t) ||
-      decide(xy, xi, y + 1, t) ||
-      decide(xy, xi - 1, y + 1, t)) {
+    if (markNeighbor(xy, x - 1, y, t) ||
+      markNeighbor(xy, xi, y - 1, t) ||
+      markNeighbor(xy, xi - 1, y - 1, t) ||
+      markNeighbor(xy, x + 1, y, t) ||
+      markNeighbor(xy, xi, y + 1, t) ||
+      markNeighbor(xy, xi - 1, y + 1, t)) {
       if (0 > pxy[xy]) {
         tmp.lost = 1;
         return '';
@@ -279,11 +282,6 @@ function stepNumber(index) {
   return '';
 }
 
-function step(index) {
-  stepNumber(index);
-  render('');
-}
-
 function stepString(typed) {
   var i = parseIntPlus(typed);
   if (isNaN(i)) {
@@ -292,19 +290,21 @@ function stepString(typed) {
   return stepNumber(i);
 }
 
+function step(index) {
+  render(stepNumber(index));
+}
+
 function submitStep() {
   var msg = 'Failed to read coordinate';
   if (window.f && window.f.t && (window.f.t.value !== undefined)) {
     msg = stepString(window.f.t.value);
   }
   render(msg);
-  return 0;
 }
 
 function restart() {
   generate();
   render('');
-  return 0;
 }
 
 function init() {
