@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Guard pet by placing pillows in its way</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='Play an example JavaScript0 board game for GemiWeb0 against a computer AI controlled opponent' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=no-referrer>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+<style>
+html, input {
+  background-color: black;
+  color: white;
+}
+
+pre {
+  background-color: #111;
+  border: 1px solid;
+}
+</style>
+</head>
+<body>
+<script>
+'use strict';
+var tmp = new Object;
+
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  } else {
+    var o = '';
+    var c;
+    if (to > th.length) {
+      to = th.length;
+    }
+    from = from - 1;
+    to = to - 1;
+    while (to > from) {
+      c = th.charAt(from = from + 1);
+      o = o + c;
+    }
+    return o;
+  }
+}
+
+// JS1
+function parseIntPlus(s) {
+  if (typeof parseInt !== 'undefined') {
+    return parseInt(s);
+  } else {
+    var k = 0;
+    var i = -1;
+    var c;
+    while (s.length > (i = i + 1)) {
+      c = s.charCodeAt(i) - 48;
+      if ((0 > c) || (c > 9)) {
+        return NaN;
+      }
+      k = (k * 10) + c;
+    }
+    return k;
+  }
+}
+
+function removeAfter(s, t) {
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, 0, i);
+  }
+  return s;
+}
+
+function writeHtml(text) {
+  if (tmp.docClosed) {
+    var typ = 'html';
+    if (document.doctype && document.doctype.name) {
+      typ = document.doctype.name;
+    }
+
+    var before = '';
+    if (document.documentElement && document.documentElement.innerHTML) {
+      before = removeAfter(document.documentElement.innerHTML, '<body>');
+    }
+    document.write('<!DOCTYPE ' + typ + '><html lang=en>' + before + '<body>' + text + '<' + '/body></html>');
+    document.close();
+  } else {
+    document.write(text);
+  }
+  if (window.f && (window.f.t && window.f.t.focus)) {
+    window.f.t.focus();
+  }
+}
+
+// JS1
+function getRandom(n) {
+  var x = tmp.random;
+  x = x ^ (x >> 7);
+  x = x ^ (x << 9);
+  return (tmp.random = (x ^ (x >> 13)) & 65535) % n;
+}
+
+function render(msg) {
+  var h = '<pre role=img>';
+  var nl = String.fromCharCode(10);
+  var y = -1;
+  var b = tmp.board;
+  var c;
+  var x;
+  var i = 11;
+  var iy = 10 - tmp.width;
+  while (tmp.height > (y = y + 1)) {
+    if (y & 1) {
+      h = h + '  ';
+    }
+    x = -1;
+    while (tmp.width > (x = x + 1)) {
+      if ((!tmp.lost) && (x === tmp.x) && (y === tmp.y)) {
+        c = '  @ ';
+      } else if (b[y] & (1 << x)) {
+        c = '  ..';
+      } else {
+        if (tmp.inline) {
+          c = '  <a href="javascript:step(' + i + ')">' + i + '</a>';
+        } else {
+          c = '  ' + i;
+        }
+      }
+      i = i + 1;
+      h = h + c;
+    }
+    i = i + iy;
+    h = h + nl;
+  }
+  h = h + '</pre>';
+
+  if (tmp.win || tmp.lost) {
+    if (tmp.win) {
+      h = h + 'The pet is safe.';
+    } else {
+      h = h + 'The pet ran away.';
+    }
+    h = h + '<p><a href="javascript:restart()">Restart</a>';
+  } else if (tmp.inline) {
+    h = h + '<p><a href="javascript:setInline(0)">Switch inline links to form input</a>';
+  } else {
+    h = h + '<form name=f action="javascript:submitStep()"><input name=t><input type=submit></form>';
+    h = h + '<p><a href="javascript:setInline(1)">Switch form to inline links</a>';
+  }
+  if (msg) {
+    h = h + '<p>' + msg;
+  }
+  writeHtml(h);
+}
+
+function setInline(i) {
+  tmp.inline = i;
+  render('');
+}
+
+function generate() {
+  tmp.win = 0;
+  tmp.lost = 0;
+  tmp.x = tmp.width >> 1;
+  tmp.y = tmp.height >> 1;
+
+  var o = new Array;
+
+  var y = tmp.height;
+  while (y) {
+    o[y = y - 1] = 0;
+  }
+  o[tmp.y] = 1 << tmp.x;
+
+  var x;
+  var i = tmp.barriers;
+  while (i) {
+    x = 1 << getRandom(tmp.width);
+    y = getRandom(tmp.height);
+    if (!(o[y] & x)) {
+      o[y] = o[y] | x;
+      i = i - 1;
+    }
+  }
+  o[tmp.y] = o[tmp.y] ^ (1 << tmp.x);
+  tmp.board = o;
+}
+
+function decide(xy0, x, y, t) {
+  var w = tmp.width;
+  if ((0 > x) || (0 > y) || (x >= w) || (y >= tmp.height)) {
+    return 1;
+  }
+  var xy = (y * w) + x;
+  var m = 1 << x;
+  var pxy = t.pxy;
+  if ((pxy[xy] >= 0) || (tmp.board[y] & m) || ((x === tmp.x) && (y === tmp.y))) {
+    return 0;
+  }
+
+  pxy[xy] = xy0;
+  var s = t.s;
+  s[s.length] = x;
+  s[s.length] = y;
+  return 0;
+}
+
+function stepNumber(index) {
+  if (tmp.win || tmp.lost) {
+    return '';
+  }
+  var y = ((index / 10) | 0) - 1;
+  var x = (index % 10) - 1;
+  var w = tmp.width;
+  var err = 'Expecting an available coordinate';
+  if ((0 > x) || (0 > y) || (x >= w) || (y >= tmp.height)) {
+    return err;
+  }
+  var m = 1 << x;
+  if ((tmp.board[y] & m) || ((x === tmp.x) && (y === tmp.y))) {
+    return err;
+  }
+  tmp.board[y] = tmp.board[y] | m;
+
+  var t = new Object;
+  var pxy = new Array;
+  t.pxy = pxy;
+  var i = 0;
+  var k = tmp.width * tmp.height;
+  while (k > i) {
+    pxy[i] = -1;
+    i = i + 1;
+  }
+
+  var s = new Array;
+  var si = 0;
+  s[s.length] = tmp.x;
+  s[s.length] = tmp.y;
+  t.s = s;
+  var xi;
+  var xy;
+  var xy0;
+  while (s.length > si) {
+    x = s[si];
+    y = s[si + 1];
+    si = si + 2;
+    xy = (y * w) + x;
+    xi = x + (y & 1);
+
+    if (decide(xy, x - 1, y, t) ||
+      decide(xy, xi, y - 1, t) ||
+      decide(xy, xi - 1, y - 1, t) ||
+      decide(xy, x + 1, y, t) ||
+      decide(xy, xi, y + 1, t) ||
+      decide(xy, xi - 1, y + 1, t)) {
+      if (0 > pxy[xy]) {
+        tmp.lost = 1;
+        return '';
+      }
+      xy0 = xy;
+      while (pxy[xy] >= 0) {
+        xy0 = xy;
+        xy = pxy[xy];
+      }
+      tmp.y = (xy0 / w) | 0;
+      tmp.x = xy0 % w;
+      return '';
+    }
+  }
+  tmp.win = 1;
+  return '';
+}
+
+function step(index) {
+  stepNumber(index);
+  render('');
+}
+
+function stepString(typed) {
+  var i = parseIntPlus(typed);
+  if (isNaN(i)) {
+    return 'Expecting an integer';
+  }
+  return stepNumber(i);
+}
+
+function submitStep() {
+  var msg = 'Failed to read coordinate';
+  if (window.f && window.f.t && (window.f.t.value !== undefined)) {
+    msg = stepString(window.f.t.value);
+  }
+  render(msg);
+  return 0;
+}
+
+function restart() {
+  generate();
+  render('');
+  return 0;
+}
+
+function init() {
+  tmp.random = (new Date) % 65536;
+  if (!tmp.random) {
+    tmp.random = 1;
+  }
+  tmp.inline = 1;
+  tmp.width = 9;
+  tmp.height = 9;
+  tmp.barriers = (tmp.width + tmp.height) >> 1;
+  restart();
+  tmp.docClosed = 1;
+}
+
+init();
+</script
+><h2
+>Usage</h2
+>Your pet is trying to escape one step at a time. After each step, you can place a pillow on the board in its way so it can't escape and get lost. You win if you could completely surround it before it can get out of sight.<h2
+>Requirements</h2
+>You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
+><a target=_blank href=https://gitlab.com/bkil/gemiweb
+>https://gitlab.com/bkil/gemiweb</a
+></body></html>
