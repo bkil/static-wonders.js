@@ -120,9 +120,13 @@ function render(msg) {
       if ((!tmp.lost) && (x === tmp.x) && (y === tmp.y)) {
         c = '  @';
       } else if (b[y] & (1 << x)) {
-        c = ' ..';
+        if (tmp.win || tmp.lost) {
+          c = '  #';
+        } else {
+          c = '  .';
+        }
       } else if (tmp.win || tmp.lost) {
-        c = '   ';
+        c = '  _';
       } else {
         if (tmp.inline) {
           c = ' <a href="javascript:step(' + i + ')">' + i + '</a>';
