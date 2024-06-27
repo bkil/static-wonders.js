@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Towers of Hanoi disk moving</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='Play a JavaScript0 mechanical puzzle game on GemiWeb0' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=no-referrer>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+<style>
+html {
+  background-color: black;
+  color: white;
+}
+</style>
+</head>
+<body>
+<script>
+'use strict';
+var st = new Object;
+
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  } else {
+    var o = '';
+    var c;
+    if (to > th.length) {
+      to = th.length;
+    }
+    from = from - 1;
+    to = to - 1;
+    while (to > from) {
+      c = th.charAt(from = from + 1);
+      o = o + c;
+    }
+    return o;
+  }
+}
+
+function removeAfter(s, t) {
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, 0, i);
+  }
+  return s;
+}
+
+function writeHtml(text) {
+  if (st.docClosed) {
+    var typ = 'html';
+    if (document.doctype && document.doctype.name) {
+      typ = document.doctype.name;
+    }
+
+    var before = '';
+    if (document.documentElement && document.documentElement.innerHTML) {
+      before = removeAfter(document.documentElement.innerHTML, '<body>');
+    }
+    document.write('<!DOCTYPE ' + typ + '><html lang=en>' + before + '<body>' + text + '<' + '/body></html>');
+    document.close();
+  } else {
+    document.write(text);
+  }
+  if (window.f && (window.f.t && window.f.t.focus)) {
+    window.f.t.focus();
+  }
+}
+
+function move(last, next) {
+  var rodi = st.rod[last];
+  var rodj = st.rod[next];
+  var n = rodi.length - 1;
+  rodj[rodj.length] = rodi[n];
+
+  rodj = new Array;
+  var k = -1;
+  while (n > (k = k + 1)) {
+    rodj[k] = rodi[k];
+  }
+  st.rod[last] = rodj;
+  render();
+}
+
+function render(msg) {
+  var h = '';
+  var i = -1;
+  var rodi;
+  var ni;
+  var di;
+
+  var j;
+  var rodj = st.rod[st.goal];
+  var nj;
+  var dj;
+  var win = rodj.length === st.disks;
+
+  while (st.rod.length > (i = i + 1)) {
+    h = h + i + ': ';
+    rodi = st.rod[i];
+    ni = rodi.length;
+    dj = di = st.disks + 1;
+    j = -1;
+    while (ni > (j = j + 1)) {
+      di = rodi[j];
+      h = h + ' ' + di;
+    }
+    h = h + '<br>';
+
+    if (st.rod.length === (j = i + 1)) {
+      j = 0;
+    }
+    rodj = st.rod[j];
+    if (nj = rodj.length) {
+      dj = rodj[nj - 1];
+    }
+
+    if (!win && nj && (di > dj)) {
+      h = h + '<a href="javascript:move(' + j + ',' + i + ')">move ' + dj + ' to rod ' + i + '</a>';
+    }
+    h = h + '<br>';
+    if (!win && ni && (dj > di)) {
+      h = h + '<a href="javascript:move(' + i + ',' + j + ')">move ' + di + ' to rod ' + j + '</a>';
+    }
+    h = h + '<br>';
+  }
+
+  if (win) {
+    h = h + 'You win!<br><a href="javascript:restart()">Play next level</a>';
+  }
+  writeHtml(h);
+}
+
+function restart() {
+  if (9 > st.disks) {
+    st.disks = st.disks + 1;
+  }
+  st.rod = new Array;
+  i = -1;
+  while (st.rods > (i = i + 1)) {
+    st.rod[i] = new Array;
+  }
+
+  var a = new Array;
+  var i = -1;
+  var d = st.disks + 1;
+  while (d = d - 1) {
+    a[i = i + 1] = d;
+  }
+  st.rod[st.start] = a;
+
+  render();
+}
+
+function init() {
+  st.disks = 0;
+  st.rods = 3;
+  st.start = 0;
+  st.goal = 1;
+  restart();
+  st.docClosed = 1;
+}
+
+init();
+</script
+><h2
+>Usage</h2
+>Move all disks from the first rod to the second rod to solve this puzzle game. You may only move the last (top) disk on each rod. You may only place a smaller disk on top of (following) a larger disk.<h2
+>Requirements</h2
+>You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
+><a target=_blank href=https://bkil.gitlab.io/gemiweb0
+>bkil.gitlab.io/gemiweb0</a
+></body></html>
