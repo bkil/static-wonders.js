@@ -16,8 +16,7 @@ html {
 }
 </style>
 </head>
-<body>
-<script>
+<body><script>
 'use strict';
 var st = new Object;
 
@@ -65,27 +64,9 @@ function writeHtml(text) {
   } else {
     document.write(text);
   }
-  if (window.f && (window.f.t && window.f.t.focus)) {
-    window.f.t.focus();
-  }
 }
 
-function move(last, next) {
-  var rodi = st.rod[last];
-  var rodj = st.rod[next];
-  var n = rodi.length - 1;
-  rodj[rodj.length] = rodi[n];
-
-  rodj = new Array;
-  var k = -1;
-  while (n > (k = k + 1)) {
-    rodj[k] = rodi[k];
-  }
-  st.rod[last] = rodj;
-  render();
-}
-
-function render(msg) {
+function render() {
   var h = '';
   var i = -1;
   var rodi;
@@ -134,18 +115,33 @@ function render(msg) {
   writeHtml(h);
 }
 
+function move(last, next) {
+  var rodi = st.rod[last];
+  var rodj = st.rod[next];
+  var n = rodi.length - 1;
+  rodj[rodj.length] = rodi[n];
+
+  rodj = new Array;
+  var k = -1;
+  while (n > (k = k + 1)) {
+    rodj[k] = rodi[k];
+  }
+  st.rod[last] = rodj;
+  render();
+}
+
 function restart() {
   if (9 > st.disks) {
     st.disks = st.disks + 1;
   }
   st.rod = new Array;
-  i = -1;
+  var i = -1;
   while (st.rods > (i = i + 1)) {
     st.rod[i] = new Array;
   }
 
   var a = new Array;
-  var i = -1;
+  i = -1;
   var d = st.disks + 1;
   while (d = d - 1) {
     a[i = i + 1] = d;
