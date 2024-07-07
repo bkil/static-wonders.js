@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Permutation slide puzzle</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='Play a JavaScript0 mechanical game on GemiWeb0' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=no-referrer>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+<style>
+html {
+  background-color: black;
+  color: white;
+}
+</style>
+</head>
+<body><script>
+'use strict';
+var st = new Object;
+
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  } else {
+    var o = '';
+    var c;
+    if (to > th.length) {
+      to = th.length;
+    }
+    from = from - 1;
+    to = to - 1;
+    while (to > from) {
+      c = th.charAt(from = from + 1);
+      o = o + c;
+    }
+    return o;
+  }
+}
+
+// JS1
+function parseIntPlus(s) {
+  if (typeof parseInt !== 'undefined') {
+    return parseInt(s);
+  } else {
+    var k = 0;
+    var i = -1;
+    var c;
+    while (s.length > (i = i + 1)) {
+      c = s.charCodeAt(i) - 48;
+      if ((0 > c) || (c > 9)) {
+        return NaN;
+      }
+      k = (k * 10) + c;
+    }
+    return k;
+  }
+}
+
+function removeAfter(s, t) {
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, 0, i);
+  }
+  return s;
+}
+
+function writeHtml(text) {
+  if (st.docClosed) {
+    var typ = 'html';
+    if (document.doctype && document.doctype.name) {
+      typ = document.doctype.name;
+    }
+
+    var before = '';
+    if (document.documentElement && document.documentElement.innerHTML) {
+      before = removeAfter(document.documentElement.innerHTML, '<body>');
+    }
+    document.write('<!DOCTYPE ' + typ + '><html lang=en>' + before + '<body>' + text + '<' + '/body></html>');
+    document.close();
+  } else {
+    document.write(text);
+  }
+  if (window.f && (window.f.t && window.f.t.focus)) {
+    window.f.t.focus();
+  }
+}
+
+// JS1
+function getRandom(n) {
+  var x = st.random;
+  x = x ^ (x >> 7);
+  x = x ^ (x << 9);
+  return (st.random = (x ^ (x >> 13)) & 65535) % n;
+}
+
+function render(msg) {
+  var h = '<pre>';
+  var b = st.board;
+
+  var i = -1;
+  var win = 1;
+  while ((16 > (i = i + 1)) && (win = win && (b[i] === ((i + 1) & 15)))) {
+  }
+
+  var t;
+  var c;
+  var x;
+  var y;
+  var choice = new Array;
+  i = -1;
+  while (16 > (i = i + 1)) {
+    if (i && !(i & 3)) {
+      h = h + '<br>';
+    }
+
+    t = b[i];
+    x = i & 3;
+    y = i >> 2;
+    c = '';
+    if (!t) {
+      c = '  ';
+    } else if (!win && ((x && !b[i-1]) || ((3 > x) && !b[i+1]) ||
+      (y && !b[i-4]) || ((3 > y) && !b[i+4]))) {
+      if (!st.entry) {
+        c = ' <a href="javascript:step(' + t + ')">' + t + '</a>';
+      } else if (st.entry === 1) {
+        choice[choice.length] = t;
+      }
+    }
+    if (!c) {
+      c = ' ' + t;
+    }
+    if (10 > t) {
+      c = c + ' ';
+    }
+    h = h + c;
+  }
+  h = h + '</pre>';
+  if (win) {
+    h = h + 'You win! <a href="javascript:restart()">Restart</a>';
+  } else if (!st.entry) {
+    h = h + '<a href="javascript:setEntry(1)">Switch to neighbor links</a>';
+  } else if (st.entry === 1) {
+    i = -1;
+    while (choice.length > (i = i + 1)) {
+      c = choice[i];
+      h = h + '<a href="javascript:step(' + c + ')">' + c + '</a><br>';
+    }
+    h = h + '<a href="javascript:setEntry(2)">Switch to form entry</a>';
+  } else {
+    h = h + 'Type 0 to switch to inline links. ';
+    h = h + '<form name=f autocomplete=off action="javascript:submitStep()">Select tile<input name=t type=number min=0 max=15 placeholder=1..15 minlength=2 maxlength=2 size=2><input type=submit></form>';
+  }
+
+  if (msg) {
+    h = h + '<br>' + msg;
+  }
+  writeHtml(h);
+}
+
+function setEntry(i) {
+  st.entry = i;
+  render('');
+}
+
+function stepNumber(index) {
+  if (!index) {
+    setEntry(0);
+    return '';
+  }
+  if ((1 > index) || (index > 15)) {
+    return 'Expecting 1..15';
+  }
+  var b = st.board;
+  var i = 0;
+  var j = 0;
+  var blank = 0;
+  while (16 > (i = i + 1)) {
+    if (index === b[i]) {
+      j = i;
+    } else if (!b[i]) {
+      blank = i;
+    }
+  }
+  i = j - blank;
+  if (0 > i) {
+    i = 0 - i;
+  }
+  if ((i !== 1) && (i !== 4)) {
+    return 'Expecting tile next to blank';
+  }
+  b[j] = 0;
+  b[blank] = index;
+  return '';
+}
+
+function stepString(typed) {
+  var i = parseIntPlus(typed);
+  if (isNaN(i)) {
+    return 'Expecting an integer';
+  }
+  return stepNumber(i);
+}
+
+function restart() {
+  var o = new Array;
+  var i = -1;
+  while (16 > (i = i + 1)) {
+    o[i] = (i + 1) & 15;
+  }
+  st.board = o;
+
+  i = 255;
+  while (i = i - 1) {
+    stepNumber(getRandom(15) + 1);
+  }
+
+  render('');
+}
+
+function step(index) {
+  render(stepNumber(index));
+}
+
+function submitStep() {
+  var msg = 'Failed to read coordinate';
+  if (window.f && window.f.t && (window.f.t.value !== undefined)) {
+    msg = stepString(window.f.t.value);
+  }
+  render(msg);
+}
+
+function init() {
+  st.random = (new Date) % 65536;
+  if (!st.random) {
+    st.random = 1;
+  }
+  restart();
+  st.docClosed = 1;
+}
+
+init();
+</script
+><h2
+>Usage</h2
+>Swap all tiles until they are in ascending order to solve this puzzle game. The sequence starts with 1 on top left. You may only move one tile at a time to the empty place.<h2
+>Requirements</h2
+>You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
+><a target=_blank href=https://bkil.gitlab.io/gemiweb0
+>bkil.gitlab.io/gemiweb0</a
+></body></html>
