@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Numerical sequence memory</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='A sequence of numbers is displayed to remember. You need to input it from recall. The list gets longer after each successful repetition. Play a JavaScript0 game on GemiWeb0' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=no-referrer>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+<style>
+html {
+  background-color: black;
+  color: white;
+}
+</style>
+</head>
+<body><script>
+'use strict';
+var st = new Object;
+
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  } else {
+    var o = '';
+    var c;
+    if (to > th.length) {
+      to = th.length;
+    }
+    from = from - 1;
+    to = to - 1;
+    while (to > from) {
+      c = th.charAt(from = from + 1);
+      o = o + c;
+    }
+    return o;
+  }
+}
+
+function removeAfter(s, t) {
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, 0, i);
+  }
+  return s;
+}
+
+function writeHtml(text) {
+  if (st.docClosed) {
+    var typ = 'html';
+    if (document.doctype && document.doctype.name) {
+      typ = document.doctype.name;
+    }
+
+    var before = '';
+    if (document.documentElement && document.documentElement.innerHTML) {
+      before = removeAfter(document.documentElement.innerHTML, '<body>');
+    }
+    document.write('<!DOCTYPE ' + typ + '><html lang=en>' + before + '<body>' + text + '<' + '/body></html>');
+    document.close();
+  } else {
+    document.write(text);
+  }
+  if (window.f && (window.f.t && window.f.t.focus)) {
+    window.f.t.focus();
+  }
+}
+
+// JS1
+function getRandom(n) {
+  var x = st.random;
+  x = x ^ (x >> 7);
+  x = x ^ (x << 9);
+  return (st.random = (x ^ (x >> 13)) & 65535) % n;
+}
+
+function getBad() {
+  if (st.goal.length & 1) {
+    return 'No';
+  }
+  return 'Bad';
+}
+
+function getNext() {
+  st.goal = st.goal + (1 + getRandom(9));
+  if (st.goal.length & 1) {
+    return 'Yes';
+  }
+  return 'Good';
+}
+
+function renderNextInput() {
+  var h = '';
+  var i = 0;
+  while (10 > (i = i + 1)) {
+    h = h + '<a href="javascript:inputNext(' + i + ')">' + i + '</a><br>';
+  }
+  h = h + 'Choose next digit';
+  if (st.inputI & 1) {
+    h = h + '.';
+  }
+  if (st.seqDisplay) {
+    h = h + '<br><a href="javascript:configure()">Configure</a>';
+  }
+  writeHtml(h);
+}
+
+function input() {
+  var h = '';
+  if (st.seqInput) {
+    st.inputI = 0;
+    renderNextInput();
+  } else {
+    h = h + '<form name=f autocomplete=off action="javascript:submitInput()">Input sequence<input name=t type=password autocomplete=off min=0 minlength=1><input type=submit></form>';
+    if (st.seqDisplay) {
+      h = h + ' Type 0 to configure';
+    }
+    writeHtml(h);
+  }
+}
+
+function renderGoalSeq0(rec) {
+  var recRec = function() { rec(rec); };
+  var h = '';
+  var i = st.renderI;
+  if (st.goal.length > i) {
+    h = h + st.goal.charAt(i);
+    h = h + '<p>';
+    if (i & 1) {
+      h = h + '.';
+    }
+    h = h + '.';
+    writeHtml(h);
+    st.renderI = i + 1;
+    setTimeout(recRec, st.delay);
+  } else {
+    input();
+  }
+}
+
+function renderGoalSeq() {
+  renderGoalSeq0(renderGoalSeq0);
+}
+
+function renderGoal(msg) {
+  var h = '';
+  if (st.seqDisplay) {
+    st.renderI = 0;
+    if (msg) {
+      writeHtml(msg);
+      setTimeout(renderGoalSeq, st.delay);
+    } else {
+      renderGoalSeq();
+    }
+  } else {
+    h = h + st.goal;
+    h = h + '<p><a href="javascript:input()">Input</a>';
+    h = h + '<p><a href="javascript:configure()">Configure</a>';
+    if (msg) {
+      h = h + '<p>' + msg;
+    }
+    writeHtml(h);
+  }
+}
+
+function inputNext(digit) {
+  var i = st.inputI;
+  if (st.goal.charCodeAt(i) === (digit + 48)) {
+    st.inputI = i + 1;
+    if (st.goal.length > st.inputI) {
+      renderNextInput();
+    } else {
+      renderGoal(getNext());
+    }
+  } else {
+    renderGoal(getBad());
+  }
+}
+
+function configure() {
+  var h = '';
+  if (st.seqInput) {
+    h = h + '<p><a href="javascript:st.seqInput=0;configure()">Input whole sequence at once in form</a>';
+  } else {
+    h = h + '<p><a href="javascript:st.seqInput=1;configure()">Input individual digits with links</a>';
+  }
+  if (st.seqDisplay) {
+    h = h + '<p><a href="javascript:st.seqDisplay=0;configure()">Display whole sequence at once</a>';
+  } else {
+    h = h + '<p><a href="javascript:st.seqDisplay=1;configure()">Display individual digits with delay</a>';
+  }
+  h = h + '<p><a href="javascript:renderGoal(' + "''" + ')">Continue</a>';
+  writeHtml(h);
+}
+
+function submitInput() {
+  var input = '';
+  if (window.f && window.f.t && (window.f.t.value !== undefined)) {
+    input = window.f.t.value;
+  }
+  if (input === '0') {
+    configure();
+  } else if (input !== st.goal) {
+    renderGoal(getBad());
+  } else {
+    renderGoal(getNext());
+  }
+}
+
+function init() {
+  st.random = (new Date) % 65536;
+  if (!st.random) {
+    st.random = 1;
+  }
+  st.delay = 1000;
+  st.goal = '';
+  getNext();
+  renderGoal('');
+  st.docClosed = 1;
+}
+
+init();
+</script
+><h2
+>Usage</h2
+>A sequence of numbers is displayed to remember. You need to input it from recall. The list gets longer after each successful repetition.<h2
+>Requirements</h2
+>You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
+><a target=_blank href=https://bkil.gitlab.io/gemiweb0
+>bkil.gitlab.io/gemiweb0</a
+></body></html>
