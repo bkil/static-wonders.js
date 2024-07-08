@@ -43,7 +43,7 @@ function String_substring(th, from, to) {
 // JS1
 function parseIntPlus(s) {
   if (typeof parseInt !== 'undefined') {
-    return parseInt(s);
+    return parseInt(s, 10);
   } else {
     var k = 0;
     var i = -1;
@@ -139,6 +139,7 @@ function render(msg) {
     h = h + c;
   }
   h = h + '</pre>';
+
   if (win) {
     h = h + 'You win! <a href="javascript:restart()">Restart</a>';
   } else if (!st.entry) {
@@ -168,7 +169,7 @@ function setEntry(i) {
 
 function stepNumber(index) {
   if (!index) {
-    setEntry(0);
+    st.entry = 0;
     return '';
   }
   if ((1 > index) || (index > 15)) {
