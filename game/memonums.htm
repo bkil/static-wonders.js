@@ -85,7 +85,8 @@ function getBad() {
 }
 
 function getNext() {
-  st.goal = st.goal + (1 + getRandom(9));
+  var prev = st.goal.charCodeAt(st.goal.length - 1) - 48;
+  st.goal = st.goal + (((prev + getRandom(8)) % 9) + 1);
   if (st.goal.length & 1) {
     return 'Yes';
   }
@@ -99,9 +100,6 @@ function renderNextInput() {
     h = h + '<a href="javascript:inputNext(' + i + ')">' + i + '</a><br>';
   }
   h = h + 'Choose next digit';
-  if (st.inputI & 1) {
-    h = h + '.';
-  }
   if (st.seqDisplay) {
     h = h + '<br><a href="javascript:configure()">Configure</a>';
   }
@@ -128,11 +126,6 @@ function renderGoalSeq0(rec) {
   var i = st.renderI;
   if (st.goal.length > i) {
     h = h + st.goal.charAt(i);
-    h = h + '<p>';
-    if (i & 1) {
-      h = h + '.';
-    }
-    h = h + '.';
     writeHtml(h);
     st.renderI = i + 1;
     setTimeout(recRec, st.delay);
@@ -216,8 +209,7 @@ function init() {
     st.random = 1;
   }
   st.delay = 1000;
-  st.goal = '';
-  getNext();
+  st.goal = '' + (1 + getRandom(9));
   renderGoal('');
   st.docClosed = 1;
 }
