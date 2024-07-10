@@ -112,7 +112,11 @@ function input() {
     st.inputI = 0;
     renderNextInput();
   } else {
-    h = h + '<form name=f autocomplete=off action="javascript:submitInput()">Input sequence<input name=t type=password autocomplete=off min=0 minlength=1><input type=submit></form>';
+    h = h + '<form name=f autocomplete=off action="javascript:submitInput()">Input sequence<input name=t';
+    if (!st.showInput) {
+      h = h + ' type=password';
+    }
+    h = h + ' autocomplete=off min=0 minlength=1><input type=submit></form>';
     if (st.seqDisplay) {
       h = h + ' Type 0 to configure';
     }
@@ -179,6 +183,13 @@ function configure() {
     h = h + '<p><a href="javascript:st.seqInput=0;configure()">Input whole sequence at once in form</a>';
   } else {
     h = h + '<p><a href="javascript:st.seqInput=1;configure()">Input individual digits with links</a>';
+  }
+  if (!st.seqInput) {
+    if (st.showInput) {
+      h = h + '<p><a href="javascript:st.showInput=0;configure()">Hide form input while typing</a>';
+    } else {
+      h = h + '<p><a href="javascript:st.showInput=1;configure()">Show form input while typing</a>';
+    }
   }
   if (st.seqDisplay) {
     h = h + '<p><a href="javascript:st.seqDisplay=0;configure()">Display whole sequence at once</a>';
