@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Rule 124 (110) cellular automaton</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='Enjoy a simulation of Rule 124, the reflection of the Turing-complete Rule 110 one-dimensional elementary cellular automaton in JavaScript0 on GemiWeb0' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=no-referrer>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+<style>
+html {
+  background-color: black;
+  color: white;
+}
+</style>
+</head>
+<body><script>
+'use strict';
+
+function run(r) {
+  var a = 'XX ';
+  var b;
+  var h = '<pre>' + a;
+  var i;
+  var x;
+  var y;
+  var z;
+  while (r = r - 1) {
+    y = b = 'X';
+    z = a.charAt(i = 1);
+    while (a.length > (i = i + 1)) {
+      x = y;
+      if ((((y = z) === (z = a.charAt(i))) || (y !== 'X')) && (x === y)) {
+        b = b + ' ';
+      } else {
+        b = b + 'X';
+      }
+    }
+    h = h + '<br>' + (a = b = b + 'X ');
+  }
+  document.write(h + '</pre>');
+}
+
+run(80);
+</script
+><h2
+>Explanation</h2
+>Enjoy a simulation of Rule 124, the reflection of the Turing-complete Rule 110 one-dimensional elementary cellular automaton.<p
+><a target=_blank href=https://en.wikipedia.org/wiki/Rule_110
+>en.wikipedia.org/wiki/Rule_110</a
+><h2
+>Requirements</h2
+>You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
+><a target=_blank href=https://bkil.gitlab.io/gemiweb0
+>bkil.gitlab.io/gemiweb0</a
+></body></html>
