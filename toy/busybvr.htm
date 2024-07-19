@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>2 to 6 state 2-symbol busy beaver automaton</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='A computer theoretical Turing machine simulation that writes as much non-blank on its tape as possible in JavaScript0 on GemiWeb0' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=no-referrer>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+<style>
+html {
+  background-color: black;
+  color: white;
+}
+</style>
+</head>
+<body><h2
+>Explanation</h2
+>Simulates the 2 to 6 state busy beaver - a Turing machine that writes as much non-blank on its tape as possible. The 5 and 6 state ones are capped. Optimality has not been proven for the 6-state one yet.<p
+><a target=_blank href=https://en.wikipedia.org/wiki/Busy_beaver
+>en.wikipedia.org/wiki/Busy_beaver</a
+><h2
+>Requirements</h2
+>You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
+><a target=_blank href=https://bkil.gitlab.io/gemiweb0
+>bkil.gitlab.io/gemiweb0</a
+><script>
+'use strict';
+
+function stateLabel(state, quit) {
+  var label = 'h';
+  if (quit > state) {
+    label = 'ABCDEF';
+    label = label.charAt(state);
+  }
+  return label;
+}
+
+function showTape(step, state, tape, i, mn, mx, quit) {
+  var written = 0;
+  var label = stateLabel(state, quit);
+  var j = mn - 1;
+  var htm = '<br>';
+  while (mx >= (j = j + 1)) {
+    if (j - i) {
+      htm = htm + ' ';
+    } else {
+      htm = htm + label;
+    }
+    if (tape[j]) {
+      htm = htm + '1';
+      written = written + 1;
+    } else {
+      htm = htm + '.';
+    }
+  }
+  return htm + ' #' + step + ' w' + written + ' @' + i;
+}
+
+function run(rules, from, to) {
+  var step = 0;
+  var state = 0;
+  var tape = new Array;
+  var i = 10;
+  var mn = 0;
+  var mx = i;
+  var quit = rules.length >> 1;
+  var htm = '<pre role=img>' + quit + '-state:';
+  var j;
+  var k;
+  if (!from) {
+    j = -1;
+    while (rules.length > (j = j + 1)) {
+      k = rules.charCodeAt(j) & 31;
+      htm = htm + ' ' + stateLabel(j >> 1, quit) + (j & 1) + ':' + (k & 1);
+      if (k & 2) {
+        htm = htm + 'R';
+      } else {
+        htm = htm + 'L';
+      }
+      k = stateLabel(k >> 2, quit);
+      htm = htm + k;
+    }
+    k = showTape(step, state, tape, i, mn, mx, quit);
+    htm = htm + k;
+  }
+
+  while ((quit > state) && (!to || (to > step))) {
+    step = step + 1;
+    state = rules.charCodeAt(state + state + (tape[i] || 0)) & 31;
+    tape[i] = state & 1;
+    i = (i - 1) + (state & 2);
+    state = state >> 2;
+
+    if (mn > i) {
+      mn = i;
+    }
+    if (i > mx) {
+      mx = i;
+    }
+    if (!from || (step >= from)) {
+      k = showTape(step, state, tape, i, mn, mx, quit);
+      htm = htm + k;
+    }
+  }
+  htm = htm + '</pre>';
+  return htm;
+}
+
+function init() {
+  document.write(
+    run('GEAK', 0, 0) +
+    run('GOJGIA', 0, 0) +
+    run('GEAHSMOB', 0, 0) +
+    run('GIKGOPAMW@', 0, 999) +
+    run('GLKVIAP[UFJR', 0, 999));
+  document.close();
+}
+
+init();
+</script
+></body></html>
