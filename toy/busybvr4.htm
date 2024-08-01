@@ -88,7 +88,7 @@ function run() {
       }
     }
 
-    htm = htm + '<br>' + showTape(step = step + 1, state, tape, i);
+    htm = htm + String.fromCharCode(10) + showTape(step = step + 1, state, tape, i);
   }
   document.write(htm + '</pre>');
   document.close();

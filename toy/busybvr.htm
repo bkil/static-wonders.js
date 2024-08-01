@@ -42,7 +42,7 @@ function showTape(step, state, tape, i, mn, mx, quit) {
   var written = 0;
   var label = stateLabel(state, quit);
   var j = mn - 1;
-  var htm = '<br>';
+  var htm = String.fromCharCode(10);
   while (mx >= (j = j + 1)) {
     if (j - i) {
       htm = htm + ' ';
