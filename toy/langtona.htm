@@ -18,11 +18,15 @@ html {
 </head>
 <body><h2
 >Explanation</h2
->A mobile agent is simulated which has the single state of its heading. Global state is stored in a grid of theoretically infinite binary cells. The grid starts with all blanks. Inspect the current value of the cell the agent is on top at each step:<ul><li
->If 0, turn 90 degrees clockwise.</li><li
->If 1, turn 90 degrees counter-clockwise.</li></ul>Then add 1 to the cell value and move one step forward.<p
+>A mobile agent is simulated which has the single state of its heading. Global state is stored in a grid of theoretically infinite binary cells. The grid starts with all blanks. Inspect the current value of the cell the agent is on top of at each step:<ul
+><li
+>If 0, turn 90 degrees clockwise.</li
+><li
+>If 1, turn 90 degrees counter-clockwise.</li
+></ul
+>Then add 1 to the cell value and move one step forward.<p
 ><a target=_blank href=https://en.wikipedia.org/wiki/Langton%27s_ant
->en.wikipedia.org/wiki/Langton%27s_ant</a
+>en.wikipedia.org/wiki/Langton's_ant</a
 ><h2
 >Requirements</h2
 >You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
@@ -147,7 +151,11 @@ function step0(rec) {
     simulate();
   }
   var htm = showMem();
-  htm = '<a href=javascript:pause()>Pause</a><br><a href=javascript:speed()>Speed</a><pre role=img>' + htm + '</pre>';
+  htm = '<a href=javascript:pause()>Pause</a><br><a href=javascript:speed()>' +
+    st.batch +
+    ' step/sec</a><pre role=img>' +
+    htm +
+    '</pre>';
   writeHtm(htm);
 
   var recRec = function() { rec(rec); };
