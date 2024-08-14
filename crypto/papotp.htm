@@ -115,30 +115,30 @@ function showCiphered() {
     n = raw.charCodeAt(i);
     i = i + 1;
 
-    if ((n !== 10) && (columns > c)) {
+    if ((n - 10) && (columns > c)) {
       if (bit = getRandom(2)) {
         u = u + x1;
-        if (n === 32) {
+        if (!(n - 32)) {
           z = z + x1;
         }
       } else {
         u = u + x0;
-        if (n === 32) {
+        if (!(n - 32)) {
           z = z + x0;
         }
       }
-      if (bit ^ (n === 32)) {
+      if (bit ^ !(n - 32)) {
         v = v + x0;
       } else {
         v = v + x1;
       }
-      if (n !== 32) {
+      if (n - 32) {
         z = z + x2;
       }
       c = c + 1;
     }
 
-    if ((n === 10) || (i >= raw.length)) {
+    if (!(n - 10) || (i >= raw.length)) {
       while (columns > c) {
         if (getRandom(2)) {
           u = u + x1;
