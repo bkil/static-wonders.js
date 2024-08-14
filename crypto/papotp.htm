@@ -26,7 +26,16 @@ pre {
 }
 </style>
 </head>
-<body><script>
+<body><form name=f action='javascript:showCiphered()'
+><textarea role=img rows=12 cols=24 name=t
+>@@       @@@@    @@
+@@      @@@@@@   @@
+@@      @@  @@   @@
+@@      @@  @@   @@
+@@      @@  @@   @@
+@@@@@   @@@@@@   @@@@@
+@@@@@    @@@@    @@@@@</textarea
+><script>
 'use strict';
 var tmp = new Object;
 
@@ -165,9 +174,18 @@ function showCiphered() {
     }
   }
 
-  var h = '<form name=f action="javascript:showCiphered()"><textarea role=img rows=12 cols=24 name=t>' +
-    def +
-    '</textarea><input type=submit></form><p><pre role=img>' +
+  var h = '';
+  if (tmp.docClosed) {
+    h = h + '<form name=f action="javascript:showCiphered()"><textarea role=img rows=12 cols=24 name=t>' +
+      def +
+      '</textarea>';
+  }
+
+  h = h + '<input type=submit>';
+  if (tmp.docClosed) {
+    h = h + '</form>';
+  }
+  h = h + '<p><pre role=img>' +
     u +
     '</pre><p><pre role=img>' +
     v +
@@ -192,7 +210,7 @@ function init() {
 
 init();
 </script
-><h2
+></form><h2
 >Usage</h2
 >Please draw an ASCII-art message to "encrypt". The output shall be two separate graphics that you can print on separate pieces of paper. You may improve your print by using gray text or substituting the "░" character. The third output is to simulate how it would look if you overlapped the first two on paper. The secret message will appear once you place one on top of another and align them in front of a light source such as a window. It may contain up to 24 columns in 12 rows of either space or non-space (e.g., "@").<p
 >The canvas could be filled with text generated from a raster font. The font you use should ideally be scaled 2x or 3x and should optimize for contrast by distancing lines from each other and leaving as large blocks of empty areas as possible. The resolution of the dots may be increased to about 75 dots per inch while still maintaining easy alignment of the two sheets of paper by hand. This could be achieved by decreasing the font size or by generating Braille dots. This version is only for illustrative purposes similar to decoder rings: it is generated with a 16-bit PRNG from less than 16 bits of entropy of the current time in milliseconds. Imagine that the random one-time-pad was generated with a secure source of randomness or at least a cryptographically secure pseudorandom number generator.<p
