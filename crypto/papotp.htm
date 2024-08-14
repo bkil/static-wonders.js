@@ -90,12 +90,11 @@ function getRandom(n) {
 var nl = String.fromCharCode(10);
 
 function showCiphered() {
-  var def = '  @@  @@  @@  @@  @@  @@';
-  def = def + nl + def + nl + def + nl + def + nl + def + nl + def + nl + def;
-  var raw = def;
+  var raw = '';
   if (window.f && window.f.t && window.f.t.value) {
     raw = window.f.t.value;
   }
+  var def = '';
 
   var u = '';
   var v = '';
@@ -134,6 +133,9 @@ function showCiphered() {
       }
       if (n - 32) {
         z = z + x2;
+        def = def + '@';
+      } else {
+        def = def + ' ';
       }
       c = c + 1;
     }
@@ -149,6 +151,7 @@ function showCiphered() {
           v = v + x0;
           z = z + x0;
         }
+        def = def + ' ';
         c = c + 1;
       }
       r = r + 1;
@@ -157,6 +160,7 @@ function showCiphered() {
         u = u + nl;
         v = v + nl;
         z = z + nl;
+        def = def + nl;
       }
     }
   }
