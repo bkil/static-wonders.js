@@ -4,7 +4,7 @@
   <meta charset=utf-8>
   <title>Paper printable graphical one-time pad encryption</title>
   <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
-  <meta property='og:description' content='Example interactive JavaScript0 app for GemiWeb0' name='description'>
+  <meta property='og:description' content='Example interactive JavaScript0 app for GemiWeb0 to simulate how to hide a secret message with cryptography on dots' name='description'>
   <meta name=viewport content='width=device-width, initial-scale=1'>
   <meta name=referrer content=no-referrer>
   <meta http-equiv=x-dns-prefetch-control content=off>
@@ -26,7 +26,15 @@ pre {
 }
 </style>
 </head>
-<body><form name=f action='javascript:showCiphered()'
+<body><h2
+>Usage</h2
+>Please draw an ASCII-art message to "encrypt". The output shall be two separate graphics that you can print on separate pieces of paper. You may improve your print by using gray text or substituting the "░" character. The third output is to simulate how it would look if you overlapped the first two on paper. The secret message will appear once you place one on top of another and align them in front of a light source such as a window. It may contain up to 24 columns in 12 rows of either space or non-space (e.g., "@").<p
+>The canvas could be filled with text generated from a raster font. The font you use should ideally be scaled 2x or 3x and should optimize for contrast by distancing lines from each other and leaving as large blocks of empty areas as possible. The resolution of the dots may be increased up to about 75 dots per inch while still maintaining easy alignment of the two sheets of paper by hand. This could be achieved by decreasing the font size or by generating Braille dots. This version is only for illustrative purposes similar to decoder rings: it is generated with a 16-bit PRNG from less than 16 bits of entropy of the current time in milliseconds. Imagine that the random one-time-pad was generated with a secure source of randomness or at least a cryptographically secure pseudorandom number generator.<h2
+>Requirements</h2
+>You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
+><a target=_blank href=https://bkil.gitlab.io/gemiweb0
+>bkil.gitlab.io/gemiweb0</a
+><form name=f action='javascript:showCiphered()'
 ><textarea role=img rows=12 cols=24 name=t
 >@@       @@@@    @@
 @@      @@@@@@   @@
@@ -210,13 +218,5 @@ function init() {
 
 init();
 </script
-></form><h2
->Usage</h2
->Please draw an ASCII-art message to "encrypt". The output shall be two separate graphics that you can print on separate pieces of paper. You may improve your print by using gray text or substituting the "░" character. The third output is to simulate how it would look if you overlapped the first two on paper. The secret message will appear once you place one on top of another and align them in front of a light source such as a window. It may contain up to 24 columns in 12 rows of either space or non-space (e.g., "@").<p
->The canvas could be filled with text generated from a raster font. The font you use should ideally be scaled 2x or 3x and should optimize for contrast by distancing lines from each other and leaving as large blocks of empty areas as possible. The resolution of the dots may be increased to about 75 dots per inch while still maintaining easy alignment of the two sheets of paper by hand. This could be achieved by decreasing the font size or by generating Braille dots. This version is only for illustrative purposes similar to decoder rings: it is generated with a 16-bit PRNG from less than 16 bits of entropy of the current time in milliseconds. Imagine that the random one-time-pad was generated with a secure source of randomness or at least a cryptographically secure pseudorandom number generator.<p
-><h2
->Requirements</h2
->You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
-><a target=_blank href=https://bkil.gitlab.io/gemiweb0
->https://bkil.gitlab.io/gemiweb0</a
+></form
 ></body></html>
