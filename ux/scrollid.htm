@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Viewport offset scroll position</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='Developer tests for document.write(), link activation and heading hash anchor following between virtual screens in JavaScript0 on GemiWeb0' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=no-referrer>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+<style>
+html {
+  background-color: black;
+  color: white;
+}
+</style>
+</head>
+<body><h2
+>Explanation</h2
+>Please write down which heading came up at the top of the window viewport before each click. Then scroll down to the bottom of the page and click on the link to test the next screen. In an ideal world, you should see the following offsets: a42, b123, c69 and d21. Note that the behavior may change if you press reload on the page, so always start over from a new browser tab or window. Please share your browser platform, version and which test screens scrolled successfully. Feedback is also welcome if you know how to improve this behavior.<h2
+>Requirements</h2
+>You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
+><a target=_blank href=https://bkil.gitlab.io/gemiweb0
+>bkil.gitlab.io/gemiweb0</a><script>
+'use strict';
+var st = new Object;
+
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  } else {
+    var o = '';
+    var c;
+    if (to > th.length) {
+      to = th.length;
+    }
+    from = from - 1;
+    to = to - 1;
+    while (to > from) {
+      c = th.charAt(from = from + 1);
+      o = o + c;
+    }
+    return o;
+  }
+}
+
+function removeAfter(s, t) {
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, 0, i);
+  }
+  return s;
+}
+
+function getHtmDoc(text) {
+  var typ = 'html';
+  if (document.doctype && document.doctype.name) {
+    typ = document.doctype.name;
+  }
+
+  var before = '';
+  if (document.documentElement && document.documentElement.innerHTML) {
+    before = removeAfter(document.documentElement.innerHTML, '</a>');
+  }
+  return '<!DOCTYPE ' + typ + '><html lang=en>' + before + '</a>' + text + '<' + '/body></html>';
+}
+
+function writeHtm(text) {
+  if (st.docClosed) {
+    document.write(getHtmDoc(text));
+    document.close();
+  } else {
+    document.write(text);
+  }
+}
+
+function setHash(s) {
+  window.location.replace(removeAfter(window.location.href, '#') + '#' + s);
+}
+
+function getAnchors(v) {
+  var h = '';
+  var n;
+  var i = -1;
+  while (200 > (i = i + 1)) {
+    n = v + i;
+    h = h + '<h2 name="' + n + '" id="' + n + '">' + n + '</h2>';
+  }
+  return h;
+}
+
+function test4() {
+  return getHtmDoc(getAnchors('d') + '<script>function f() { window.location.replace("#d21"); }; setTimeout(f, 123);</' + 'script>Thank you for testing.');
+}
+
+function test3c() {
+  setHash('d21');
+}
+
+function test3b() {
+  writeHtm(getAnchors('c') + '<a href="javascript:test4() //#d21">Test D</a>');
+  setTimeout(test3c, 0);
+}
+
+function test3() {
+  setHash('c69');
+  setTimeout(test3b, 0);
+}
+
+function test2() {
+  setHash('b123');
+  writeHtm(getAnchors('b') + '<a href="javascript:test3() //#c69">Test C</a>');
+  setHash('b123');
+}
+
+function init() {
+  setHash('a42');
+  writeHtm(getAnchors('a') + '<a href="javascript:test2() //#b123">Test B</a>');
+  setHash('a42');
+  st.docClosed = 1;
+}
+init();
+</script
+></body></html>
