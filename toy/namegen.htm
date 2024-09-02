@@ -28,45 +28,45 @@ html {
 >Output</h2
 ><script>
 'use strict';
+var st = new Object;
 
-function getRandom(r, n) {
-  var x = r.random;
+function getRandom(n) {
+  var x = st.random;
   x = x ^ (x >> 7);
   x = x ^ (x << 9);
-  return (r.random = (x ^ (x >> 13)) & 65535) % n;
+  return (st.random = (x ^ (x >> 13)) & 65535) % n;
 }
 
-function randomChar(r, s) {
-  return s.charAt(getRandom(r, s.length));
+function randomChar(s) {
+  return s.charAt(getRandom(s.length));
 }
 
-function generateName(r) {
+function generateName() {
   var consonant = 'bdfghklmnprstvwz';
   var vowel = 'aeiou';
-  var name = randomChar(r, consonant);
+  var name = randomChar(consonant);
   name = String.fromCharCode(name.charCodeAt(0) - 32);
   var i = 0;
-  var n = getRandom(r, 5) + 3;
+  var n = getRandom(4) + 3;
   while (n > (i = i + 1)) {
     if (i & 1) {
-      name = name + randomChar(r, vowel);
+      name = name + randomChar(vowel);
     } else {
-      name = name + randomChar(r, consonant);
+      name = name + randomChar(consonant);
     }
   }
   return name;
 }
 
 function init() {
-  var r = new Object;
-  r.random = (new Date) % 65536;
-  if (!r.random) {
-    r.random = 1;
+  st.random = (new Date) % 65536;
+  if (!st.random) {
+    st.random = 1;
   }
   var h = '';
   var i = 666;
   while (i = i - 1) {
-    h = h + generateName(r) + '<br>' + String.fromCharCode(10);
+    h = h + generateName() + '<br>';
   }
   document.write(h);
 }
