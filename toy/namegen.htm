@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Pronouncable nickname generator</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='Generates a random interspersed vowels and consonants in JavaScript0 on GemiWeb0' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=no-referrer>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+<style>
+html {
+  background-color: black;
+  color: white;
+}
+</style>
+</head>
+<body><h2
+>Explanation</h2
+>Generates a random nickname of interspersed vowels and consonants so it can be pronounced.<p
+><h2
+>Requirements</h2
+>You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
+><a target=_blank href=https://bkil.gitlab.io/gemiweb0
+>bkil.gitlab.io/gemiweb0</a
+><h2
+>Output</h2
+><script>
+'use strict';
+
+function getRandom(r, n) {
+  var x = r.random;
+  x = x ^ (x >> 7);
+  x = x ^ (x << 9);
+  return (r.random = (x ^ (x >> 13)) & 65535) % n;
+}
+
+function randomChar(r, s) {
+  return s.charAt(getRandom(r, s.length));
+}
+
+function generateName(r) {
+  var consonant = 'bdfghklmnprstvwz';
+  var vowel = 'aeiou';
+  var name = randomChar(r, consonant);
+  name = String.fromCharCode(name.charCodeAt(0) - 32);
+  var i = 0;
+  var n = getRandom(r, 5) + 3;
+  while (n > (i = i + 1)) {
+    if (i & 1) {
+      name = name + randomChar(r, vowel);
+    } else {
+      name = name + randomChar(r, consonant);
+    }
+  }
+  return name;
+}
+
+function init() {
+  var r = new Object;
+  r.random = (new Date) % 65536;
+  if (!r.random) {
+    r.random = 1;
+  }
+  var h = '';
+  var i = 666;
+  while (i = i - 1) {
+    h = h + generateName(r) + '<br>' + String.fromCharCode(10);
+  }
+  document.write(h);
+}
+
+init();
+</script
+></body></html>
