@@ -13,16 +13,22 @@ See a generated file listing here:
 * https://github.com/mdn/content
 * https://en.wikibooks.org/wiki/JavaScript
 * https://en.wikiversity.org/wiki/Web_Design/An_Introduction_to_Programming_with_JavaScript
-* https://github.com/javascript-tutorial/en.javascript.info
 * https://github.com/mbeaudru/modern-js-cheatsheet
 * https://github.com/coodict/javascript-in-one-pic
 * https://github.com/BonsaiDen/JavaScript-Garden
 * https://www.w3.org/TR/?filter-tr-name=&tags%5B%5D=performance&tags%5B%5D=webapi
 * https://github.com/whatwg/dom
+* https://github.com/incompl/learnlayout
+* https://github.com/OWASP/CheatSheetSeries
+* https://github.com/slightlyoff/never_slow_mode
+
+### Non-commercial copyleft resources
+
+* https://github.com/javascript-tutorial/en.javascript.info
+* https://eloquentjavascript.net/
+* https://www.w3.org/wiki/JavaScript_best_practices
 
 ### Distributable resources
 
-* https://eloquentjavascript.net/
 * https://ecma-international.org/publications-and-standards/standards/ecma-262/
 * https://github.com/getify/You-Dont-Know-JS
-* https://www.w3.org/wiki/JavaScript_best_practices
