@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Bifurcation diagram of logistic map</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='Plot the chaotic region of a recurrence relation with ASCII-art in JavaScript0 on GemiWeb0' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=no-referrer>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+<style>
+html {
+  background-color: black;
+  color: white;
+}
+</style>
+</head>
+<body><h2
+>Explanation</h2
+>See a plot of the chaotic region (r between 2.5 and 4) of the recurrence relation:<pre
+>x[n+1] = r * x[n] * (1 - x[n])</pre
+><p
+><a target=_blank href=https://en.wikipedia.org/wiki/Logistic_map
+>en.wikipedia.org/wiki/Logistic_map</a
+><h2
+>Requirements</h2
+>You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
+><a target=_blank href=https://bkil.gitlab.io/gemiweb0
+>bkil.gitlab.io/gemiweb0</a
+><script>
+'use strict';
+
+function run(colBit, rowBit, iteration) {
+  var htm = '<pre role=img>';
+  var nl = String.fromCharCode(10);
+  var row = (1 << (rowBit - 1)) + 1;
+  var histogram;
+  var r = 5 << (rowBit - 1);
+  var i;
+  var x;
+
+  while (row = row - 1) {
+    htm = htm + nl;
+    histogram = new Array;
+    x = 1 << 29;
+    i = iteration;
+    while (i = i - 1) {
+      x = ((x - ((x >> 15) * (x >> 15))) >> rowBit) * r;
+      histogram[x >> (30 - colBit)] = 1;
+    }
+
+    i = 1 << colBit;
+    while (i = i - 1) {
+      if (histogram[i]) {
+        htm = htm + 'X';
+      } else {
+        htm = htm + ' ';
+      }
+    }
+    r = r + 3;
+  }
+  document.write(htm = htm + '</pre>');
+  document.close();
+}
+
+run(7, 10, 42);
+</script
+></body></html>
