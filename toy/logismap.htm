@@ -51,8 +51,8 @@ function run(colBit, rowBit, iteration) {
     }
 
     i = 1 << colBit;
-    while (i = i - 1) {
-      if (histogram[i]) {
+    while (i) {
+      if (histogram[i = i - 1]) {
         htm = htm + 'X';
       } else {
         htm = htm + ' ';
