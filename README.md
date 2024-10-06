@@ -21,6 +21,7 @@ See a generated file listing here:
 * https://github.com/incompl/learnlayout
 * https://github.com/OWASP/CheatSheetSeries
 * https://github.com/slightlyoff/never_slow_mode
+* https://github.com/denysdovhan/wtfjs
 
 ### Non-commercial copyleft resources
 
