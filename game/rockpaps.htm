@@ -4,42 +4,63 @@
   <meta charset=utf-8>
   <title>Rock-paper-scissors numerical strategy game</title>
   <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
-  <meta property='og:description' content='Simplified abstract tactical simulation inspired by PAX Britannica. Example interactive app for Web0/JavaScript0/gemiweb' name='description'>
+  <meta property='og:description' content='Simplified abstract tactical simulation inspired by PAX Britannica. Example interactive web0 app for JavaScript0/gemiweb0' name='description'>
   <meta name=viewport content='width=device-width, initial-scale=1'>
   <meta name=referrer content=no-referrer>
   <meta http-equiv=x-dns-prefetch-control content=off>
-  <meta http-equiv=Content-Security-Policy content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
 <style>
 html {
   background-color: black;
   color: white;
 }
 </style>
+  <meta http-equiv=Content-Security-Policy content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
 </head>
 <body>
 <script>
 'use strict';
-var nl = String.fromCharCode(10);
-var bs = String.fromCharCode(92);
+var st = new Object;
 
-function reload(text) {
-  if (tmp.docClosed) {
-    var typ = '';
-    if (document.doctype && (document.doctype.name !== undefined)) {
-      typ = '<!DOCTYPE ' + document.doctype.name + '>';
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  } else {
+    var o = '';
+    var c;
+    if (to > th.length) {
+      to = th.length;
+    }
+    from = from - 1;
+    to = to - 1;
+    while (to > from) {
+      c = th.charAt(from = from + 1);
+      o = o + c;
+    }
+    return o;
+  }
+}
+
+function removeAfter(s, t) {
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, 0, i);
+  }
+  return s;
+}
+
+function writeHtm(text) {
+  if (st.docClosed) {
+    var typ = 'html';
+    if (document.doctype && document.doctype.name) {
+      typ = document.doctype.name;
     }
 
-    var head = '';
-    if (document.head && document.head.innerHTML && String.prototype && String.prototype.match) {
-      head = document.head.innerHTML;
-      var m = head.match('^((?:.|' + bs + 'n)*)<[^>]+http-equiv=["' + "'" + ']?Content-Security-Policy[^>]*>((?:.|' + bs + 'n)*)$');
-      if (m) {
-        head = m[1] + m[2];
-      }
+    var before = '';
+    if (document.documentElement && document.documentElement.innerHTML) {
+      before = removeAfter(document.documentElement.innerHTML, '</style>');
     }
-
-    document.close();
-    document.write(typ + '<html lang=en><head>' + head + '</head><body>' + text + '</body></html>');
+    document.write('<!DOCTYPE ' + typ + '><html lang=en>' + before + '</style></head><body>' + text + '<' + '/body></html>');
     document.close();
   } else {
     document.write(text);
@@ -49,23 +70,19 @@ function reload(text) {
   }
 }
 
-var random = new Object;
-random.seed = (new Date) % 65536;
-
+// JS1
 function getRandom(n) {
-  var x = random.seed;
+  var x = st.random;
   x = x ^ (x >> 7);
   x = x ^ (x << 9);
-  x = (x ^ (x >> 13)) & 65535;
-  random.seed = x;
-  return x % n;
+  return (st.random = (x ^ (x >> 13)) & 65535) % n;
 }
 
 function printPlayer(out, who) {
-  if (who === 0) {
-    out = out + 'Me';
-  } else {
+  if (who) {
     out = out + 'Bot-' + String.fromCharCode(65 + who);
+  } else {
+    out = out + 'Me';
   }
   return out;
 }
@@ -79,25 +96,22 @@ function printBar(out, char, x) {
   return out;
 }
 
-var dur = new Object;
-var tmp = new Object;
-
 function printShip(out, which) {
   var i = 0;
   var name;
   var char;
-  if (which === 0) {
-    name = 'scout';
+  if (!which) {
+    name = 'Scout';
     char = 's';
-  } else if (which === 1) {
+  } else if (which - 1) {
+    name = 'Defender';
+    char = 'd';
+  } else {
     name = 'Bomber';
     char = 'B';
-  } else {
-    name = 'defender';
-    char = 'd';
   }
 
-  if (tmp.gameOver || tmp.showForm) {
+  if (st.gameOver || st.showForm) {
     out = out + name + '';
   } else {
     out = out + '<a href=javascript:key(' + (which + 1) + ')>build ' + name + '</a>';
@@ -106,10 +120,10 @@ function printShip(out, which) {
   var p;
   var width;
   var maxWidth = 5;
-  out = out + '<pre>';
-  while (i < dur.p.length) {
-    p = dur.p[i];
-    if (i !== 0) {
+  out = out + '<pre role=img>';
+  while (i < st.p.length) {
+    p = st.p[i];
+    if (i) {
       out = out + ' ';
     }
     out = printPlayer(out, i);
@@ -119,10 +133,10 @@ function printShip(out, which) {
       width = maxWidth;
     }
     out = printBar(out, char, width);
-    if (p.action === (which + 1)) {
-      out = out + '+';
-    } else {
+    if (p.action - (which + 1)) {
       out = out + ' ';
+    } else {
+      out = out + '+';
     }
     out = printBar(out, ' ', (maxWidth - width) + 1);
     i = i + 1;
@@ -134,21 +148,21 @@ function print() {
   var i;
   var p;
   var out = '';
-  if (!tmp.gameOver && !tmp.showForm) {
+  if (!st.gameOver && !st.showForm) {
     out = out + '<a href=javascript:key(0)>next round</a><br>';
   }
-  out = out + 'Round ' + dur.round + '<br>';
+  out = out + 'Round ' + st.round + '<br>';
   out = printShip(out, 0);
   out = printShip(out, 1);
   out = printShip(out, 2);
-  if (!tmp.gameOver && !tmp.showForm) {
+  if (!st.gameOver && !st.showForm) {
     out = out + '<a href=javascript:key(4)>stop building</a>';
   }
 
   out = out + '<ul>';
   i = 0;
-  while (i < dur.p.length) {
-    p = dur.p[i];
+  while (i < st.p.length) {
+    p = st.p[i];
     out = out + '<li>.';
     out = printBar(out, '.', p.h);
     out = out + ' ' + p.h + ' health, ' + p.r + ' funds ';
@@ -158,9 +172,9 @@ function print() {
   }
   out = out + '</ul>';
 
-  if (!tmp.gameOver && !tmp.showForm) {
+  if (!st.gameOver && !st.showForm) {
     out = out + '<a href=javascript:key(5)>';
-    if (tmp.auto) {
+    if (st.auto) {
       out = out + 'pause';
     } else {
       out = out + 'resume';
@@ -168,27 +182,27 @@ function print() {
     out = out + ' automatic stepping</a><br>';
   }
 
-  if (!tmp.showForm) {
+  if (!st.showForm) {
     out = out + '<a href=javascript:key(6)>show form input</a><br>';
   }
 
-  if (tmp.gameOver) {
+  if (st.gameOver) {
     out = out + 'Game over.';
-    if (!tmp.showForm) {
+    if (!st.showForm) {
       out = out + '<br><a href=javascript:key(7)>restart</a>';
     }
   }
 
-  if (tmp.showForm) {
-    out = out + '<br>Keys: 0=next 1=scout 2=Bomber 3=defender 4=idle 5=auto 6=links 7=restart';
-    out = out + '<form name=f action="javascript:onSubmit()"><input name=t><input type=submit></form>';
+  if (st.showForm) {
+    out = out + '<br>Keys: 0=next 1=Scout 2=Bomber 3=Defender 4=idle 5=auto 6=links 7=restart';
+    out = out + '<form name=f action=javascript:onSubmit()><input name=t><input type=submit></form>';
   }
 
-  reload(out);
+  writeHtm(out);
 }
 
 function build(player, ship, cost) {
-  if ((player.action !== (ship + 1)) || (player.r < cost)) {
+  if ((player.action - (ship + 1)) || (player.r < cost)) {
     return 0;
   }
   player.s[ship] = player.s[ship] + 1;
@@ -216,7 +230,7 @@ function hit(old, next, who, hqMiss) {
 }
 
 function step() {
-  if (tmp.gameOver) {
+  if (st.gameOver) {
     print();
     return 0;
   }
@@ -225,8 +239,8 @@ function step() {
   var q;
   var old = new Array;
   var i = 0;
-  while (i < dur.p.length) {
-    p = dur.p[i];
+  while (i < st.p.length) {
+    p = st.p[i];
     q = new Object;
     q.s = new Array;
     q.s[0] = p.s[0];
@@ -241,9 +255,9 @@ function step() {
   while (i < old.length) {
     p = old[i];
     j = 0;
-    while (j < dur.p.length) {
-      if (i !== j) {
-        q = dur.p[j];
+    while (j < st.p.length) {
+      if (i - j) {
+        q = st.p[j];
         hit(p, q, 0, 8);
         hit(p, q, 1, 4);
         hit(p, q, 2, 2);
@@ -255,8 +269,8 @@ function step() {
 
   i = 0;
   var allAlive = 0;
-  while (i < dur.p.length) {
-    p = dur.p[i];
+  while (i < st.p.length) {
+    p = st.p[i];
     if (p.h) {
       p.r = p.r + 1;
       allAlive = allAlive + 1;
@@ -265,17 +279,17 @@ function step() {
     }
     i = i + 1;
   }
-  tmp.gameOver = allAlive < 2;
+  st.gameOver = allAlive < 2;
 
   i = 0;
   var built;
   var r;
-  while (i < dur.p.length) {
-    p = dur.p[i];
+  while (i < st.p.length) {
+    p = st.p[i];
     if (p.h) {
       built = build(p, 0, 2) | build(p, 1, 4) | build(p, 2, 8);
 
-      if ((i > 0) && built) {
+      if (i && built) {
         r = getRandom(7);
         if (r < 1) {
           p.action = 3;
@@ -292,20 +306,20 @@ function step() {
     i = i + 1;
   }
 
-  dur.round = dur.round + 1;
+  st.round = st.round + 1;
   print();
 }
 
 function restart() {
-  tmp.gameOver = 0;
-  tmp.auto = 0;
+  st.gameOver = 0;
+  st.auto = 0;
 
-  dur.round = 0;
-  dur.p = new Array;
+  st.round = 0;
+  st.p = new Array;
   var i = 0;
   while (i < 3) {
     var p = new Object;
-    if (i === 0) {
+    if (!i) {
       p.action = 4;
     } else {
       p.action = getRandom(3) + 1;
@@ -316,36 +330,36 @@ function restart() {
     p.s[0] = 0;
     p.s[1] = 0;
     p.s[2] = 0;
-    dur.p[i] = p;
+    st.p[i] = p;
     i = i + 1;
   }
   print();
 }
 
-function key(k) {
-  function g(self) {
-    if (tmp.auto && !tmp.gameOver) {
-      step();
-      setTimeout(function() { self(self) }, 2000);
-    }
+function autoStep(self) {
+  if (st.auto && !st.gameOver) {
+    step();
+    setTimeout(function(){ self(self); }, 2000);
   }
+}
 
+function key(k) {
   if ((0 > k) || (k > 7)) {
     print();
-  } else if (k === 7) {
+  } else if (!(k - 7)) {
     restart();
-  } else if (k === 6) {
-    tmp.showForm = !tmp.showForm;
+  } else if (!(k - 6)) {
+    st.showForm = !st.showForm;
     print();
-  } else if (k === 5) {
-    tmp.auto = !tmp.auto;
-    if (tmp.auto && !tmp.gameOver) {
-      setTimeout(function() { g(g) }, 2000);
+  } else if (!(k - 5)) {
+    st.auto = !st.auto;
+    if (st.auto && !st.gameOver) {
+      setTimeout(function(){ autoStep(autoStep); }, 2000);
     }
     print();
   } else {
     if (k) {
-      var p = dur.p[0];
+      var p = st.p[0];
       p.action = k;
     }
     step();
@@ -354,7 +368,7 @@ function key(k) {
 
 function onSubmit() {
   try {
-    if (window.f.t.value === '') {
+    if (!window.f.t.value) {
       step();
       return undefined;
     }
@@ -366,16 +380,19 @@ function onSubmit() {
     }
     key(sel);
   } catch (e) {
-    console.log(e + nl);
-    throw(e);
+    console.log(e);
   }
   return undefined;
 }
 
 function init() {
-  tmp.showForm = 0;
+  st.random = (new Date) % 65536;
+  if (!st.random) {
+    st.random = 1;
+  }
+  st.showForm = 0;
   restart();
-  tmp.docClosed = 1;
+  st.docClosed = 1;
 }
 
 init();
@@ -403,9 +420,9 @@ Type 6 and press enter to switch back to clickable links.
 </ul>
 
 <h2>Requirements</h2>
-You can install a web browser that supports at least JavaScript 1.0 to play this game or you may consider implementing a Web0/gemiweb browser with JavaScript0 yourself according to the following specification:
+You can install a web browser that supports at least JavaScript 1.0 (1995) to play this game or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:
 <p>
-<a target=_blank href="https://bkil.gitlab.io/gemiweb0">https://bkil.gitlab.io/gemiweb0</a>
-
+<a target=_blank href=https://bkil.gitlab.io/gemiweb0
+>bkil.gitlab.io/gemiweb0</a>
 </body>
 </html>
