@@ -187,14 +187,18 @@ function print() {
   }
 
   if (st.gameOver) {
-    out = out + 'Game over.';
+    out = out + 'Game over.<br>';
     if (!st.showForm) {
-      out = out + '<br><a href=javascript:key(7)>restart</a>';
+      out = out + '<a href=javascript:key(7)>restart easy</a>';
+      out = out + '<br><a href=javascript:key(8)>restart hard</a>';
     }
   }
 
   if (st.showForm) {
-    out = out + '<br>Keys: 0=next 1=Scout 2=Bomber 3=Defender 4=idle 5=auto 6=links 7=restart';
+    out = out + 'Keys: 0=next 1=Scout 2=Bomber 3=Defender 4=idle 5=auto 6=links';
+    if (st.gameOver) {
+      out = out + ' 7=restart easy 8=restart hard';
+    }
     out = out + '<form name=f action=javascript:onSubmit()><input name=t><input type=submit></form>';
   }
 
@@ -319,10 +323,10 @@ function restart() {
   var i = 0;
   while (i < 3) {
     var p = new Object;
-    if (!i) {
-      p.action = 4;
-    } else {
+    if (i) {
       p.action = getRandom(3) + 1;
+    } else {
+      p.action = 4;
     }
     p.h = 9;
     p.r = 0;
