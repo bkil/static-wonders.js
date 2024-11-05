@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Calculate metric dirt in a hole of certan volumetric dimensions</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='Try an example calculator JavaScript0 for GemiWeb0' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; img-src data: 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+</head>
+<body><h2
+>Introduction</h2
+>This is a calculator that will answer the question of how much dirt is inside a hole with given volumentric dimensions given in meters.<h2
+>Requirements</h2
+>You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
+><a target=_blank rel=noopener href=https://bkil.gitlab.io/gemiweb0
+>bkil.gitlab.io/gemiweb0</a
+><h2
+>Start</h2
+><script>
+'use strict';
+var tmp = new Object;
+
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  } else {
+    var o = '';
+    var c;
+    if (to > th.length) {
+      to = th.length;
+    }
+    from = from - 1;
+    to = to - 1;
+    while (to > from) {
+      c = th.charAt(from = from + 1);
+      o = o + c;
+    }
+    return o;
+  }
+}
+
+function removeAfter(s, t) {
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, 0, i);
+  }
+  return s;
+}
+
+function writeHtm(text) {
+  var h = '<!DOCTYPE ';
+  if (document.doctype && document.doctype.name) {
+    h = h + document.doctype.name;
+  } else {
+    h = h + 'html';
+  }
+  h = h + '><html lang=en>';
+  if (document.documentElement && document.documentElement.innerHTML) {
+    h = h + removeAfter(document.documentElement.innerHTML, '<body>');
+  }
+  h = '<body>' + text + '<' + '/body></html>';
+  document.write(h);
+  document.close();
+  if (window.f && window.f.t && window.f.t.focus) {
+    window.f.t.focus();
+  }
+}
+
+function ask(dim) {
+  writeHtm('<form action="javascript:have_' + dim + '()" name=f >What is the ' + dim + ' of the hole?<input name=t><input type=submit></form>');
+}
+
+function have_length() {
+  writeHtm('0 m3, because there is no dirt in an empty hole');
+}
+
+function have_width() {
+  ask('length');
+}
+
+function have_depth() {
+  ask('width');
+}
+
+function init() {
+  ask('depth');
+}
+</script
+><a href=javascript:init()
+>Start calculation</a
+></body
+></html>
