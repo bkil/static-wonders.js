@@ -261,9 +261,9 @@ function ai(p, i, built) {
     while (st.p.length > (j = j + 1)) {
       if (i - j) {
         q = st.p[j];
-        s0 = s0 || q.s[0] || !(q.action - 1);
-        s1 = s1 || q.s[1] || !(q.action - 2);
-        s2 = s2 || q.s[2] || !(q.action - 3);
+        s0 = s0 || q.s[0];
+        s1 = s1 || q.s[1];
+        s2 = s2 || q.s[2];
       }
     }
     if (s1 && !p.s[0]) {
@@ -273,7 +273,7 @@ function ai(p, i, built) {
     } else if (s0 && !p.s[2]) {
       p.action = 3;
     } else {
-      p.action = 0;
+      p.action = getRandom(3) + 1;
     }
   }
 }
