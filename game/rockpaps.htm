@@ -73,9 +73,7 @@ function writeHtm(text) {
 // JS1
 function getRandom(n) {
   var x = st.random;
-  x = x ^ (x >> 7);
-  x = x ^ (x << 9);
-  return (st.random = (x ^ (x >> 13)) & 65535) % n;
+  return (st.random = (((x >> 30) ^ (x >> 27)) & 1) ^ ((x & 1073741823) << 1)) % n;
 }
 
 function printPlayer(out, who) {
@@ -428,7 +426,7 @@ function onSubmit() {
 }
 
 function init() {
-  st.random = (new Date) % 65536;
+  st.random = (new Date) % 2147483648;
   if (!st.random) {
     st.random = 1;
   }
