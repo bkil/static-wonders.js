@@ -2,6 +2,10 @@
 
 Demonstrating what you can achieve without mandatory usage of any kind custom of server side logic. You could use these on a CDN, shared web hosting without SSI or `.htaccess` or source code repository based hosting.
 
+Many of these are written in JavaScript0 and can also run in a web browser that supports at least JavaScript 1.0 (1995) or even in a simple GemiWeb0 browser implemented by yourself according to the following specification:
+
+* https://bkil.gitlab.io/gemiweb0
+
 See a generated file listing here:
 
 * https://bkil.gitlab.io/static-wonders.js/
