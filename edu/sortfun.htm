@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Property test for sort comparison function</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='Type in your implementation to evaluate and verify whether it is pure, stable, reflexive, anti-symmetric and transitive. Example interactive web0 app for JavaScript0/gemiweb0' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta name=color-scheme content='light dark'>
+<style>
+textarea {
+  display: block;
+  min-height: 5em;
+  height: 19em;
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+}
+input {
+  margin-right: 1em;
+}
+</style>
+<!-- -->
+  <meta http-equiv=Content-Security-Policy content="default-src 'none'; img-src data: 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline' 'unsafe-eval'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+</head>
+<body>
+<h2>Overview</h2>
+The comparison function for Array.sort must obey a specific set of properties, otherwise the result will be undefined. It must be pure, stable, reflexive, anti-symmetric and transitive. You can type in some JavaScript code here to see whether it would be considered good. Initialize an array. Define a comparison function fun(a,b) that returns 0 if the two parameters are considered equal, -1 (or negative) if a is less than b (i.e., a should precede b) and 1 (or positive) if b is less than a. Invoke the Array_sort(array,fun) function with the array and the comparison function as arguments. It will evaluate it and output the sorted result and note any inconsistency about the comparison function.
+<p>
+<a target=_blank href=https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#parameters
+>developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort</a>
+<h2>Requirements</h2>
+You can install a web browser that supports at least JavaScript 1.0 (1995) to play this game or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:
+<p>
+<a target=_blank href=https://bkil.gitlab.io/gemiweb0
+>bkil.gitlab.io/gemiweb0</a>
+<h2>Test</h2>
+<script>
+'use strict';
+var st = new Object;
+
+function strEqual(u, v) {
+  return !(u.length - v.length) && !u.indexOf(v);
+}
+
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  } else {
+    var o = '';
+    var c;
+    if (to > th.length) {
+      to = th.length;
+    }
+    from = from - 1;
+    to = to - 1;
+    while (to > from) {
+      c = th.charAt(from = from + 1);
+      o = o + c;
+    }
+    return o;
+  }
+}
+
+function removeAfter(s, t) {
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, 0, i + t.length);
+  }
+  return s;
+}
+
+function writeHtm(text) {
+  var before = '';
+  if (document.documentElement && document.documentElement.innerHTML) {
+    before = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
+  }
+  document.write('<!DOCTYPE html><html lang=en>' + before + '</head><body>' + text + '<' + '/body><' + '/html>');
+  document.close();
+  if (window.f && window.f.t && window.f.t.focus) {
+    window.f.t.focus();
+  }
+}
+
+function escapeHtmChar(c) {
+  var n = c.charCodeAt(0);
+  if (n === 34) {
+    return '&' + 'quot;';
+  } else if (n === 38) {
+    return '&' + 'amp;';
+  } else if (n === 39) {
+    return '&' + 'apos;';
+  } else if (n === 60) {
+    return '&' + 'lt;';
+  } else if (n === 62) {
+    return '&' + 'gt;';
+  } else {
+    return c;
+  }
+}
+
+function escapeHtm(s) {
+  var o = '';
+  var c;
+  var i = -1;
+  while (s.length > (i = i + 1)) {
+    c = escapeHtmChar(s.charAt(i));
+    o = o + c;
+  }
+  return o;
+}
+
+function replaceNl(s) {
+  var o = '';
+  var c;
+  var i = -1;
+  while (s.length > (i = i + 1)) {
+    if (s.charCodeAt(i) - 10) {
+      c = s.charAt(i);
+      o = o + c;
+    } else {
+      o = o + '<br>';
+    }
+  }
+  return o;
+}
+
+function str(x) {
+  if (!strEqual(typeof JSON, 'undefined') && JSON.stringify) {
+    return JSON.stringify(x);
+  }
+  return '' + x;
+}
+
+function checkRange(x) {
+  return strEqual(typeof x, 'number') && ((x >= 0) || (0 >= x));
+}
+
+function sign(x) {
+  if (x > 0) {
+    return 1;
+  }
+  if (0 > x) {
+    return -1;
+  }
+  return 0;
+}
+
+function Array_sort(v, fun) {
+  var w = new Array;
+  var k = -1;
+  var a;
+  var b;
+  var n = v.length;
+  var x;
+  var y;
+  var j;
+
+  var i = -1;
+  while (n > (i = i + 1)) {
+    a = v[i];
+    if (9 > k) {
+      x = fun(a, a);
+      if (!checkRange(x)) {
+        w[k = k + 1] = 'range: f(' + str(a) + ',' + str(a) + ')=' + str(x);
+      } else if (x) {
+        w[k = k + 1] = 'reflexivity: f(' + str(a) + ',' + str(a) + ')=' + str(x);
+      }
+    }
+    j = i;
+    while (n > (j = j + 1)) {
+      b = v[j];
+
+      if ((x = fun(a, b)) > 0) {
+        y = v[i];
+        v[i] = v[j];
+        v[j] = y;
+      }
+      y = fun(b, a);
+
+      if (9 > k) {
+        if (!checkRange(x)) {
+          w[k = k + 1] = 'range: f(' + str(a) + ',' + str(b) + ')=' + str(x);
+        }
+        if (!checkRange(y)) {
+          w[k = k + 1] = 'range: f(' + str(b) + ',' + str(a) + ')=' + str(y);
+        }
+        if (checkRange(x) && checkRange(y) && (sign(x) + sign(y))) {
+          w[k = k + 1] = 'anti-symmetry: f(' + str(a) + ',' + str(b) + ')=' + str(x) + ', ' +
+            'f(' + str(b) + ',' + str(a) + ')=' + str(y);
+        }
+      }
+    }
+  }
+
+  var c;
+  var z;
+  a = v[0];
+  b = v[1];
+  i = 1;
+  while (n > (i = i + 1)) {
+    c = v[i];
+    x = fun(a, b);
+    y = fun(b, c);
+    z = fun(a, c);
+    if (!(sign(x) - sign(y)) && (sign(x) - sign(z))) {
+      w[k = k + 1] = 'transitivity: f(' + str(a) + ',' + str(b) + ')=' + str(x) + ', ' +
+        'f(' + str(b) + ',' + str(c) + ')=' + str(y) + ', ' +
+        'f(' + str(a) + ',' + str(c) + ')=' + str(z);
+    }
+    a = b;
+    b = c;
+  }
+
+  st.v = v;
+  st.warn = w;
+}
+
+function htmList(v) {
+  var h = '<ul>';
+  var i = -1;
+  var s;
+  while (v.length > (i = i + 1)) {
+    s = v[i];
+    if (!strEqual(typeof s, 'string')) {
+      s = str(s);
+    }
+    s = escapeHtm(s);
+    h = h + '<li>' + s + '</li>';
+  }
+  h = h + '</ul>';
+  return h;
+}
+
+function onSubmit() {
+  st.w = undefined;
+  st.v = undefined;
+  var code = window.f.t.value;
+  var h = '';
+  var e;
+  try {
+    eval(code);
+  } catch (ex) {
+    if (!ex.length && ex.stack) {
+      e = '' + ex.stack;
+    } else {
+      e = '' + ex;
+    }
+    e = replaceNl(escapeHtm(e));
+  }
+  if (e) {
+    h = h + '<h3>Exception</h3>' + e;
+  }
+
+  var w = st.warn;
+  if (w && w.length) {
+    e = htmList(w);
+    h = h + '<h3>Warning</h3>' + e;
+  }
+
+  if (st.v) {
+    e = htmList(st.v);
+    h = h + '<h3>Sorted</h3>' + e;
+  }
+
+  code = escapeHtm(code);
+  h = h + '<form name=f action=javascript:onSubmit()><input type=submit>Comparison function script<textarea name=t>' + code + '</textarea></form>';
+  writeHtm(h);
+}
+</script>
+<form name=f action=javascript:onSubmit()><input type=submit>Comparison function script<textarea name=t>'use strict';
+function compare(a, b) {
+  return a - b;
+}
+function test() {
+  var v = new Array;
+  v[0] = 666;
+  v[1] = 69;
+  v[2] = 42;
+  return Array_sort(v, compare);
+}
+test();
+</textarea></form>
+</body>
+</html>
