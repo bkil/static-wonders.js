@@ -14,6 +14,7 @@ html {
   color: white;
 }
 </style>
+<!-- -->
   <meta http-equiv=Content-Security-Policy content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
 </head>
 <body>
@@ -44,7 +45,7 @@ function String_substring(th, from, to) {
 function removeAfter(s, t) {
   var i = s.indexOf(t);
   if (i >= 0) {
-    s = String_substring(s, 0, i);
+    s = String_substring(s, 0, i + t.length);
   }
   return s;
 }
@@ -58,7 +59,7 @@ function writeHtm(text) {
 
     var before = '';
     if (document.documentElement && document.documentElement.innerHTML) {
-      before = removeAfter(document.documentElement.innerHTML, '</style>');
+      before = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
     }
     document.write('<!DOCTYPE ' + typ + '><html lang=en>' + before + '</style></head><body>' + text + '<' + '/body></html>');
     document.close();
