@@ -52,16 +52,11 @@ function removeAfter(s, t) {
 
 function writeHtm(text) {
   if (st.docClosed) {
-    var typ = 'html';
-    if (document.doctype && document.doctype.name) {
-      typ = document.doctype.name;
-    }
-
     var before = '';
     if (document.documentElement && document.documentElement.innerHTML) {
       before = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
     }
-    document.write('<!DOCTYPE ' + typ + '><html lang=en>' + before + '</style></head><body>' + text + '<' + '/body></html>');
+    document.write('<!DOCTYPE html><html lang=en>' + before + '</head><body>' + text + '<' + '/body><' + '/html>');
     document.close();
   } else {
     document.write(text);
