@@ -26,12 +26,14 @@ input {
 </head>
 <body>
 <h2>Overview</h2>
-The comparison function for Array.sort must obey a specific set of properties, otherwise the result will be undefined. It must be pure, stable, reflexive, anti-symmetric and transitive. You can type in some JavaScript code here to see whether it would be considered good. Initialize an array. Define a comparison function fun(a,b) that returns 0 if the two parameters are considered equal, -1 (or negative) if a is less than b (i.e., a should precede b) and 1 (or positive) if b is less than a. Invoke the Array_sort(array,fun) function with the array and the comparison function as arguments. It will evaluate it and output the sorted result and note any inconsistency about the comparison function.
+The comparison function for Array.sort must obey a specific set of properties, otherwise the result will be undefined. It must be pure, stable, reflexive, anti-symmetric and transitive. You can type in some JavaScript code here to see whether it would be considered acceptable.
+<p>
+Initialize an array. Define a comparison function compare(a,b) that returns 0 if the two parameters are considered equal, -1 (or negative) if a is less than b (i.e., a should precede b in the output) and 1 (or positive) if b is less than a. Invoke the Array_sort(array,compare) function with the array and the comparison function as arguments. It will evaluate it and output the sorted result and note any inconsistency about the comparison function.
 <p>
 <a target=_blank href=https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#parameters
 >developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort</a>
 <h2>Requirements</h2>
-You can install a web browser that supports at least JavaScript 1.0 (1995) to play this game or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:
+You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:
 <p>
 <a target=_blank href=https://bkil.gitlab.io/gemiweb0
 >bkil.gitlab.io/gemiweb0</a>
@@ -40,6 +42,7 @@ You can install a web browser that supports at least JavaScript 1.0 (1995) to pl
 'use strict';
 var st = new Object;
 
+// JS1
 function strEqual(u, v) {
   return !(u.length - v.length) && !u.indexOf(v);
 }
@@ -62,6 +65,31 @@ function String_substring(th, from, to) {
     }
     return o;
   }
+}
+
+// JS1
+function Array_toString(v) {
+  var o = '';
+  var i = -1;
+  while (v.length > (i = i + 1)) {
+    if (o) {
+      o = o + ',';
+    }
+    o = o + v[i];
+  }
+  return o;
+}
+
+// ES5
+function str(x) {
+  if (!strEqual(typeof JSON, 'undefined') && JSON.stringify) {
+    return JSON.stringify(x);
+  }
+  var n;
+  if (strEqual(typeof x, 'object') && ((n = x.length) | 1) && strEqual(typeof n, 'number')) {
+    return '[' + Array_toString(x) + ']';
+  }
+  return '' + x;
 }
 
 function removeAfter(s, t) {
@@ -127,13 +155,6 @@ function replaceNl(s) {
   return o;
 }
 
-function str(x) {
-  if (!strEqual(typeof JSON, 'undefined') && JSON.stringify) {
-    return JSON.stringify(x);
-  }
-  return '' + x;
-}
-
 function checkRange(x) {
   return strEqual(typeof x, 'number') && ((x >= 0) || (0 >= x));
 }
@@ -148,9 +169,10 @@ function sign(x) {
   return 0;
 }
 
-function Array_sort(v, fun) {
-  var w = new Array;
-  var k = -1;
+function Array_sort(v, compare) {
+  st.v = v;
+  var w = st.warn;
+  var k = w.length - 1;
   var a;
   var b;
   var n = v.length;
@@ -162,34 +184,34 @@ function Array_sort(v, fun) {
   while (n > (i = i + 1)) {
     a = v[i];
     if (9 > k) {
-      x = fun(a, a);
+      x = compare(a, a);
       if (!checkRange(x)) {
-        w[k = k + 1] = 'range: f(' + str(a) + ',' + str(a) + ')=' + str(x);
+        w[k = k + 1] = 'range: compare(' + str(a) + ',' + str(a) + ')=' + str(x);
       } else if (x) {
-        w[k = k + 1] = 'reflexivity: f(' + str(a) + ',' + str(a) + ')=' + str(x);
+        w[k = k + 1] = 'reflexivity: compare(' + str(a) + ',' + str(a) + ')=' + str(x);
       }
     }
     j = i;
     while (n > (j = j + 1)) {
       b = v[j];
 
-      if ((x = fun(a, b)) > 0) {
+      if ((x = compare(a, b)) > 0) {
         y = v[i];
         v[i] = v[j];
         v[j] = y;
       }
-      y = fun(b, a);
+      y = compare(b, a);
 
       if (9 > k) {
         if (!checkRange(x)) {
-          w[k = k + 1] = 'range: f(' + str(a) + ',' + str(b) + ')=' + str(x);
+          w[k = k + 1] = 'range: compare(' + str(a) + ',' + str(b) + ')=' + str(x);
         }
         if (!checkRange(y)) {
-          w[k = k + 1] = 'range: f(' + str(b) + ',' + str(a) + ')=' + str(y);
+          w[k = k + 1] = 'range: compare(' + str(b) + ',' + str(a) + ')=' + str(y);
         }
         if (checkRange(x) && checkRange(y) && (sign(x) + sign(y))) {
-          w[k = k + 1] = 'anti-symmetry: f(' + str(a) + ',' + str(b) + ')=' + str(x) + ', ' +
-            'f(' + str(b) + ',' + str(a) + ')=' + str(y);
+          w[k = k + 1] = 'anti-symmetry: compare(' + str(a) + ',' + str(b) + ')=' + str(x) + ', ' +
+            'compare(' + str(b) + ',' + str(a) + ')=' + str(y);
         }
       }
     }
@@ -202,20 +224,17 @@ function Array_sort(v, fun) {
   i = 1;
   while (n > (i = i + 1)) {
     c = v[i];
-    x = fun(a, b);
-    y = fun(b, c);
-    z = fun(a, c);
+    x = compare(a, b);
+    y = compare(b, c);
+    z = compare(a, c);
     if (!(sign(x) - sign(y)) && (sign(x) - sign(z))) {
-      w[k = k + 1] = 'transitivity: f(' + str(a) + ',' + str(b) + ')=' + str(x) + ', ' +
-        'f(' + str(b) + ',' + str(c) + ')=' + str(y) + ', ' +
-        'f(' + str(a) + ',' + str(c) + ')=' + str(z);
+      w[k = k + 1] = 'transitivity: compare(' + str(a) + ',' + str(b) + ')=' + str(x) + ', ' +
+        'compare(' + str(b) + ',' + str(c) + ')=' + str(y) + ', ' +
+        'compare(' + str(a) + ',' + str(c) + ')=' + str(z);
     }
     a = b;
     b = c;
   }
-
-  st.v = v;
-  st.warn = w;
 }
 
 function htmList(v) {
@@ -235,7 +254,7 @@ function htmList(v) {
 }
 
 function onSubmit() {
-  st.warn = undefined;
+  var w = st.warn = new Array;
   st.v = undefined;
   var code = window.f.t.value;
   var h = '';
@@ -254,8 +273,7 @@ function onSubmit() {
     h = h + '<h3>Exception</h3>' + e;
   }
 
-  var w = st.warn;
-  if (w && w.length) {
+  if (w.length) {
     e = htmList(w);
     h = h + '<h3>Warning</h3>' + e;
   }
@@ -272,13 +290,19 @@ function onSubmit() {
 </script>
 <form name=f action=javascript:onSubmit()><input type=submit>Comparison function script<textarea name=t>'use strict';
 function compare(a, b) {
-  return a - b;
+  return a[1] - b[1];
+}
+function pair(a, b) {
+  var v = new Array;
+  v[0] = a;
+  v[1] = b;
+  return v;
 }
 function test() {
   var v = new Array;
-  v[0] = 666;
-  v[1] = 69;
-  v[2] = 42;
+  v[0] = pair(0, 666);
+  v[1] = pair(1, 69);
+  v[2] = pair(2, 42);
   return Array_sort(v, compare);
 }
 test();
