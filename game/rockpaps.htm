@@ -62,9 +62,21 @@ function writeHtm(text) {
 }
 
 // JS1
-function getRandom(n) {
+function getRandomBits(n) {
   var x = st.random;
-  return (st.random = (((x >> 30) ^ (x >> 27)) & 1) ^ ((x & 1073741823) << 1)) % n;
+  var i = n + 1;
+  while (i = i - 1) {
+    x = (((x >> 30) ^ (x >> 27)) & 1) ^ ((x & 1073741823) << 1);
+  }
+  st.random = x;
+  if (n > 31) {
+    n = 31;
+  }
+  return x & ((1 << n) - 1);
+}
+
+function getRandom(m) {
+  return getRandomBits(8) % m;
 }
 
 function printPlayer(out, who) {
@@ -421,6 +433,8 @@ function init() {
   if (!st.random) {
     st.random = 1;
   }
+  getRandomBits(128);
+
   st.showForm = 0;
   st.ai = 1;
   restart();
