@@ -15,10 +15,7 @@
 <body>
 <script>
 'use strict';
-var dur = new Object;
-var tmp = new Object;
-var nl = String.fromCharCode(10);
-var bs = String.fromCharCode(92);
+var st = new Object;
 
 // JS1
 function strEqual(u, v) {
@@ -73,7 +70,7 @@ function removeAfter(s, t) {
 }
 
 function writeHtm(text) {
-  if (tmp.docClosed) {
+  if (st.docClosed) {
     var h = '';
     if (document.documentElement && document.documentElement.innerHTML) {
       h = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
@@ -91,12 +88,12 @@ function writeHtm(text) {
 
 // JS1
 function getRandomBits(n) {
-  var x = dur.random;
+  var x = st.random;
   var i = n + 1;
   while (i = i - 1) {
     x = (((x >> 30) ^ (x >> 27)) & 1) ^ ((x & 1073741823) << 1);
   }
-  dur.random = x;
+  st.random = x;
   if (n > 31) {
     n = 31;
   }
@@ -111,9 +108,9 @@ function print() {
   var j;
   var out = '';
   var i = 0;
-  var col = dur.startCol;
-  while (dur.place.length > i) {
-    if (!tmp.showForm && (dur.pairs > dur.foundPairs)) {
+  var col = st.startCol;
+  while (st.place.length > i) {
+    if (!st.showForm && (st.pairs > st.foundPairs)) {
       out = out + '<a href=javascript:key(' + i + ')>';
     }
     j = 0;
@@ -121,22 +118,22 @@ function print() {
       out = out + '. ';
       j = j + 1;
     }
-    if (!(i - dur.pick1) || !(i - dur.pick2) || dur.found[i]) {
-      out = out + dur.place[i];
+    if (!(i - st.pick1) || !(i - st.pick2) || st.found[i]) {
+      out = out + st.place[i];
     } else {
       out = out + i;
     }
-    if (!tmp.showForm && (dur.pairs > dur.foundPairs)) {
+    if (!st.showForm && (st.pairs > st.foundPairs)) {
       out = out + '</a>';
     }
     out = out + '<br>';
-    col = (col + dur.stepCol) % dur.cols;
+    col = (col + st.stepCol) % st.cols;
     i = i + 1;
   }
 
-  var elapsed = ((new Date / 1000) | 0) - dur.startTime;
-  out = out + dur.foundPairs + ' pairs in ' + dur.round + ' turns, ' + elapsed + 'sec, game ' + dur.game + '<br>';
-  if (tmp.showForm) {
+  var elapsed = ((new Date / 1000) | 0) - st.startTime;
+  out = out + st.foundPairs + ' pairs in ' + st.round + ' turns, ' + elapsed + 'sec, game ' + st.game + '<br>';
+  if (st.showForm) {
     out = out + 'Keys: 0..9=flip 10=links 11=new game';
     out = out + '<form name=f action="javascript:onSubmit()"><input name=t type=number min=0 max=11 placeholder=0..11 required><input type=submit></form>';
   } else {
@@ -148,16 +145,16 @@ function print() {
 }
 
 function restart() {
-  dur.round = 0;
-  dur.foundPairs = 0;
-  dur.startTime = (new Date / 1000) | 0;
-  dur.startCol = getRandom(dur.cols);
-  dur.stepCol = getRandom(2) + 2;
-  dur.pick1 = -1;
-  dur.pick2 = -1;
+  st.round = 0;
+  st.foundPairs = 0;
+  st.startTime = (new Date / 1000) | 0;
+  st.startCol = getRandom(st.cols);
+  st.stepCol = getRandom(2) + 2;
+  st.pick1 = -1;
+  st.pick2 = -1;
 
-  var wholeSet = tmp.levels[dur.level];
-  dur.level = (dur.level + 1) % tmp.levels.length;
+  var wholeSet = st.levels[st.level];
+  st.level = (st.level + 1) % st.levels.length;
   var pickedSet = '';
 
   var freeChar;
@@ -165,7 +162,7 @@ function restart() {
   var pick;
   var j;
   var i = 0;
-  while (dur.pairs > i) {
+  while (st.pairs > i) {
     freeChar = '';
     j = 0;
     while (wholeSet.length > j) {
@@ -181,7 +178,7 @@ function restart() {
     i = i + 1;
   }
 
-  var cards = 2 * dur.pairs;
+  var cards = 2 * st.pairs;
   var place = new Array;
   i = 0;
   while (cards > i) {
@@ -203,11 +200,11 @@ function restart() {
     pick = getRandom(freePlace.length);
     j = freePlace[pick];
     place[j] = pickedSet.charAt(i >> 1);
-    dur.found[j] = 0;
+    st.found[j] = 0;
     i = i + 1;
   }
-  dur.place = place;
-  dur.game = dur.game + 1;
+  st.place = place;
+  st.game = st.game + 1;
   print();
 }
 
@@ -215,28 +212,28 @@ function key(k) {
   if ((0 > k) || (k > 11)) {
     print();
   } else if (!(k - 10)) {
-    tmp.showForm = !tmp.showForm;
+    st.showForm = !st.showForm;
     print();
   } else if (!(k - 11)) {
     restart();
-  } else if (dur.found[k]) {
+  } else if (st.found[k]) {
     print();
-  } else if (0 > dur.pick1) {
-    dur.pick1 = k;
+  } else if (0 > st.pick1) {
+    st.pick1 = k;
     print();
-  } else if (!(k - dur.pick1)) {
+  } else if (!(k - st.pick1)) {
     print();
   } else {
-    dur.pick2 = k;
-    if (strEqual(dur.place[dur.pick1], dur.place[dur.pick2])) {
-      dur.found[dur.pick1] = 1;
-      dur.found[dur.pick2] = 1;
-      dur.foundPairs = dur.foundPairs + 1;
+    st.pick2 = k;
+    if (strEqual(st.place[st.pick1], st.place[st.pick2])) {
+      st.found[st.pick1] = 1;
+      st.found[st.pick2] = 1;
+      st.foundPairs = st.foundPairs + 1;
     }
-    dur.round = dur.round + 1;
+    st.round = st.round + 1;
     print();
-    dur.pick1 = -1;
-    dur.pick2 = -1;
+    st.pick1 = -1;
+    st.pick2 = -1;
   }
 }
 
@@ -254,28 +251,28 @@ function onSubmit() {
 }
 
 function init() {
-  dur.random = (new Date) % 2147483648;
-  if (!dur.random) {
-    dur.random = 1;
+  st.random = (new Date) % 2147483648;
+  if (!st.random) {
+    st.random = 1;
   }
   getRandomBits(128);
 
-  tmp.showForm = 0;
+  st.showForm = 0;
   var l = new Array;
   l[0] = '"`~^' + "'";
   l[1] = '()<>[]{}';
   l[2] = '@#$&%|';
   l[3] = '!?,:;=';
-  l[4] = '+-*/_' + bs;
-  tmp.levels = l;
+  l[4] = '+-*/_' + String.fromCharCode(92);
+  st.levels = l;
 
-  dur.found = new Array;
-  dur.pairs = 5;
-  dur.cols = 5;
-  dur.game = 0;
-  dur.level = getRandom(l.length);
+  st.found = new Array;
+  st.pairs = 5;
+  st.cols = 5;
+  st.game = 0;
+  st.level = getRandom(l.length);
   restart();
-  tmp.docClosed = 1;
+  st.docClosed = 1;
 }
 
 init();
