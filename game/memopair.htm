@@ -8,64 +8,104 @@
   <meta name=viewport content='width=device-width, initial-scale=1'>
   <meta name=referrer content=no-referrer>
   <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta name=color-scheme content='light dark'>
+<!-- -->
   <meta http-equiv=Content-Security-Policy content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
-<style>
-html {
-  background-color: black;
-  color: white;
-}
-</style>
 </head>
 <body>
 <script>
 'use strict';
+var dur = new Object;
+var tmp = new Object;
 var nl = String.fromCharCode(10);
 var bs = String.fromCharCode(92);
 
-function reload(text) {
-  if (tmp.docClosed) {
-    var typ = '';
-    if (document.doctype && (document.doctype.name !== undefined)) {
-      typ = '<!DOCTYPE ' + document.doctype.name + '>';
-    }
+// JS1
+function strEqual(u, v) {
+  return !(u.length - v.length) && !u.indexOf(v);
+}
 
-    var head = '';
-    if (document.head && document.head.innerHTML && String.prototype && String.prototype.match) {
-      head = document.head.innerHTML;
-      var m = head.match('^((?:.|' + bs + 'n)*)<[^>]+http-equiv=["' + "'" + ']?Content-Security-Policy[^>]*>((?:.|' + bs + 'n)*)$');
-      if (m) {
-        head = m[1] + m[2];
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  } else {
+    var o = '';
+    var c;
+    if (to > th.length) {
+      to = th.length;
+    }
+    from = from - 1;
+    to = to - 1;
+    while (to > from) {
+      c = th.charAt(from = from + 1);
+      o = o + c;
+    }
+    return o;
+  }
+}
+
+// JS1
+function parseIntPlus(s) {
+  if (!strEqual(typeof parseInt, 'undefined')) {
+    return parseInt(s);
+  } else {
+    var k = 0;
+    var i = -1;
+    var c;
+    while (s.length > (i = i + 1)) {
+      c = s.charCodeAt(i) - 48;
+      if ((0 > c) || (c > 9)) {
+        return NaN;
       }
+      k = (k * 10) + c;
     }
+    return k;
+  }
+}
 
-    document.close();
-    document.write(typ + '<html lang=en><head>' + head + '</head><body>' + text + '</body></html>');
+function removeAfter(s, t) {
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, 0, i + t.length);
+  }
+  return s;
+}
+
+function writeHtm(text) {
+  if (tmp.docClosed) {
+    var h = '';
+    if (document.documentElement && document.documentElement.innerHTML) {
+      h = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
+    }
+    h = '<!DOCTYPE html><html lang=en>' + h + '</head><body>' + text + '<' + '/body><' + '/html>';
+    document.write(h);
     document.close();
   } else {
     document.write(text);
   }
-  if (window.f && (window.f.t && window.f.t.focus)) {
+  if (window.f && window.f.t && window.f.t.focus) {
     window.f.t.focus();
   }
 }
 
-var random = new Object;
-random.seed = (new Date) % 65536;
-
-function getRandom(n) {
-  var x = random.seed;
-  if (!x) {
-    x = x + 1;
+// JS1
+function getRandomBits(n) {
+  var x = dur.random;
+  var i = n + 1;
+  while (i = i - 1) {
+    x = (((x >> 30) ^ (x >> 27)) & 1) ^ ((x & 1073741823) << 1);
   }
-  x = x ^ (x >> 7);
-  x = x ^ (x << 9);
-  x = (x ^ (x >> 13)) & 65535;
-  random.seed = x;
-  return x % n;
+  dur.random = x;
+  if (n > 31) {
+    n = 31;
+  }
+  return x & ((1 << n) - 1);
 }
 
-var dur = new Object;
-var tmp = new Object;
+function getRandom(m) {
+  return getRandomBits(8) % m;
+}
 
 function print() {
   var j;
@@ -81,7 +121,7 @@ function print() {
       out = out + '. ';
       j = j + 1;
     }
-    if ((i === dur.pick1) || (i === dur.pick2) || dur.found[i]) {
+    if (!(i - dur.pick1) || !(i - dur.pick2) || dur.found[i]) {
       out = out + dur.place[i];
     } else {
       out = out + i;
@@ -104,7 +144,7 @@ function print() {
     out = out + '<a href=javascript:key(11)>New game</a>';
   }
 
-  reload(out);
+  writeHtm(out);
 }
 
 function restart() {
@@ -155,7 +195,7 @@ function restart() {
     freePlace = new Array;
     j = 0;
     while (place.length > j) {
-      if (place[j].length === 0) {
+      if (!place[j].length) {
         freePlace[freePlace.length] = j;
       }
       j = j + 1;
@@ -174,21 +214,21 @@ function restart() {
 function key(k) {
   if ((0 > k) || (k > 11)) {
     print();
-  } else if (k === 10) {
+  } else if (!(k - 10)) {
     tmp.showForm = !tmp.showForm;
     print();
-  } else if (k === 11) {
+  } else if (!(k - 11)) {
     restart();
   } else if (dur.found[k]) {
     print();
   } else if (0 > dur.pick1) {
     dur.pick1 = k;
     print();
-  } else if (k === dur.pick1) {
+  } else if (!(k - dur.pick1)) {
     print();
   } else {
     dur.pick2 = k;
-    if (dur.place[dur.pick1] === dur.place[dur.pick2]) {
+    if (strEqual(dur.place[dur.pick1], dur.place[dur.pick2])) {
       dur.found[dur.pick1] = 1;
       dur.found[dur.pick2] = 1;
       dur.foundPairs = dur.foundPairs + 1;
@@ -201,10 +241,10 @@ function key(k) {
 }
 
 function onSubmit() {
-  if (window.f.t.value === '') {
+  if (!window.f.t.value) {
     return undefined;
   }
-  var sel = parseInt(window.f.t.value);
+  var sel = parseIntPlus(window.f.t.value);
   if (isNaN(sel)) {
     print();
     return undefined;
@@ -214,6 +254,12 @@ function onSubmit() {
 }
 
 function init() {
+  dur.random = (new Date) % 2147483648;
+  if (!dur.random) {
+    dur.random = 1;
+  }
+  getRandomBits(128);
+
   tmp.showForm = 0;
   var l = new Array;
   l[0] = '"`~^' + "'";
@@ -245,7 +291,7 @@ You need to remember what the other side of each card shows.
 The goal is to eliminate each pair of matching cards by flipping them together.
 
 <h2>Requirements</h2>
-You can install a web browser that supports at least JavaScript 1.0 to play this game or you may consider implementing a Web0/gemiweb browser with JavaScript0 yourself according to the following specification:
+You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:
 <p>
 <a target=_blank href="https://bkil.gitlab.io/gemiweb0">https://bkil.gitlab.io/gemiweb0</a>
 
