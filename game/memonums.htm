@@ -4,21 +4,30 @@
   <meta charset=utf-8>
   <title>Numerical sequence memory</title>
   <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
-  <meta property='og:description' content='A sequence of numbers is displayed to remember. You need to input it from recall. The list gets longer after each successful repetition. Play a JavaScript0 game on GemiWeb0' name='description'>
+  <meta property='og:description' content='A sequence of numbers is displayed to remember. You need to recall them in order. The list gets longer after each successful repetition. Play a JavaScript0 game on GemiWeb0' name='description'>
   <meta name=viewport content='width=device-width, initial-scale=1'>
   <meta name=referrer content=no-referrer>
   <meta http-equiv=x-dns-prefetch-control content=off>
-  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
-<style>
-html {
-  background-color: black;
-  color: white;
-}
-</style>
+  <meta name=color-scheme content='light dark'>
+<!-- -->
+  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; img-src data: 'self'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
 </head>
-<body><script>
+<body
+><h2
+>Usage</h2
+>A sequence of numbers is displayed to remember. You need to recall them in order. The list gets longer after each successful repetition.<h2
+>Requirements</h2
+>You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
+><a target=_blank href=https://bkil.gitlab.io/gemiweb0
+>bkil.gitlab.io/gemiweb0</a
+><script>
 'use strict';
 var st = new Object;
+
+// JS1
+function strEqual(u, v) {
+  return !(u.length - v.length) && !u.indexOf(v);
+}
 
 // JS1
 function String_substring(th, from, to) {
@@ -43,38 +52,44 @@ function String_substring(th, from, to) {
 function removeAfter(s, t) {
   var i = s.indexOf(t);
   if (i >= 0) {
-    s = String_substring(s, 0, i);
+    s = String_substring(s, 0, i + t.length);
   }
   return s;
 }
 
-function writeHtml(text) {
+function writeHtm(text) {
   if (st.docClosed) {
-    var typ = 'html';
-    if (document.doctype && document.doctype.name) {
-      typ = document.doctype.name;
-    }
-
-    var before = '';
+    var h = '';
     if (document.documentElement && document.documentElement.innerHTML) {
-      before = removeAfter(document.documentElement.innerHTML, '<body>');
+      h = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
     }
-    document.write('<!DOCTYPE ' + typ + '><html lang=en>' + before + '<body>' + text + '<' + '/body></html>');
+    h = '<!DOCTYPE html><html lang=en>' + h + '</head><body>' + text + '<' + '/body><' + '/html>';
+    document.write(h);
     document.close();
   } else {
     document.write(text);
   }
-  if (window.f && (window.f.t && window.f.t.focus)) {
+  if (window.f && window.f.t && window.f.t.focus) {
     window.f.t.focus();
   }
 }
 
 // JS1
-function getRandom(n) {
+function getRandomBits(n) {
   var x = st.random;
-  x = x ^ (x >> 7);
-  x = x ^ (x << 9);
-  return (st.random = (x ^ (x >> 13)) & 65535) % n;
+  var i = n + 1;
+  while (i = i - 1) {
+    x = (((x >> 30) ^ (x >> 27)) & 1) ^ ((x & 1073741823) << 1);
+  }
+  st.random = x;
+  if (n > 31) {
+    n = 31;
+  }
+  return x & ((1 << n) - 1);
+}
+
+function getRandom(m) {
+  return getRandomBits(8) % m;
 }
 
 function getBad() {
@@ -103,7 +118,7 @@ function renderNextInput() {
   if (st.seqDisplay) {
     h = h + '<br><a href="javascript:configure()">Configure</a>';
   }
-  writeHtml(h);
+  writeHtm(h);
 }
 
 function input() {
@@ -120,7 +135,7 @@ function input() {
     if (st.seqDisplay) {
       h = h + ' Type 0 to configure';
     }
-    writeHtml(h);
+    writeHtm(h);
   }
 }
 
@@ -130,7 +145,7 @@ function renderGoalSeq0(rec) {
   var i = st.renderI;
   if (st.goal.length > i) {
     h = h + st.goal.charAt(i);
-    writeHtml(h);
+    writeHtm(h);
     st.renderI = i + 1;
     setTimeout(recRec, st.delay);
   } else {
@@ -147,7 +162,7 @@ function renderGoal(msg) {
   if (st.seqDisplay) {
     st.renderI = 0;
     if (msg) {
-      writeHtml(msg);
+      writeHtm(msg);
       setTimeout(renderGoalSeq, st.delay);
     } else {
       renderGoalSeq();
@@ -159,21 +174,21 @@ function renderGoal(msg) {
     if (msg) {
       h = h + '<p>' + msg;
     }
-    writeHtml(h);
+    writeHtm(h);
   }
 }
 
 function inputNext(digit) {
   var i = st.inputI;
-  if (st.goal.charCodeAt(i) === (digit + 48)) {
+  if (st.goal.charCodeAt(i) - (digit + 48)) {
+    renderGoal(getBad());
+  } else {
     st.inputI = i + 1;
     if (st.goal.length > st.inputI) {
       renderNextInput();
     } else {
       renderGoal(getNext());
     }
-  } else {
-    renderGoal(getBad());
   }
 }
 
@@ -197,28 +212,30 @@ function configure() {
     h = h + '<p><a href="javascript:st.seqDisplay=1;configure()">Display individual digits with delay</a>';
   }
   h = h + '<p><a href="javascript:renderGoal(' + "''" + ')">Continue</a>';
-  writeHtml(h);
+  writeHtm(h);
 }
 
 function submitInput() {
   var input = '';
-  if (window.f && window.f.t && (window.f.t.value !== undefined)) {
+  if (window.f && window.f.t && window.f.t.value) {
     input = window.f.t.value;
   }
-  if (input === '0') {
+  if (strEqual(input, '0')) {
     configure();
-  } else if (input !== st.goal) {
-    renderGoal(getBad());
-  } else {
+  } else if (strEqual(input, st.goal)) {
     renderGoal(getNext());
+  } else {
+    renderGoal(getBad());
   }
 }
 
 function init() {
-  st.random = (new Date) % 65536;
+  st.random = (new Date) % 2147483648;
   if (!st.random) {
     st.random = 1;
   }
+  getRandomBits(128);
+
   st.delay = 1000;
   st.goal = '' + (1 + getRandom(9));
   renderGoal('');
@@ -227,11 +244,4 @@ function init() {
 
 init();
 </script
-><h2
->Usage</h2
->A sequence of numbers is displayed to remember. You need to input it from recall. The list gets longer after each successful repetition.<h2
->Requirements</h2
->You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
-><a target=_blank href=https://bkil.gitlab.io/gemiweb0
->bkil.gitlab.io/gemiweb0</a
 ></body></html>
