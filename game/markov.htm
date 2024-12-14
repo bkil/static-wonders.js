@@ -8,13 +8,8 @@
   <meta name=viewport content='width=device-width, initial-scale=1'>
   <meta name=referrer content=no-referrer>
   <meta http-equiv=x-dns-prefetch-control content=off>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline' 'unsafe-eval'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+  <meta name=color-scheme content='light dark'>
 <style>
-html, textarea {
-  background-color: black;
-  color: white;
-}
-
 html {
   overflow-wrap: anywhere;
 }
@@ -35,13 +30,21 @@ input {
   margin-right: 0.5rem;
 }
 </style>
+<!-- -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline' 'unsafe-eval'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
 </head>
-<body><form width='100%' name=f action='javascript:app.submit()'
+<body
+><form width='100%' name=f action='javascript:app.submit()'
 ><textarea width='100%' cols=40 rows=24 name=t spellcheck=false autocorrect=off autocomplete=off
 >// You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the above specification.
 'use strict';
 
-var tmp = new Object;
+var st = new Object;
+
+// JS1
+function strEqual(u, v) {
+  return !(u.length - v.length) && !u.indexOf(v);
+}
 
 // JS1
 function String_substring(th, from, to) {
@@ -66,55 +69,55 @@ function String_substring(th, from, to) {
 function removeAfter(s, t) {
   var i = s.indexOf(t);
   if (i >= 0) {
-    s = String_substring(s, 0, i);
+    s = String_substring(s, 0, i + t.length);
   }
   return s;
 }
 
-function writeHtml(text) {
-  if (tmp.docClosed) {
-    var typ = 'html';
-    if (document.doctype && document.doctype.name) {
-      typ = document.doctype.name;
-    }
-
-    var before = '';
+function writeHtm(text) {
+  if (st.docClosed) {
+    var h = '';
     if (document.documentElement && document.documentElement.innerHTML) {
-      before = removeAfter(document.documentElement.innerHTML, '<body>');
+      h = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
     }
-    document.write('<!DOCTYPE ' + typ + '><html lang=en>' + before + '<body>' + text + '<' + '/body></html>');
+    h = '<!DOCTYPE html><html lang=en>' + h + '</head><body>' + text + '<' + '/body><' + '/html>';
+    document.write(h);
     document.close();
   } else {
     document.write(text);
   }
-  if (window.f && (window.f.s && window.f.s.focus)) {
+  if (window.s && window.f.s && window.f.s.focus) {
     window.f.s.focus();
   }
 }
 
 function updateGram(key, next) {
-  var o = tmp.gram[key];
+  var o = st.gram[key];
   if (!o) {
     o = new Array;
-    tmp.gram[key] = o;
+    st.gram[key] = o;
   }
   o[o.length] = next;
 }
 
 function learnGrams(s) {
-  if (tmp.inText === s) {
+  if (strEqual(st.inText, s)) {
     return 0;
   }
-  tmp.gram = new Object;
+  st.inText = s;
+  st.gram = new Object;
   var i = 0;
   var w;
   var x = '';
   var y = '';
   var z = '';
 
-  while (i < s.length) {
-    if (s.charCodeAt(i) === 32) {
-      while (s.charCodeAt(i = i + 1) === 32) {
+  while (s.length > i) {
+    if (!(s.charCodeAt(i) - 32)) {
+      while ((s.length > (i = i + 1)) && (!(s.charCodeAt(i) - 32))) {
+      }
+      if (i >= s.length) {
+        return 0;
       }
       i = i - 1;
     }
@@ -129,20 +132,19 @@ function learnGrams(s) {
     updateGram(y + z, i);
     updateGram(z, i);
   }
-  tmp.inText = s;
 }
 
-function escapeHtmlChar(c) {
+function escapeHtmChar(c) {
   var n = c.charCodeAt(0);
-  if (n === 34) {
+  if (!(n - 34)) {
     return '&' + 'quot;';
-  } else if (n === 38) {
+  } else if (!(n - 38)) {
     return '&' + 'amp;';
-  } else if (n === 39) {
+  } else if (!(n - 39)) {
     return '&' + 'apos;';
-  } else if (n === 60) {
+  } else if (!(n - 60)) {
     return '&' + 'lt;';
-  } else if (n === 62) {
+  } else if (!(n - 62)) {
     return '&' + 'gt;';
   } else {
     return c;
@@ -150,22 +152,30 @@ function escapeHtmlChar(c) {
 }
 
 // JS1
-function getRandom(n) {
-  var x = tmp.random;
-  x = x ^ (x >> 7);
-  x = x ^ (x << 9);
-  x = (x ^ (x >> 13)) & 65535;
-  tmp.random = x;
-  return x % n;
+function getRandomBits(n) {
+  var x = st.random;
+  var i = n + 1;
+  while (i = i - 1) {
+    x = (((x >> 30) ^ (x >> 27)) & 1) ^ ((x & 1073741823) << 1);
+  }
+  st.random = x;
+  if (n > 31) {
+    n = 31;
+  }
+  return x & ((1 << n) - 1);
+}
+
+function getRandom(m) {
+  return getRandomBits(8) % m;
 }
 
 function generateGrams(len) {
   if (!len) {
     return '';
   }
-  var i = getRandom(len);
-  var s = tmp.inText;
-  var t = '';
+  var s = st.inText;
+  var i = getRandom(s.length);
+  var h = '';
   var o;
   var n;
   var w;
@@ -176,95 +186,102 @@ function generateGrams(len) {
   var n;
   var word = 0;
 
-  while (len) {
+  len = len + 1;
+  while (len = len - 1) {
     w = x;
     x = y;
     y = z;
-    z = s.charAt(i);
-    i = i + 1;
     if (i >= s.length) {
       i = 0;
     }
+    z = s.charAt(i);
+    i = i + 1;
     n = z.charCodeAt(0);
-
-    if (n === 10) {
-      t = t + '<br>';
+    if (!(n - 10)) {
+      h = h + '<' + 'br>';
       word = 0;
-    } else if (n === 32) {
-      t = t + ' ';
+    } else if (!(n - 32)) {
+      h = h + ' ';
       word = 0;
       i = i - 1;
-      while (s.charCodeAt(i = i + 1) === 32) {
+
+      while ((len = len - 1) && !(s.charCodeAt(i = i + 1) - 32)) {
         if (word = !word) {
-          t = t + '&' + 'nbsp;';
+          h = h + '&' + 'nbsp;';
         } else {
-          t = t + ' ';
+          h = h + ' ';
         }
+        if (i >= s.length) {
+          i = 0;
+        }
+      }
+      if (!len) {
+        len = 1;
       }
       word = 0;
     } else {
       word = word + 1;
       if ((word > 32) || ((word > 13) && ((65 > n) || ((n > 90) && (97 > n)) || ((n > 122) && (127 > n))))) {
-        t = t + ' ';
+        h = h + ' ';
         word = 0;
       }
-      c = escapeHtmlChar(z);
-      t = t + c;
+      c = escapeHtmChar(z);
+      h = h + c;
     }
 
-    o = tmp.gram[w + x + y + z];
-    if (!o || ((o.length === 1) && !getRandom(4))) {
-      o = tmp.gram[x + y + z];
+    o = st.gram[w + x + y + z];
+    if (!o || (!(o.length - 1) && !getRandom(8))) {
+      o = st.gram[x + y + z];
       if (!o) {
-        o = tmp.gram[y + z];
+        o = st.gram[y + z];
         if (!o) {
-          o = tmp.gram[z];
+          o = st.gram[z];
         }
       }
     }
     if (o) {
       i = o[getRandom(o.length)];
     }
-
-    len = len - 1;
   }
-  return t;
+  return h;
 }
 
-function escapeHtml(s) {
-  var i = 0;
-  var t = '';
+function escapeHtm(s) {
+  var h = '';
   var c;
-  while (i < s.length) {
-    c = escapeHtmlChar(s.charAt(i));
-    t = t + c;
-    i = i + 1;
+  var i = -1;
+  while (s.length > (i = i + 1)) {
+    c = escapeHtmChar(s.charAt(i));
+    h = h + c;
   }
-  return t;
+  return h;
 }
 
 function submit() {
   var s = window.f.t.value;
   learnGrams(s);
-  var t = generateGrams(2 * s.length);
-  t = '<p>' + t;
-  if (tmp.docClosed) {
-    t = '<form name=f action="javascript:app.submit()"><textarea name=t>' +
-      escapeHtml(s) +
+  var h = generateGrams(2 * s.length);
+  h = '<p>' + h;
+  if (st.docClosed) {
+    s = escapeHtm(s);
+    h = '<form name=f action="javascript:app.submit()"><textarea name=t>' +
+      s +
       '<' + '/textarea><br><input type=submit name=s value=Shuffle><a target=_blank href="https://bkil.gitlab.io/gemiweb0">bkil.gitlab.io/gemiweb0</a></form>' +
-      t;
+      h;
   }
-  writeHtml(t);
+  writeHtm(h);
 }
 
 function init() {
-  tmp.random = (new Date) % 65536;
-  if (!tmp.random) {
-    tmp.random = 1;
+  st.random = (new Date) % 2147483648;
+  if (!st.random) {
+    st.random = 1;
   }
+  getRandomBits(128);
 
+  st.inText = '';
   submit();
-  tmp.docClosed = 1;
+  st.docClosed = 1;
   var app = new Object;
   app.submit = submit;
   return app;
