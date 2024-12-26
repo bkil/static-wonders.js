@@ -540,10 +540,7 @@ ES11
 
 <script>
 'use strict';
-if (typeof tmp === 'undefined') {
-  var tmp = new Object;
-}
-
+var tmp = new Object;
 var nl = String.fromCharCode(10);
 
 // JS1
@@ -943,9 +940,6 @@ function loaded() {
 }
 
 function init() {
-  if (tmp.docClosed) {
-    return 0;
-  }
   tmp.random = (new Date) % 2147483648;
   if (!tmp.random) {
     tmp.random = 1;
