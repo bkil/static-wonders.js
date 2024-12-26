@@ -547,6 +547,11 @@ if (typeof tmp === 'undefined') {
 var nl = String.fromCharCode(10);
 
 // JS1
+function strEqual(u, v) {
+  return !(u.length - v.length) && !u.indexOf(v);
+}
+
+// JS1
 function String_substring(th, from, to) {
   if (th.substring) {
     return th.substring(from, to);
@@ -587,7 +592,7 @@ function String_trim(th) {
   } else {
     function isWs(i) {
       var n = th.charCodeAt(i);
-      return (n === 32) || (n === 9) || (n === 10);
+      return !(n - 32) || !(n - 9) || !(n - 10);
     }
     var i = 0;
     while ((i < th.length) && isWs(i)) {
@@ -730,7 +735,7 @@ function getRandomElements(a, k, skip) {
       if (r >= a.length) {
         throw 'unreachable';
       }
-      if (!d[r] && (a[r] !== skip)) {
+      if (!d[r] && (!strEqual(a[r], skip))) {
         i = i - 1;
       }
     }
@@ -747,13 +752,13 @@ function renderQuiz(t) {
   if (tmp.quizTopic && tmp.quizFact) {
     topic = tmp.card[tmp.quizTopic];
     fact = topic[tmp.quizFact];
-    if (tmp.quizSelect === tmp.quizAnswer) {
-      t = t + '<' + 'h2>Yes</h2>';
-      tmp.score = tmp.score + 1;
-    } else {
+    if (tmp.quizSelect - tmp.quizAnswer) {
       t = t + '<' + 'h2>No</h2>';
       t = t +
         tmp.quizTopic + ' ' + tmp.quizFact + ': ' + (fact.a) + '<p>';
+    } else {
+      t = t + '<' + 'h2>Yes</h2>';
+      tmp.score = tmp.score + 1;
     }
   }
 
@@ -771,12 +776,12 @@ function renderQuiz(t) {
   var j = 0;
   while ((i + j) < (conf.length + 1)) {
     t = t + '<a href=javascript:answerQuiz(' + (i + j) + ')>';
-    if ((i + j) === tmp.quizAnswer) {
-      t = t + (fact.a);
-      j = j + 1;
-    } else {
+    if ((i + j) - tmp.quizAnswer) {
       t = t + conf[i];
       i = i + 1;
+    } else {
+      t = t + (fact.a);
+      j = j + 1;
     }
     t = t + '</a><br>';
   }
@@ -823,11 +828,11 @@ function renderMenu(t) {
 
 function render() {
   var t = '';
-  if (tmp.mode === 1) {
+  if (!(tmp.mode - 1)) {
     t = renderQuiz(t);
-  } else if (tmp.mode === 3) {
+  } else if (!(tmp.mode - 3)) {
     t = renderReview(t);
-  } else if (tmp.mode === 4) {
+  } else if (!(tmp.mode - 4)) {
     t = renderQuizEnd(t);
   } else {
     t = renderMenu(t);
@@ -890,7 +895,7 @@ function loadHtml(h) {
       while (j < fs.length) {
         as = fs[j];
         as = String_split(as, '<' + '/h3>');
-        if (as.length === 2) {
+        if (!(as.length - 2)) {
           asq = as[0];
           asq = String_trim(asq);
           asa = as[1];
