@@ -9,6 +9,7 @@
   <meta name=referrer content=no-referrer>
   <meta http-equiv=x-dns-prefetch-control content=off>
   <meta name=color-scheme content='light dark'>
+<!-- -->
   <meta http-equiv='Content-Security-Policy' content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
 </head>
 <body><script>
@@ -38,23 +39,20 @@ function String_substring(th, from, to) {
 function removeAfter(s, t) {
   var i = s.indexOf(t);
   if (i >= 0) {
-    s = String_substring(s, 0, i);
+    s = String_substring(s, 0, i + t.length);
   }
   return s;
 }
 
-function writeHtml(text) {
+function writeHtm(text) {
   if (st.docClosed) {
-    var typ = 'html';
-    if (document.doctype && document.doctype.name) {
-      typ = document.doctype.name;
-    }
-
-    var before = '';
+    var h = '';
     if (document.documentElement && document.documentElement.innerHTML) {
-      before = removeAfter(document.documentElement.innerHTML, '<body>');
+      h = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
+      h = h + '</head>';
     }
-    document.write('<!DOCTYPE ' + typ + '><html lang=en>' + before + '<body>' + text + '<' + '/body></html>');
+    h = '<!DOCTYPE html><html lang=en>' + h + '<body>' + text + '<' + '/body><' + '/html>';
+    document.write(h);
     document.close();
   } else {
     document.write(text);
@@ -107,7 +105,7 @@ function render() {
   if (win) {
     h = h + 'You win!<br><a href="javascript:restart()">Play next level</a>';
   }
-  writeHtml(h);
+  writeHtm(h);
 }
 
 function move(last, next) {
