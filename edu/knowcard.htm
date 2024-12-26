@@ -615,16 +615,22 @@ function Object_keys(o) {
   }
 }
 
-function getRandom(n) {
+// JS1
+function getRandomBits(n) {
   var x = tmp.random;
-  if (!x) {
-    x = 1;
+  var i = n + 1;
+  while (i = i - 1) {
+    x = (((x >> 30) ^ (x >> 27)) & 1) ^ ((x & 1073741823) << 1);
   }
-  x = x ^ (x >> 7);
-  x = x ^ (x << 9);
-  x = (x ^ (x >> 13)) & 65535;
   tmp.random = x;
-  return x % n;
+  if (n > 31) {
+    n = 31;
+  }
+  return x & ((1 << n) - 1);
+}
+
+function getRandom(m) {
+  return getRandomBits(8) % m;
 }
 
 function indexAfter(haystack, needle, from) {
@@ -935,7 +941,12 @@ function init() {
   if (tmp.docClosed) {
     return 0;
   }
-  tmp.random = (new Date) % 65536;
+  tmp.random = (new Date) % 2147483648;
+  if (!tmp.random) {
+    tmp.random = 1;
+  }
+  getRandomBits(128);
+
   tmp.mode = 3;
   if (window.location.href.indexOf('#') > -1) {
     tmp.mode = 0;
