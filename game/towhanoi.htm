@@ -72,7 +72,7 @@ function render() {
   var rodj = st.rod[st.goal];
   var nj;
   var dj;
-  var win = rodj.length === st.disks;
+  var win = !(rodj.length - st.disks);
 
   while (st.rod.length > (i = i + 1)) {
     h = h + i + ': ';
@@ -86,7 +86,7 @@ function render() {
     }
     h = h + '<br>';
 
-    if (st.rod.length === (j = i + 1)) {
+    if (!(st.rod.length - (j = i + 1))) {
       j = 0;
     }
     rodj = st.rod[j];
