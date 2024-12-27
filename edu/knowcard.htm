@@ -651,7 +651,7 @@ function removeAfter(s, t) {
   return s;
 }
 
-function writeHtml(text) {
+function writeHtm(text) {
   if (tmp.docClosed) {
     var typ = 'html';
     if (document.doctype && document.doctype.name) {
@@ -837,7 +837,7 @@ function render() {
   if ((tmp.mode >= 2) && (tmp.mode <= 4)) {
     t = t + '<p><a href=javascript:modeMenu()>Return to menu</a>';
   }
-  writeHtml(t);
+  writeHtm(t);
 }
 
 function answerQuiz(i) {
@@ -866,7 +866,7 @@ function modeMenu() {
   render();
 }
 
-function loadHtml(h) {
+function loadHtm(h) {
   var confuse = new Object;
   var cards = new Object;
   h = removeAfter(h, '<script>');
@@ -935,7 +935,7 @@ function loadHtml(h) {
 }
 
 function loaded() {
-  loadHtml(document.documentElement.innerHTML);
+  loadHtm(document.documentElement.innerHTML);
   render();
 }
 
@@ -956,7 +956,7 @@ function init() {
   tmp.score = 0;
   tmp.i = 0;
 
-  writeHtml('processing in progress');
+  writeHtm('processing in progress');
   tmp.docClosed = 1;
   setTimeout(loaded, 0);
 }
