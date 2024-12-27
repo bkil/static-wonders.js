@@ -9,6 +9,7 @@
   <meta name=referrer content=no-referrer>
   <meta http-equiv=x-dns-prefetch-control content=off>
   <meta name=color-scheme content='light dark'>
+<!-- -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
 </head>
 <body>
@@ -643,7 +644,7 @@ function indexAfter(haystack, needle, from) {
   return i;
 }
 
-function removeAfter(s, t) {
+function removeStarting(s, t) {
   var i = s.indexOf(t);
   if (i >= 0) {
     s = String_substring(s, 0, i);
@@ -651,24 +652,24 @@ function removeAfter(s, t) {
   return s;
 }
 
+function removeAfter(s, t) {
+  return removeStarting(s, t) + t;
+}
+
 function writeHtm(text) {
   if (tmp.docClosed) {
-    var typ = 'html';
-    if (document.doctype && document.doctype.name) {
-      typ = document.doctype.name;
-    }
-
-    var before = '';
+    var h = '';
     if (document.documentElement && document.documentElement.innerHTML) {
-      before = removeAfter(document.documentElement.innerHTML, '<body>');
+      h = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
+      h = h + '</head>';
     }
-    document.write('<!DOCTYPE ' + typ + '><html lang=en>' + before + '<body>' + text + '<' + '/body></html>');
+    h = '<!DOCTYPE html><html lang=en>' + h + '<body>' + text + '<' + '/body><' + '/html>';
+    document.write(h);
     document.close();
   } else {
     document.write(text);
   }
-
-  if (window.f && (window.f.t && window.f.t.focus)) {
+  if (window.f && window.f.t && window.f.t.focus) {
     window.f.t.focus();
   }
 }
@@ -869,7 +870,7 @@ function modeMenu() {
 function loadHtm(h) {
   var confuse = new Object;
   var cards = new Object;
-  h = removeAfter(h, '<script>');
+  h = removeStarting(h, '<script>');
   var cs = String_split(h, '<' + 'h2>');
   var i = 1;
   var j;
@@ -886,7 +887,7 @@ function loadHtm(h) {
     fs = cs[i];
     fs = String_split(fs, '<' + 'h3>');
     if (fs.length > 1) {
-      topic = removeAfter(fs[0], '<' + '/h2>');
+      topic = removeStarting(fs[0], '<' + '/h2>');
       topic = String_trim(topic);
       j = 1;
       while (j < fs.length) {
