@@ -541,7 +541,7 @@ ES11
 
 <script>
 'use strict';
-var tmp = new Object;
+var st = new Object;
 var nl = String.fromCharCode(10);
 
 // JS1
@@ -620,12 +620,12 @@ function Object_keys(o) {
 
 // JS1
 function getRandomBits(n) {
-  var x = tmp.random;
+  var x = st.random;
   var i = n + 1;
   while (i = i - 1) {
     x = (((x >> 30) ^ (x >> 27)) & 1) ^ ((x & 1073741823) << 1);
   }
-  tmp.random = x;
+  st.random = x;
   if (n > 31) {
     n = 31;
   }
@@ -657,7 +657,7 @@ function removeAfter(s, t) {
 }
 
 function writeHtm(text) {
-  if (tmp.docClosed) {
+  if (st.docClosed) {
     var h = '';
     if (document.documentElement && document.documentElement.innerHTML) {
       h = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
@@ -679,15 +679,15 @@ function resetQuiz() {
   var j;
   var topic;
   var fact;
-  for (i in tmp.card) {
-    topic = tmp.card[i];
+  for (i in st.card) {
+    topic = st.card[i];
     for (j in topic) {
       fact = topic[j];
       fact.seen = 0;
     }
   }
-  tmp.score = 0;
-  tmp.quizRounds = 0;
+  st.score = 0;
+  st.quizRounds = 0;
 }
 
 function getRandomFact() {
@@ -695,19 +695,19 @@ function getRandomFact() {
   var j;
   var topic;
   var fact;
-  if (tmp.quizRounds >= tmp.factCount) {
+  if (st.quizRounds >= st.factCount) {
     resetQuiz();
   }
 
-  var n = getRandom(tmp.factCount - tmp.quizRounds);
-  for (i in tmp.card) {
-    topic = tmp.card[i];
+  var n = getRandom(st.factCount - st.quizRounds);
+  for (i in st.card) {
+    topic = st.card[i];
     for (j in topic) {
       fact = topic[j];
       if (!fact.seen) {
         if (!n) {
           fact.seen = 1;
-          tmp.quizRounds = tmp.quizRounds + 1;
+          st.quizRounds = st.quizRounds + 1;
           var a = new Array;
           a[0] = i;
           a[1] = j;
@@ -747,34 +747,34 @@ function getRandomElements(a, k, skip) {
 function renderQuiz(t) {
   var topic;
   var fact;
-  if (tmp.quizTopic && tmp.quizFact) {
-    topic = tmp.card[tmp.quizTopic];
-    fact = topic[tmp.quizFact];
-    if (tmp.quizSelect - tmp.quizAnswer) {
+  if (st.quizTopic && st.quizFact) {
+    topic = st.card[st.quizTopic];
+    fact = topic[st.quizFact];
+    if (st.quizSelect - st.quizAnswer) {
       t = t + '<' + 'h2>No</h2>';
       t = t +
-        tmp.quizTopic + ' ' + tmp.quizFact + ': ' + (fact.a) + '<p>';
+        st.quizTopic + ' ' + st.quizFact + ': ' + (fact.a) + '<p>';
     } else {
       t = t + '<' + 'h2>Yes</h2>';
-      tmp.score = tmp.score + 1;
+      st.score = st.score + 1;
     }
   }
 
   var a = getRandomFact();
-  topic = tmp.card[a[0]];
+  topic = st.card[a[0]];
   fact = topic[a[1]];
-  tmp.quizTopic = a[0];
-  tmp.quizFact = a[1];
+  st.quizTopic = a[0];
+  st.quizFact = a[1];
 
   t = t + '<' + 'h2>' + a[0] + '</h2><h3>' + a[1] + '?' + '</h3>';
-  var conf = tmp.confuse[a[1]];
+  var conf = st.confuse[a[1]];
   conf = getRandomElements(Object_keys(conf), 4, fact.a);
-  tmp.quizAnswer = getRandom(conf.length + 1);
+  st.quizAnswer = getRandom(conf.length + 1);
   var i = 0;
   var j = 0;
   while ((i + j) < (conf.length + 1)) {
     t = t + '<a href=javascript:answerQuiz(' + (i + j) + ')>';
-    if ((i + j) - tmp.quizAnswer) {
+    if ((i + j) - st.quizAnswer) {
       t = t + conf[i];
       i = i + 1;
     } else {
@@ -784,17 +784,17 @@ function renderQuiz(t) {
     t = t + '</a><br>';
   }
   t = t + '<p><a href=javascript:modeQuizEnd()>End quiz</a><br>';
-  tmp.quizSelect = -1;
+  st.quizSelect = -1;
   return t;
 }
 
 function renderQuizEnd(t) {
-  var r = tmp.quizRounds - 1;
+  var r = st.quizRounds - 1;
   if (r <= 1) {
     r = 1;
   }
-  var q = ((100 * tmp.score) / r) | 0;
-  t = t + '<' + 'h2>Score</h2>' + q + '% (' + tmp.score + ' of ' + r + ')';
+  var q = ((100 * st.score) / r) | 0;
+  t = t + '<' + 'h2>Score</h2>' + q + '% (' + st.score + ' of ' + r + ')';
   resetQuiz();
   return t;
 }
@@ -804,10 +804,10 @@ function renderReview(t) {
   var topic;
   var card;
   var q;
-  t = t + tmp.factCount + ' facts';
+  t = t + st.factCount + ' facts';
 
-  for (head in tmp.card) {
-    topic = tmp.card[head];
+  for (head in st.card) {
+    topic = st.card[head];
     for (q in topic) {
       card = topic[q];
       t = t + '<' + 'h2>' + head + '<br>' + q + '?' + '</h2>' + (card.a);
@@ -826,44 +826,44 @@ function renderMenu(t) {
 
 function render() {
   var t = '';
-  if (!(tmp.mode - 1)) {
+  if (!(st.mode - 1)) {
     t = renderQuiz(t);
-  } else if (!(tmp.mode - 3)) {
+  } else if (!(st.mode - 3)) {
     t = renderReview(t);
-  } else if (!(tmp.mode - 4)) {
+  } else if (!(st.mode - 4)) {
     t = renderQuizEnd(t);
   } else {
     t = renderMenu(t);
   }
-  if ((tmp.mode >= 2) && (tmp.mode <= 4)) {
+  if ((st.mode >= 2) && (st.mode <= 4)) {
     t = t + '<p><a href=javascript:modeMenu()>Return to menu</a>';
   }
   writeHtm(t);
 }
 
 function answerQuiz(i) {
-  tmp.quizSelect = i;
+  st.quizSelect = i;
   render();
 }
 
 function modeQuiz() {
-  tmp.mode = 1;
+  st.mode = 1;
   render();
 }
 
 function modeReview() {
-  tmp.mode = 3;
+  st.mode = 3;
   render();
 }
 
 function modeQuizEnd() {
-  tmp.mode = 4;
+  st.mode = 4;
   render();
 }
 
 function modeMenu() {
-  tmp.mode = 0;
-  tmp.quizTopic = 0;
+  st.mode = 0;
+  st.quizTopic = 0;
   render();
 }
 
@@ -930,9 +930,9 @@ function loadHtm(h) {
     i = i + 1;
   }
 
-  tmp.card = cards;
-  tmp.factCount = factCount;
-  tmp.confuse = confuse;
+  st.card = cards;
+  st.factCount = factCount;
+  st.confuse = confuse;
 }
 
 function loaded() {
@@ -941,24 +941,24 @@ function loaded() {
 }
 
 function init() {
-  tmp.random = (new Date) % 2147483648;
-  if (!tmp.random) {
-    tmp.random = 1;
+  st.random = (new Date) % 2147483648;
+  if (!st.random) {
+    st.random = 1;
   }
   getRandomBits(128);
 
-  tmp.mode = 3;
+  st.mode = 3;
   if (window.location.href.indexOf('#') > -1) {
-    tmp.mode = 0;
+    st.mode = 0;
   } else {
     window.location.href = window.location.href + '#';
   }
-  tmp.quizRounds = 0;
-  tmp.score = 0;
-  tmp.i = 0;
+  st.quizRounds = 0;
+  st.score = 0;
+  st.i = 0;
 
   writeHtm('processing in progress');
-  tmp.docClosed = 1;
+  st.docClosed = 1;
   setTimeout(loaded, 0);
 }
 
