@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Snowfall animation</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='Winter themed discrete particle simulation with ASCII-art visualization of snow falling inside a textbox via JavaScript0 on GemiWeb0' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=no-referrer>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta name=color-scheme content='light dark'>
+  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+<style>
+textarea {
+  display: block;
+}
+</style>
+</head>
+<body><h2
+>Explanation</h2
+>Winter themed discrete particle simulation with ASCII-art visualization of snow falling inside a textbox.<h2
+>Requirements</h2
+>You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
+><a target=_blank href=https://bkil.gitlab.io/gemiweb0
+>bkil.gitlab.io/gemiweb0</a
+><script>
+'use strict';
+var st = new Object;
+
+// JS1
+function getRandomBits(n) {
+  var b = st.random;
+  var i = n + 1;
+  while (i = i - 1) {
+    b = (((b >> 30) ^ (b >> 27)) & 1) ^ ((b & 1073741823) << 1);
+  }
+  st.random = b;
+  if (n > 31) {
+    n = 31;
+  }
+  return b & ((1 << n) - 1);
+}
+
+function reset() {
+  st.steps = 0;
+  var v = new Array;
+  var i = -1;
+  while (12 > (i = i + 1)) {
+    v[i] = 0;
+  }
+  st.v = v;
+}
+
+function animate(y) {
+  if (!st.alive) {
+    return 0;
+  }
+
+  var v = st.v;
+  var row = v.length;
+  var col = 32;
+  var b;
+  var i = row;
+  while ((i = i - 1) > 0) {
+    b = v[i];
+    v[i] = v[i] | v[i-1];
+    v[i-1] = v[i-1] & b;
+  }
+
+  b = 0;
+  var j = 1 << (col - 1);
+  while (j) {
+    if (!getRandomBits(3)) {
+      b = b | j;
+    }
+    j = j >>> 1;
+  }
+  v[0] = b;
+
+  var nl = String.fromCharCode(10);
+  var t = '';
+  i = -1;
+  while (row > (i = i + 1)) {
+    if (i) {
+      t = t + nl;
+    }
+    b = v[i];
+    j = 1 << (col - 1);
+    while (j) {
+      if (b & j) {
+        t = t + '.';
+      } else {
+        t = t + ' ';
+      }
+      j = j >>> 1;
+    }
+  }
+
+  if ((st.steps = st.steps + 1) > (4 * row)) {
+    reset();
+  }
+  window.f.t.value = t;
+  setTimeout(function() { y(y); }, 1000);
+}
+
+function start() {
+  if (st.alive) {
+    animate(animate);
+  }
+}
+
+function pause() {
+  st.alive = !st.alive;
+  start();
+}
+
+function init() {
+  st.random = (new Date) % 2147483648;
+  if (!st.random) {
+    st.random = 1;
+  }
+  getRandomBits(128);
+
+  st.alive = 1;
+  reset();
+}
+
+init();
+</script
+><form name=f action=javascript:pause()
+><textarea role=img rows=12 cols=33 name=t></textarea
+><input type=submit value=Pause
+></form
+><script>
+'use strict';
+start();
+</script
+></body></html>
