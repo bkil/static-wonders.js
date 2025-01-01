@@ -9,7 +9,7 @@
   <meta name=referrer content=no-referrer>
   <meta http-equiv=x-dns-prefetch-control content=off>
   <meta name=color-scheme content='light dark'>
-  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; font-src data: blob:; frame-src data: blob:; img-src data: blob:; manifest-src data: blob:; media-src data: blob:; style-src data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; img-src data: 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
 <style>
 textarea {
   display: block;
@@ -96,22 +96,11 @@ function animate(y) {
     }
   }
 
-  if ((st.steps = st.steps + 1) > (4 * row)) {
+  if ((st.steps = st.steps + 1) > (row << 2)) {
     reset();
   }
   window.f.t.value = t;
   setTimeout(function() { y(y); }, 1000);
-}
-
-function start() {
-  if (st.alive) {
-    animate(animate);
-  }
-}
-
-function pause() {
-  st.alive = !st.alive;
-  start();
 }
 
 function init() {
@@ -125,10 +114,22 @@ function init() {
   reset();
 }
 
+function start() {
+  if (st.alive) {
+    animate(animate);
+  }
+}
+
+function pause() {
+  st.alive = !st.alive;
+  start();
+}
+
 init();
 </script
 ><form name=f action=javascript:pause()
-><textarea role=img rows=12 cols=33 name=t></textarea
+><textarea name=t role=img rows=12 cols=33 readonly
+></textarea
 ><input type=submit value=Pause
 ></form
 ><script>
