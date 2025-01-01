@@ -25,6 +25,11 @@
 ><script>
 'use strict';
 
+// JS1
+function strEqual(u, v) {
+  return !(u.length - v.length) && !u.indexOf(v);
+}
+
 function run(r) {
   var a = 'X ';
   var b;
@@ -38,7 +43,7 @@ function run(r) {
     z = a.charAt(i = 1);
     while (a.length > (i = i + 1)) {
       x = y;
-      if ((((y = z) === (z = a.charAt(i))) || (y !== 'X')) && (x === y)) {
+      if ((strEqual(y = z, z = a.charAt(i)) || !strEqual(y, 'X')) && strEqual(x, y)) {
         b = b + ' ';
       } else {
         b = b + 'X';
