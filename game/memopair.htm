@@ -74,8 +74,9 @@ function writeHtm(text) {
     var h = '';
     if (document.documentElement && document.documentElement.innerHTML) {
       h = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
+      h = h + '</head>';
     }
-    h = '<!DOCTYPE html><html lang=en>' + h + '</head><body>' + text + '<' + '/body><' + '/html>';
+    h = '<!DOCTYPE html><html lang=en>' + h + '<body>' + text + '<' + '/body><' + '/html>';
     document.write(h);
     document.close();
   } else {
