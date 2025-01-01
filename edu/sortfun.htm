@@ -114,15 +114,15 @@ function writeHtm(text) {
 
 function escapeHtmChar(c) {
   var n = c.charCodeAt(0);
-  if (n === 34) {
+  if (!(n - 34)) {
     return '&' + 'quot;';
-  } else if (n === 38) {
+  } else if (!(n - 38)) {
     return '&' + 'amp;';
-  } else if (n === 39) {
+  } else if (!(n - 39)) {
     return '&' + 'apos;';
-  } else if (n === 60) {
+  } else if (!(n - 60)) {
     return '&' + 'lt;';
-  } else if (n === 62) {
+  } else if (!(n - 62)) {
     return '&' + 'gt;';
   } else {
     return c;
