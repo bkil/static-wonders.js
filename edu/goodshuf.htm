@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Shuffle goodness check</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='Using JavaScript0 on GemiWeb0' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=no-referrer>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta name=color-scheme content='light dark'>
+  <style>
+textarea {
+  display: block;
+  min-height: 5em;
+  height: 9em;
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+}
+input {
+  margin-right: 1em;
+}
+  </style>
+<!-- -->
+  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline' 'unsafe-eval'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+</head>
+<body
+><h2
+>Usage</h2
+>Swap permutation ascending sequence.<h2
+>Requirements</h2
+>You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
+><a target=_blank href=https://bkil.gitlab.io/gemiweb0
+>bkil.gitlab.io/gemiweb0</a
+><script>
+'use strict';
+var st = new Object;
+
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  } else {
+    var o = '';
+    var c;
+    if (to > th.length) {
+      to = th.length;
+    }
+    from = from - 1;
+    to = to - 1;
+    while (to > from) {
+      c = th.charAt(from = from + 1);
+      o = o + c;
+    }
+    return o;
+  }
+}
+
+function removeAfter(s, t) {
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, 0, i + t.length);
+  }
+  return s;
+}
+
+function writeHtm(text) {
+  if (st.docClosed) {
+    var h = '';
+    if (document.documentElement && document.documentElement.innerHTML) {
+      h = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
+      h = h + '</head>';
+    }
+    h = '<!DOCTYPE html><html lang=en>' + h + '<body>' + text + '<' + '/body><' + '/html>';
+    document.write(h);
+    document.close();
+  } else {
+    document.write(text);
+  }
+  if (window.f && window.f.t && window.f.t.focus) {
+    window.f.t.focus();
+  }
+}
+
+function escapeHtmChar(c) {
+  var n = c.charCodeAt(0);
+  if (!(n - 34)) {
+    return '&' + 'quot;';
+  } else if (!(n - 38)) {
+    return '&' + 'amp;';
+  } else if (!(n - 39)) {
+    return '&' + 'apos;';
+  } else if (!(n - 60)) {
+    return '&' + 'lt;';
+  } else if (!(n - 62)) {
+    return '&' + 'gt;';
+  } else {
+    return c;
+  }
+}
+
+function escapeHtm(s) {
+  var o = '';
+  var c;
+  var i = -1;
+  while (s.length > (i = i + 1)) {
+    c = escapeHtmChar(s.charAt(i));
+    o = o + c;
+  }
+  return o;
+}
+
+function replaceNl(s) {
+  var o = '';
+  var c;
+  var i = -1;
+  while (s.length > (i = i + 1)) {
+    if (s.charCodeAt(i) - 10) {
+      c = s.charAt(i);
+      o = o + c;
+    } else {
+      o = o + '<br>';
+    }
+  }
+  return o;
+}
+
+// JS1
+function getRandomBits(n) {
+  var x = st.random;
+  var i = n + 1;
+  while (i = i - 1) {
+    x = (((x >> 30) ^ (x >> 27)) & 1) ^ ((x & 1073741823) << 1);
+  }
+  st.random = x;
+  if (n > 31) {
+    n = 31;
+  }
+  return x & ((1 << n) - 1);
+}
+
+function getRandom(m) {
+  return getRandomBits(15) % m;
+}
+
+function getSequence() {
+  var v = new Array;
+  var i = -1;
+  while (52 > (i = i + 1)) {
+    v[i] = i + 1;
+  }
+  return v;
+}
+
+function swap(v, i, j) {
+  var x = v[i];
+  v[i] = v[j];
+  v[j] = x;
+}
+
+function printArray(o, v) {
+  var n = v.length;
+  if (n) {
+    o.h = o.h + v[0];
+  }
+  var i = 0;
+  while (n > (i = i + 1)) {
+    o.h = o.h + ' ' + v[i];
+  }
+}
+
+function printMetrics(o, v) {
+  printArray(o, v);
+  var metrics = o.metrics;
+  var metric;
+  var s = '';
+  var i;
+  for (i in metrics) {
+    if (s) {
+      s = s + ', ';
+    }
+    metric = metrics[i];
+    s = s + metric(v) + ' ' + i;
+  }
+  o.h = o.h + '<br>' + s;
+}
+
+function testMetrics(o, title, v) {
+  o.h = o.h + '<h2>' + title + '</h2>';
+  printMetrics(o, v);
+}
+
+function drawHistogram(o, v) {
+  var mn = -1;
+  var mx = -1;
+  var x;
+  var n = v.length;
+  var i = -1;
+  while (n > (i = i + 1)) {
+    x = v[i];
+    if (x > mx) {
+      mx = x;
+    }
+    if ((0 > mn) || (mn > x)) {
+      mn = x;
+    }
+  }
+
+  var bins = 9;
+  var col = 32;
+  var range = (mx - mn) + 1;
+  if (bins > range) {
+    bins = range;
+  }
+
+  var hist = new Array;
+  mx = -1;
+  var j;
+  i = -1;
+  while (n > (i = i + 1)) {
+    j = (((v[i] - mn) * bins) / range) | 0;
+    hist[j] = x = (hist[j] || 0) + 1;
+    if (x > mx) {
+      mx = x;
+    }
+  }
+
+  var s;
+  o.h = o.h + '<ul>';
+  i = -1;
+  while (bins > (i = i + 1)) {
+    j = ((((x = hist[i] || 0) * col) / mx) | 0) + 1;
+    x = x + '';
+    s = (range - ((((bins - i) * range) / bins) | 0)) + mn + '';
+    o.h = o.h + '<li>&gt;=' + s + ': ' + x;
+    if (j > 1) {
+      o.h = o.h + ' ';
+    }
+    while (j = j - 1) {
+      o.h = o.h + '.';
+    }
+    o.h = o.h + '</li>';
+  }
+  o.h = o.h + '</ul>';
+}
+
+function testShuffler(o, title, f) {
+  o.h = o.h + '<h2>' + title + '</h2>';
+
+  var metrics = o.metrics;
+  var metric;
+  var sample = new Object;
+  var v;
+  var w;
+  var j;
+  var i = -1;
+  while (32 > (i = i + 1)) {
+    f(v = getSequence());
+    if (!i) {
+      printMetrics(o, v);
+    }
+
+    for (j in metrics) {
+      w = sample[j];
+      if (!w) {
+        w = new Array;
+        sample[j] = w
+      }
+      metric = metrics[j];
+      w[i] = metric(v);
+    }
+  }
+
+  for (i in sample) {
+    o.h = o.h + '<h3>' + i + '</h3>';
+    drawHistogram(o, sample[i]);
+  }
+}
+
+function printErr(e, err) {
+  if (!e.length && e.stack) {
+    e = '' + e.stack;
+  } else {
+    e = '' + e;
+  }
+  e = replaceNl(escapeHtm(e));
+  err.h = err.h + '<h2>Exception</h2>' + e;
+}
+
+function getFun(t, err) {
+  try {
+    return eval(t);
+  } catch (e) {
+    printErr(e, err);
+  }
+}
+
+function run() {
+  var o = new Object;
+  o.h = '';
+  var t = window.f.t.value;
+  if (st.docClosed) {
+    o.h = o.h + '<form name=f action=javascript:run()><textarea name=t>' + escapeHtm(t) + '</' + 'textarea><input type=submit value=Run>Shuffle and metrics scripts<' + '/form>';
+  }
+  var err = new Object;
+  err.h = '';
+  var f = getFun(t, err);
+  o.h = o.h + err.h;
+  if (f) {
+    try {
+      f(o);
+    } catch (e) {
+      printErr(e, o);
+    }
+  }
+  writeHtm(o.h);
+}
+
+function init() {
+  st.random = (new Date) % 2147483648;
+  if (!st.random) {
+    st.random = 1;
+  }
+  getRandomBits(128);
+}
+
+function start() {
+  run();
+  st.docClosed = 1;
+}
+
+init();
+</script
+><form name=f action=javascript:run()
+><textarea name=t>'use strict';
+function sequentialChooseTriangleShuffle(v) {
+  var n = v.length;
+  var i = -1;
+  while (n > (i = i + 1)) {
+    swap(v, i, i + getRandom(n - i));
+  }
+}
+
+function sequentialChooseAnyShuffle(v) {
+  var n = v.length;
+  var i = -1;
+  while (n > (i = i + 1)) {
+    swap(v, i, getRandom(n));
+  }
+}
+
+function decideAllPairsShuffle(v) {
+  var n = v.length;
+  var j;
+  var i = -1;
+  while (n > (i = i + 1)) {
+    j = -1;
+    while (n > (j = j + 1)) {
+      if (getRandomBits(1)) {
+        swap(v, i, j);
+      }
+    }
+  }
+}
+
+function decideTriangleShuffle(v) {
+  var n = v.length;
+  var j;
+  var i = -1;
+  while (n > (i = i + 1)) {
+    j = i;
+    while (n > (j = j + 1)) {
+      if (getRandomBits(1)) {
+        swap(v, i, j);
+      }
+    }
+  }
+}
+
+function pickRandomPairsShuffle(v) {
+  var n = v.length;
+  var i = (n << 1) + 1;
+  while (i = i - 1) {
+    swap(v, getRandom(n), getRandom(n));
+  }
+}
+
+function risingMetric(v) {
+  var n = v.length;
+  var s = 0;
+  var old;
+  var next = 1;
+  var i;
+  while (n >= next) {
+    s = s + 1;
+    old = next;
+    i = -1;
+    while (n > (i = i + 1)) {
+      if (!(next - v[i])) {
+        next = next + 1;
+      }
+    }
+    if (!(old-next)) {
+      return -1;
+    }
+  }
+  return s;
+}
+
+function distanceMetric(v) {
+  var n = v.length;
+  var s = 0;
+  var d;
+  var i = -1;
+  while (n > (i = i + 1)) {
+    if (0 > (d = (i + 1) - v[i])) {
+      d = 0 - d;
+    }
+    s = s + d;
+  }
+  return (s / n) | 0;
+}
+
+function offsetMetric(v) {
+  var n = v.length;
+  var s = 0;
+  var d;
+  var i = -1;
+  while (n > (i = i + 1)) {
+    d = ((i + n + 1) - v[i]) % n;
+    s = s + d;
+  }
+  return (s / n) | 0;
+}
+
+function neighborMetric(v) {
+  var n = v.length;
+  var s = 0;
+  var i = 0;
+  while (n > (i = i + 1)) {
+    if (v[i-1] > v[i]) {
+      s = s + 1;
+    }
+  }
+  return s;
+}
+
+function inversionMetric(v) {
+  var n = v.length;
+  var s = 0;
+  var j;
+  var i = -1;
+  while (n > (i = i + 1)) {
+    j = -1;
+    while (n > (j = j + 1)) {
+      if ((v[i] > v[j]) ^ (i > j)) {
+        s = s + 1;
+      }
+    }
+  }
+  return (s / n) | 0;
+}
+
+function runTests(o) {
+  var m = new Object;
+  m.rising = risingMetric;
+  m.distance = distanceMetric;
+  m.offset = offsetMetric;
+  m.neighbors = neighborMetric;
+  m.inversion = inversionMetric;
+  o.metrics = m;
+
+  var v = getSequence();
+  var n = v.length;
+  swap(v, 0, n - 1);
+  testMetrics(o, 'Metrics of single swap', v);
+
+  var d = n >> 1;
+  var i = d;
+  while (i = i - 1) {
+    swap(v, i, n - 1 - i);
+  }
+  testMetrics(o, 'Metrics of reverse', v);
+
+  i = d >> 1;
+  while (i) {
+    swap(v, i = i - 1, d - 1 - i);
+  }
+  testMetrics(o, 'Metrics of half reversed', v);
+
+  v = getSequence();
+  i = n;
+  while (i) {
+    swap(v, i = i - 1, i = i - 1);
+  }
+  testMetrics(o, 'Metrics of swapped neighbors', v);
+
+  i = d;
+  while (i) {
+    swap(v, i = i - 1, n - 1 - (i = i - 1));
+  }
+  testMetrics(o, 'Metrics of reversed interspersed', v);
+
+  testShuffler(o, 'Shuffle decide for every pair', decideAllPairsShuffle);
+  testShuffler(o, 'Shuffle decide pairs under triangle', decideTriangleShuffle);
+  testShuffler(o, 'Shuffle sequentially choose any place', sequentialChooseAnyShuffle);
+  testShuffler(o, 'Shuffle sequentially choose under triangle', sequentialChooseTriangleShuffle);
+  testShuffler(o, 'Shuffle swap random pairs', pickRandomPairsShuffle);
+}
+
+runTests</textarea
+><input type=submit value=Run
+>Shuffle and metrics scripts</form
+><script>
+'use strict';
+start();
+</script
+></body></html>
