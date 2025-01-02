@@ -27,20 +27,6 @@ textarea {
 'use strict';
 var st = new Object;
 
-// JS1
-function getRandomBits(n) {
-  var b = st.random;
-  var i = n + 1;
-  while (i = i - 1) {
-    b = (((b >> 30) ^ (b >> 27)) & 1) ^ ((b & 1073741823) << 1);
-  }
-  st.random = b;
-  if (n > 31) {
-    n = 31;
-  }
-  return b & ((1 << n) - 1);
-}
-
 function reset() {
   st.steps = 0;
   var v = new Array;
@@ -51,16 +37,30 @@ function reset() {
   st.v = v;
 }
 
+// JS1
+function getRandomBits(n) {
+  var i = n + 1;
+  var b = st.random;
+  while (i = i - 1) {
+    b = (((b >> 30) ^ (b >> 27)) & 1) ^ ((b & 1073741823) << 1);
+  }
+  st.random = b;
+  if (n > 31) {
+    n = 31;
+  }
+  return b & ((1 << n) - 1);
+}
+
 function animate(y) {
   if (!st.alive) {
     return 0;
   }
 
-  var v = st.v;
-  var row = v.length;
+  var row;
   var col = 32;
   var b;
-  var i = row;
+  var v = st.v;
+  var i = row = v.length;
   while ((i = i - 1) > 0) {
     b = v[i];
     v[i] = v[i] | v[i-1];
