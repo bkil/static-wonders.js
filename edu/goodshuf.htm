@@ -2,9 +2,9 @@
 <html lang=en>
 <head>
   <meta charset=utf-8>
-  <title>Shuffle goodness check</title>
+  <title>Playing card shuffle goodness</title>
   <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
-  <meta property='og:description' content='Using JavaScript0 on GemiWeb0' name='description'>
+  <meta property='og:description' content='Monte Carlo simulations for comparing the efficiency of algorithms that may be executed manually without electronics for shuffling a deck of playing cards and for determining how well a shuffle was executed using JavaScript0 on GemiWeb0' name='description'>
   <meta name=viewport content='width=device-width, initial-scale=1'>
   <meta name=referrer content=no-referrer>
   <meta http-equiv=x-dns-prefetch-control content=off>
@@ -25,10 +25,39 @@ input {
 <!-- -->
   <meta http-equiv='Content-Security-Policy' content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline' 'unsafe-eval'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
 </head>
-<body
-><h2
->Usage</h2
->Swap permutation ascending sequence.<h2
+<body>
+<h2>Explanation</h2>
+Monte Carlo simulations for comparing the efficiency of algorithms that may be executed manually without electronics for shuffling a deck of playing cards and for determining how well a shuffle was executed. The starting vector contains the ascending sequence number 1..52. Please see the source code of each algorithm in the following text box for implementation details of each metric and shuffle algorithm. You can modify any argument or constant to see its effect after pressing the button. You can increase `o.samples` to make the plots smoother. References:
+<ul>
+<li><a target=_blank href="https://en.wikipedia.org/wiki/Shuffle#Research">en.wikipedia.org/wiki/Shuffle#Research</a></li>
+<li><a target=_blank href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#The_modern_algorithm">en.wikipedia.org/wiki/Fisher-Yates_shuffle#The_modern_algorithm</a></li>
+<li><a target=_blank href="https://en.wikipedia.org/wiki/Inversion_(discrete_mathematics)">en.wikipedia.org/wiki/Inversion_(discrete_mathematics)</a></li>
+<li><a target=_blank href="https://en.wikipedia.org/wiki/Cycles_and_fixed_points">en.wikipedia.org/wiki/Cycles_and_fixed_points</a></li>
+</ul>
+<h2>Shuffling algorithms</h2>
+Creates a random permutation by altering the order of elements within the sequence:
+<ul>
+<li>Fisher-Yates: well known and proven to produce an unbiased permutation on computers by optionally swapping each element by a random remaining element.</li>
+<li>Riffle pair swap: mimics the popular two-hand leafing motion. Splits the deck in half, interleaves the halves and randomly decide whether to swap each align pair or not.</li>
+<li>Riffle pick: a different model of the same motion. Splits the deck in half, and then picks randomly which half to take the next element from.</li>
+<li>Overhand: mimics the common hand motion of reversing small packets of random size by moving them from the top of the old deck to the top of the new deck.</li>
+<li>Coin split: assign each card to either the earlier or the later deck by a random coin flip. Shuffle each deck by the same algorithm. Concatenate the earlier deck with the later deck.</li>
+<li>Dice book: place each card inside a book in one of 36 slots decided by two dice throws. For example, after the page numbered twice the two throws concatenated: 2..132. Then go through each page in sequence and add each card to the output which was alone on their page. Collect all remaining cards to a separate deck and shuffle by the same algorithm.</li>
+<li>Wandering dice: arrange all cards in a pseudo-grid. Hold onto the first one. Throw the dice twice and use them as coordinates towards the right and below (modulo) of the empty place to pick a card to place into the empty place. Repeat as many times as required. Finally place the card you hold to the empty place.</li>
+</ul>
+<h2>Metrics</h2>
+Each metric estimates on a different scale how much the vector is different from the ascending sequence:
+<ul>
+<li>Rising: the number of rising subsequences within the sequence, each is a maximal disjoint subset whose elements are in sequence.</li>
+<li>Neighbor swap: the number of neighboring elements which are out of order.</li>
+<li>Neighbor offset: the average of modulo offset that is added to an element and its neighbor (or second neighbor, respectively).</li>
+<li>Neighbors near: the number of elements for which 1 or 2 needs to be added (or subtracted) to arrive at its neighbor</li>
+<li>Orbital cycles: the number of distinct cycles that result from determining the fixed point at each element. The value of an element will determine the index to look up next in an orbit until a loop is found.</li>
+<li>Distance: the average of the distance from the location of a value to its location in the ascending sequence.</li>
+<li>Offset: the average of the module offset to add to the original location of a value in the ascending sequence to arrive at its present location.</li>
+<li>Inversion: the inversion number of the permutation (the number of pairs of elements which are out of order to each other) divided by the number of elements.</li>
+</ul>
+<h2
 >Requirements</h2
 >You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
 ><a target=_blank href=https://bkil.gitlab.io/gemiweb0
@@ -77,9 +106,6 @@ function writeHtm(text) {
     document.close();
   } else {
     document.write(text);
-  }
-  if (window.f && window.f.t && window.f.t.focus) {
-    window.f.t.focus();
   }
 }
 
@@ -140,8 +166,22 @@ function getRandomBits(n) {
   return x & ((1 << n) - 1);
 }
 
-function getRandom(m) {
-  return getRandomBits(15) % m;
+//  Lemire, Daniel (23 February 2019). "Fast Random Integer Generation in an Interval". ACM Transactions on Modeling and Computer Simulation. 29 (1): 1–12. arXiv:1805.10941. doi:10.1145/3230636. S2CID 44061046.
+function getRandom2(s, L) {
+  var t;
+  var p2L = 1 << L;
+  var p2L1 = p2L - 1;
+  var m = getRandomBits(L) * s;
+  if (s > (m & p2L1)) {
+    t = (p2L - s) % s;
+    while (t > ((m = getRandomBits(L) * s) & p2L1)) {
+    }
+  }
+  return m >> L;
+}
+
+function getRandom(s) {
+  return getRandom2(s, 8);
 }
 
 function getSequence() {
@@ -181,6 +221,9 @@ function printMetrics(o, v) {
       s = s + ', ';
     }
     metric = metrics[i];
+    if (o.seed) {
+      st.random = o.seed;
+    }
     s = s + metric(v) + ' ' + i;
   }
   o.h = o.h + '<br>' + s;
@@ -209,45 +252,66 @@ function drawHistogram(o, v) {
 
   var bins = 9;
   var col = 32;
+
   var range = (mx - mn) + 1;
-  if (bins > range) {
+  var div = 1;
+  if (bins >= range) {
     bins = range;
+  } else {
+    div = (((range + bins) - 1) / bins) | 0;
+    bins = (((range + div) - 1) / div) | 0;
+  }
+  var lastMod = range % div;
+  if (!lastMod) {
+    lastMod = div;
   }
 
   var hist = new Array;
-  mx = -1;
+  var vmx = -1;
   var j;
   i = -1;
   while (n > (i = i + 1)) {
-    j = (((v[i] - mn) * bins) / range) | 0;
+    j = ((v[i] - mn) / div) | 0;
     hist[j] = x = (hist[j] || 0) + 1;
-    if (x > mx) {
-      mx = x;
+    if (j >= (bins - 1)) {
+      x = ((x * div) / lastMod) | 0;
+    }
+    if (x > vmx) {
+      vmx = x;
     }
   }
 
-  var s;
+  var mark = mn;
+  var nmark = '';
   o.h = o.h + '<ul>';
   i = -1;
   while (bins > (i = i + 1)) {
-    j = ((((x = hist[i] || 0) * col) / mx) | 0) + 1;
-    x = x + '';
-    s = (range - ((((bins - i) * range) / bins) | 0)) + mn + '';
-    o.h = o.h + '<li>&gt;=' + s + ': ' + x;
+    j = x = hist[i] || 0;
+    if (div > 1) {
+      if (i >= (bins - 1)) {
+        j = ((x * div) / lastMod) | 0;
+        nmark = mx;
+      } else {
+        nmark = (mark + div) - 1;
+      }
+      nmark = '..' + nmark;
+    }
+    j = (((j * col) / vmx) | 0) + 1;
+    o.h = o.h + '<li>' + mark + nmark + ': ';
+    mark = mark + div;
     if (j > 1) {
+      while (j = j - 1) {
+        o.h = o.h + '.';
+      }
       o.h = o.h + ' ';
     }
-    while (j = j - 1) {
-      o.h = o.h + '.';
-    }
-    o.h = o.h + '</li>';
+    o.h = o.h + x + '</li>';
   }
   o.h = o.h + '</ul>';
 }
 
 function testShuffler(o, title, f) {
   o.h = o.h + '<h2>' + title + '</h2>';
-
   var metrics = o.metrics;
   var metric;
   var sample = new Object;
@@ -255,8 +319,14 @@ function testShuffler(o, title, f) {
   var w;
   var j;
   var i = -1;
-  while (32 > (i = i + 1)) {
+  var rand = o.seed;
+  while (o.samples > (i = i + 1)) {
+    if (rand) {
+      st.random = rand;
+    }
     f(v = getSequence());
+    rand = st.random;
+
     if (!i) {
       printMetrics(o, v);
     }
@@ -268,6 +338,9 @@ function testShuffler(o, title, f) {
         sample[j] = w
       }
       metric = metrics[j];
+      if (o.seed) {
+        st.random = o.seed;
+      }
       w[i] = metric(v);
     }
   }
@@ -288,7 +361,7 @@ function printErr(e, err) {
   err.h = err.h + '<h2>Exception</h2>' + e;
 }
 
-function getFun(t, err) {
+function tryEval(t, err) {
   try {
     return eval(t);
   } catch (e) {
@@ -305,14 +378,18 @@ function run() {
   }
   var err = new Object;
   err.h = '';
-  var f = getFun(t, err);
+  var tester = tryEval(t, err);
   o.h = o.h + err.h;
-  if (f) {
+  if (tester) {
     try {
-      f(o);
+      o.samples = tester.samples || 42;
+      o.seed = tester.seed;
+      tester.run(o);
     } catch (e) {
       printErr(e, o);
     }
+  } else {
+    o.h = o.h + '<h2>Error</h2>The script must return an object containing a member `result.run(state)`';
   }
   writeHtm(o.h);
 }
@@ -334,55 +411,196 @@ init();
 </script
 ><form name=f action=javascript:run()
 ><textarea name=t>'use strict';
-function sequentialChooseTriangleShuffle(v) {
+function fisherYatesShuffle(v) {
   var n = v.length;
+  var m = n - 1;
   var i = -1;
-  while (n > (i = i + 1)) {
+  while (m > (i = i + 1)) {
     swap(v, i, i + getRandom(n - i));
   }
 }
 
-function sequentialChooseAnyShuffle(v) {
+function intersperseFaroHalves(v) {
   var n = v.length;
+  var d = n >> 1;
+  var w = new Array;
   var i = -1;
   while (n > (i = i + 1)) {
-    swap(v, i, getRandom(n));
+    w[i] = v[i];
+  }
+  i = -1;
+  while (d > (i = i + 1)) {
+    v[i << 1] = w[i];
+    v[(i << 1) + 1] = w[i + d];
   }
 }
 
-function decideAllPairsShuffle(v) {
+function rifflePairSwapShuffle(v) {
   var n = v.length;
-  var j;
-  var i = -1;
-  while (n > (i = i + 1)) {
-    j = -1;
-    while (n > (j = j + 1)) {
-      if (getRandomBits(1)) {
-        swap(v, i, j);
-      }
+  intersperseFaroHalves(v);
+  var i = -2;
+  while (n > (i = i + 2)) {
+    if (getRandomBits(1)) {
+      swap(v, i, i + 1);
     }
   }
 }
 
-function decideTriangleShuffle(v) {
+function rifflePairSwap6Shuffle(v) {
+  var i = 7;
+  while (i = i - 1) {
+    rifflePairSwapShuffle(v);
+  }
+}
+
+function rifflePickShuffle(v) {
   var n = v.length;
-  var j;
+  var m = n >> 1;
+  var u = new Array;
+  var j = -1;
+  var w = new Array;
+  var k = -1;
+
+  var i = -1;
+  while (m > (i = i + 1)) {
+    u[j = j + 1] = v[i];
+    w[k = k + 1] = v[i + m];
+  }
+  m = j;
+  var q = k;
+  j = -1;
+  k = -1;
+
   var i = -1;
   while (n > (i = i + 1)) {
-    j = i;
-    while (n > (j = j + 1)) {
-      if (getRandomBits(1)) {
-        swap(v, i, j);
-      }
+    if ((k >= q) || ((m > j) && getRandomBits(1))) {
+      v[i] = u[j = j + 1];
+    } else {
+      v[i] = w[k = k + 1];
     }
   }
 }
 
-function pickRandomPairsShuffle(v) {
+function rifflePick6Shuffle(v) {
+  var i = 7;
+  while (i = i - 1) {
+    rifflePickShuffle(v);
+  }
+}
+
+function overhandShuffle(v) {
+  var n = v.length;
+  var w = new Array;
+  var i = -1;
+  while (n > (i = i + 1)) {
+    w[i] = v[i];
+  }
+  var p = 6;
+  var j;
+  var k;
+  var nm = n - 1;
+  i = -1;
+  while (nm > i) {
+    if ((i + (k = getRandom(p) + 1)) >= n) {
+      k = n - i;
+    }
+    j = nm - i - k;
+    while (k = k - 1) {
+      v[j = j + 1] = w[i = i + 1];
+    }
+  }
+}
+
+function overhand6Shuffle(v) {
+  var i = 7;
+  while (i = i - 1) {
+    overhandShuffle(v);
+  }
+}
+
+function wanderingDiceShuffle(v) {
   var n = v.length;
   var i = (n << 1) + 1;
+  var j = 0;
+  var k;
   while (i = i - 1) {
-    swap(v, getRandom(n), getRandom(n));
+    swap(v, j, k = (j + getRandom(36)) % n);
+    j = k;
+  }
+}
+
+function coinSplitShuffle0(y, v) {
+  var n = v.length;
+  if (2 > n) {
+    return 0;
+  }
+  var u = new Array;
+  var w = new Array;
+  var i = -1;
+  var j = -1;
+  var k = -1;
+  while (n > (i = i + 1)) {
+    if (getRandomBits(1)) {
+      u[j = j + 1] = v[i];
+    } else {
+      w[k = k + 1] = v[i];
+    }
+  }
+  y(y, u);
+  y(y, w);
+  i = -1;
+
+  n = u.length;
+  j = -1;
+  while (n > (j = j + 1)) {
+    v[i = i + 1] = u[j];
+  }
+
+  n = w.length;
+  k = -1;
+  while (n > (k = k + 1)) {
+    v[i = i + 1] = w[k];
+  }
+}
+
+function coinSplitShuffle(v) {
+  coinSplitShuffle0(coinSplitShuffle0, v);
+}
+
+function diceBookShuffle(v) {
+  var n = v.length;
+  var out = -1;
+  var todo = new Array;
+  var todos = 0;
+  var bins = new Array;
+  var bin;
+  bins[0] = v;
+  var i;
+  var j;
+  while (1) {
+    i = -1;
+    while (36 > (i = i + 1)) {
+      if (bin = bins[i]) {
+        if (bin.length - 1) {
+          j = -1;
+          while (bin.length > (j = j + 1)) {
+            todo[todos] = bin[j];
+            todos = todos + 1;
+          }
+        } else {
+          v[out = out + 1] = bin[0];
+        }
+      }
+      bins[i] = new Array;
+    }
+    if (!todos) {
+      return 0;
+    }
+
+    while (todos) {
+      bin = bins[getRandom(36)];
+      bin[bin.length] = todo[todos = todos - 1];
+    }
   }
 }
 
@@ -425,21 +643,74 @@ function distanceMetric(v) {
 function offsetMetric(v) {
   var n = v.length;
   var s = 0;
-  var d;
   var i = -1;
   while (n > (i = i + 1)) {
-    d = ((i + n + 1) - v[i]) % n;
-    s = s + d;
+    s = s + (((i + n + 1) - v[i]) % n);
   }
   return (s / n) | 0;
 }
 
-function neighborMetric(v) {
+function neighborSwapMetric(v) {
   var n = v.length;
   var s = 0;
   var i = 0;
   while (n > (i = i + 1)) {
     if (v[i-1] > v[i]) {
+      s = s + 1;
+    }
+  }
+  return s;
+}
+
+function neighborOffsetMetric(v) {
+  var n = v.length;
+  var s = 0;
+  var i = 0;
+  while (n > (i = i + 1)) {
+    s = s + ((n + (v[i] - v[i-1])) % n);
+  }
+  return (s / (n - 1)) | 0;
+}
+
+function neighbor2OffsetMetric(v) {
+  var n = v.length;
+  var s = 0;
+  var i = 1;
+  while (n > (i = i + 1)) {
+    s = s + ((n + (v[i] - v[i-2])) % n);
+  }
+  return (s / (n - 2)) | 0;
+}
+
+function neighborNearMetric(v) {
+  var n = v.length;
+  var s = 0;
+  var d;
+  var i = 0;
+  while (n > (i = i + 1)) {
+    d = v[i] - v[i-1];
+    if (0 > d) {
+      d = 0 - d;
+    }
+    if (3 > d) {
+      s = s + 1;
+    }
+  }
+  return s;
+}
+
+function orbitalCyclesMetric(v) {
+  var n = v.length;
+  var s = 0;
+  var path = new Array;
+  var j;
+  var i = -1;
+  while (n > (i = i + 1)) {
+    if (!path[j = i]) {
+      while (!path[j]) {
+        path[j] = 1;
+        j = v[i] - 1;
+      }
       s = s + 1;
     }
   }
@@ -465,13 +736,30 @@ function inversionMetric(v) {
 function runTests(o) {
   var m = new Object;
   m.rising = risingMetric;
+  m.neighborSwap = neighborSwapMetric;
+  m.neighborOffset= neighborOffsetMetric;
+  m.neighbor2Offset = neighbor2OffsetMetric;
+  m.neighborNear = neighborNearMetric;
+  m.orbitalCycles = orbitalCyclesMetric;
   m.distance = distanceMetric;
   m.offset = offsetMetric;
-  m.neighbors = neighborMetric;
   m.inversion = inversionMetric;
   o.metrics = m;
 
+  testShuffler(o, 'Fisher-Yates shuffle', fisherYatesShuffle);
+  testShuffler(o, 'Riffle pair swap shuffle', rifflePairSwapShuffle);
+  testShuffler(o, 'Riffle pair swap shuffle 6 times', rifflePairSwap6Shuffle);
+  testShuffler(o, 'Riffle pick shuffle', rifflePickShuffle);
+  testShuffler(o, 'Riffle pick shuffle 6 times', rifflePick6Shuffle);
+  testShuffler(o, 'Overhand shuffle', overhandShuffle);
+  testShuffler(o, 'Overhand shuffle 6 times', overhand6Shuffle);
+  testShuffler(o, 'Coin split shuffle', coinSplitShuffle);
+  testShuffler(o, 'Dice book shuffle', diceBookShuffle);
+  testShuffler(o, 'Wandering dice shuffle', wanderingDiceShuffle);
+
   var v = getSequence();
+  testMetrics(o, 'Metrics of sequence', v);
+
   var n = v.length;
   swap(v, 0, n - 1);
   testMetrics(o, 'Metrics of single swap', v);
@@ -490,6 +778,13 @@ function runTests(o) {
   testMetrics(o, 'Metrics of half reversed', v);
 
   v = getSequence();
+  i = d;
+  while (i) {
+    swap(v, i = i - 1, i + d);
+  }
+  testMetrics(o, 'Metrics of halves swapped', v);
+
+  v = getSequence();
   i = n;
   while (i) {
     swap(v, i = i - 1, i = i - 1);
@@ -502,14 +797,20 @@ function runTests(o) {
   }
   testMetrics(o, 'Metrics of reversed interspersed', v);
 
-  testShuffler(o, 'Shuffle decide for every pair', decideAllPairsShuffle);
-  testShuffler(o, 'Shuffle decide pairs under triangle', decideTriangleShuffle);
-  testShuffler(o, 'Shuffle sequentially choose any place', sequentialChooseAnyShuffle);
-  testShuffler(o, 'Shuffle sequentially choose under triangle', sequentialChooseTriangleShuffle);
-  testShuffler(o, 'Shuffle swap random pairs', pickRandomPairsShuffle);
+  v = getSequence();
+  intersperseFaroHalves(v);
+  testMetrics(o, 'Metrics of halves interspersed', v);
 }
 
-runTests</textarea
+function tester() {
+  var o = new Object;
+  o.samples = 16;
+  o.seed = 0;
+  o.run = runTests;
+  return o;
+}
+
+tester();</textarea
 ><input type=submit value=Run
 >Shuffle and metrics scripts</form
 ><script>
