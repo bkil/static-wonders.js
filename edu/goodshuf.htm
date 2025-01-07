@@ -27,7 +27,9 @@ input {
 </head>
 <body>
 <h2>Explanation</h2>
-Monte Carlo simulations for comparing the efficiency of algorithms that may be executed manually without electronics for shuffling a deck of playing cards and for determining how well a shuffle was executed. The starting vector contains the ascending sequence number 1..52. Please see the source code of each algorithm in the following text box for implementation details of each metric and shuffle algorithm. You can modify any argument or constant to see its effect after pressing the button. You can increase `o.samples` to make the plots smoother. References:
+Monte Carlo simulations for comparing the efficiency of algorithms that may be executed manually without electronics for shuffling a deck of playing cards and for determining how well a shuffle was executed. The starting vector contains the ascending sequence numbered 1..52.
+<p>
+Please see the source code of each algorithm in the following text box for implementation details of each metric and shuffle algorithm. You can modify any argument or constant to see its effect after pressing the `Run` button. You can pick a deterministic random seed (`o.seed`), change the number of cards in a deck (`o.cards`), adjust the dimensions of a chart (`o.columns` and `o.bins`) or increase `o.samples` to trade off variance for speed. References:
 <ul>
 <li><a target=_blank href="https://en.wikipedia.org/wiki/Shuffle#Research">en.wikipedia.org/wiki/Shuffle#Research</a></li>
 <li><a target=_blank href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#The_modern_algorithm">en.wikipedia.org/wiki/Fisher-Yates_shuffle#The_modern_algorithm</a></li>
@@ -166,7 +168,7 @@ function getRandomBits(n) {
   return x & ((1 << n) - 1);
 }
 
-//  Lemire, Daniel (23 February 2019). "Fast Random Integer Generation in an Interval". ACM Transactions on Modeling and Computer Simulation. 29 (1): 1–12. arXiv:1805.10941. doi:10.1145/3230636. S2CID 44061046.
+// Lemire, Daniel (23 February 2019). "Fast Random Integer Generation in an Interval". ACM Transactions on Modeling and Computer Simulation. 29 (1): 1–12. arXiv:1805.10941. doi:10.1145/3230636. S2CID 44061046.
 function getRandom2(s, L) {
   var t;
   var p2L = 1 << L;
@@ -184,10 +186,11 @@ function getRandom(s) {
   return getRandom2(s, 8);
 }
 
-function getSequence() {
+function getSequence(o) {
+  var n = o.cards;
   var v = new Array;
   var i = -1;
-  while (52 > (i = i + 1)) {
+  while (n > (i = i + 1)) {
     v[i] = i + 1;
   }
   return v;
@@ -250,8 +253,8 @@ function drawHistogram(o, v) {
     }
   }
 
-  var bins = 9;
-  var col = 32;
+  var bins = o.bins;
+  var col = o.columns;
 
   var range = (mx - mn) + 1;
   var div = 1;
@@ -324,7 +327,7 @@ function testShuffler(o, title, f) {
     if (rand) {
       st.random = rand;
     }
-    f(v = getSequence());
+    f(v = getSequence(o));
     rand = st.random;
 
     if (!i) {
@@ -378,18 +381,24 @@ function run() {
   }
   var err = new Object;
   err.h = '';
-  var tester = tryEval(t, err);
+  var p = tryEval(t, err);
   o.h = o.h + err.h;
-  if (tester) {
-    try {
-      o.samples = tester.samples || 42;
-      o.seed = tester.seed;
-      tester.run(o);
-    } catch (e) {
-      printErr(e, o);
+  try {
+    if (p && (p.cards > 3) && (53 > p.cards) &&
+      (p.bins > 1) && (53 >= p.bins) &&
+      (p.columns > 1) && (129 > p.columns) &&
+      (p.samples > 0) && (1001 > p.samples)) {
+      o.seed = p.seed;
+      o.bins = p.bins;
+      o.columns = p.columns;
+      o.cards = (p.cards >> 2) << 2;
+      o.samples = p.samples;
+      p.run(o);
+    } else {
+      o.h = o.h + '<h2>Error</h2>The script must return an object containing member `run()` and optionally `cards` (4..52), `bins` (2..52), `seed` (>=0), `columns` (2..128), `samples` (1..1000)';
     }
-  } else {
-    o.h = o.h + '<h2>Error</h2>The script must return an object containing a member `result.run(state)`';
+  } catch (e) {
+    printErr(e, o);
   }
   writeHtm(o.h);
 }
@@ -403,7 +412,11 @@ function init() {
 }
 
 function start() {
-  run();
+  if (0 > window.location.href.indexOf('#')) {
+    window.location.href = window.location.href + '#';
+  } else {
+    run();
+  }
   st.docClosed = 1;
 }
 
@@ -757,7 +770,7 @@ function runTests(o) {
   testShuffler(o, 'Dice book shuffle', diceBookShuffle);
   testShuffler(o, 'Wandering dice shuffle', wanderingDiceShuffle);
 
-  var v = getSequence();
+  var v = getSequence(o);
   testMetrics(o, 'Metrics of sequence', v);
 
   var n = v.length;
@@ -777,14 +790,14 @@ function runTests(o) {
   }
   testMetrics(o, 'Metrics of half reversed', v);
 
-  v = getSequence();
+  v = getSequence(o);
   i = d;
   while (i) {
     swap(v, i = i - 1, i + d);
   }
   testMetrics(o, 'Metrics of halves swapped', v);
 
-  v = getSequence();
+  v = getSequence(o);
   i = n;
   while (i) {
     swap(v, i = i - 1, i = i - 1);
@@ -797,15 +810,18 @@ function runTests(o) {
   }
   testMetrics(o, 'Metrics of reversed interspersed', v);
 
-  v = getSequence();
+  v = getSequence(o);
   intersperseFaroHalves(v);
   testMetrics(o, 'Metrics of halves interspersed', v);
 }
 
 function tester() {
   var o = new Object;
-  o.samples = 16;
   o.seed = 0;
+  o.bins = 9;
+  o.columns = 32;
+  o.cards = 52;
+  o.samples = 100;
   o.run = runTests;
   return o;
 }
