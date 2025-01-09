@@ -40,12 +40,12 @@ Please see the source code of each algorithm in the following text box for imple
 Creates a random permutation by altering the order of elements within the sequence:
 <ul>
 <li>Fisher-Yates: well known and proven to produce an unbiased permutation on computers by optionally swapping each element by a random remaining element.</li>
-<li>Riffle pair swap: mimics the popular two-hand leafing motion. Splits the deck in half, interleaves the halves and randomly decide whether to swap each align pair or not.</li>
+<li>Riffle pair swap: mimics the popular two-hand leafing motion. Splits the deck in half, interleaves the halves and randomly decide whether to swap each aligned pair or not.</li>
 <li>Riffle pick: a different model of the same motion. Splits the deck in half, and then picks randomly which half to take the next element from.</li>
 <li>Overhand: mimics the common hand motion of reversing small packets of random size by moving them from the top of the old deck to the top of the new deck.</li>
 <li>Coin split: assign each card to either the earlier or the later deck by a random coin flip. Shuffle each deck by the same algorithm. Concatenate the earlier deck with the later deck.</li>
-<li>Dice book: place each card inside a book in one of 36 slots decided by two dice throws. For example, after the page numbered twice the two throws concatenated: 2..132. Then go through each page in sequence and add each card to the output which was alone on their page. Collect all remaining cards to a separate deck and shuffle by the same algorithm.</li>
-<li>Wandering dice: arrange all cards in a pseudo-grid. Hold onto the first one. Throw the dice twice and use them as coordinates towards the right and below (modulo) of the empty place to pick a card to place into the empty place. Repeat as many times as required. Finally place the card you hold to the empty place.</li>
+<li>Dice book: place each card inside a book in one of 36 slots decided by two dice throws. For example, after the page numbered twice the two throws concatenated: 22..132. Then go through each page in sequence and add each card to the output which was alone on their page. Collect all remaining cards to a separate deck and shuffle by the same algorithm.</li>
+<li>Wandering dice: arrange all cards in a pseudo-grid. Hold onto the first one. Throw the dice twice and use them as coordinates towards the right and below (modulo) of the empty place to pick a card to place into the empty place from. Repeat as many times as required, preferably at least twice the number of cards. Finally place the card you hold to the empty place.</li>
 </ul>
 <h2>Metrics</h2>
 Each metric estimates on a different scale how much the vector is different from the ascending sequence:
@@ -56,7 +56,7 @@ Each metric estimates on a different scale how much the vector is different from
 <li>Neighbors near: the number of elements for which 1 or 2 needs to be added (or subtracted) to arrive at its neighbor</li>
 <li>Orbital cycles: the number of distinct cycles that result from determining the fixed point at each element. The value of an element will determine the index to look up next in an orbit until a loop is found.</li>
 <li>Distance: the average of the distance from the location of a value to its location in the ascending sequence.</li>
-<li>Offset: the average of the module offset to add to the original location of a value in the ascending sequence to arrive at its present location.</li>
+<li>Offset: the average of the modulo offset to add to the original location of a value in the ascending sequence to arrive at its present location.</li>
 <li>Inversion: the inversion number of the permutation (the number of pairs of elements which are out of order to each other) divided by the number of elements.</li>
 </ul>
 <h2
@@ -443,8 +443,8 @@ function intersperseFaroHalves(v) {
   }
   i = -1;
   while (d > (i = i + 1)) {
-    v[i << 1] = w[i];
-    v[(i << 1) + 1] = w[i + d];
+    v[i + i] = w[i];
+    v[i + i + 1] = w[i + d];
   }
 }
 
@@ -533,7 +533,7 @@ function overhand6Shuffle(v) {
 
 function wanderingDiceShuffle(v) {
   var n = v.length;
-  var i = (n << 1) + 1;
+  var i = n + n + 1;
   var j = 0;
   var k;
   while (i = i - 1) {
