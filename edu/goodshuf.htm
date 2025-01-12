@@ -35,6 +35,7 @@ Please see the source code of each algorithm in the following text box for imple
 <li><a target=_blank href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#The_modern_algorithm">en.wikipedia.org/wiki/Fisher-Yates_shuffle#The_modern_algorithm</a></li>
 <li><a target=_blank href="https://en.wikipedia.org/wiki/Inversion_(discrete_mathematics)">en.wikipedia.org/wiki/Inversion_(discrete_mathematics)</a></li>
 <li><a target=_blank href="https://en.wikipedia.org/wiki/Cycles_and_fixed_points">en.wikipedia.org/wiki/Cycles_and_fixed_points</a></li>
+<li><a target=_blank href="https://www.stat.berkeley.edu/~aldous/157/Papers/bayer_diaconis.pdf">Dave Bayer and Persi Diaconis. Trailing the dovetail shuffle to its lair. The Annals of Applied Probability, 2(2):294–313, 1992.</a></li>
 </ul>
 <h2>Shuffling algorithms</h2>
 Creates a random permutation by altering the order of elements within the sequence:
@@ -42,6 +43,8 @@ Creates a random permutation by altering the order of elements within the sequen
 <li>Fisher-Yates: well known and proven to produce an unbiased permutation on computers by optionally swapping each element by a random remaining element.</li>
 <li>Riffle pair swap: mimics the popular two-hand leafing motion. Splits the deck in half, interleaves the halves and randomly decide whether to swap each aligned pair or not.</li>
 <li>Riffle pick: a different model of the same motion. Splits the deck in half, and then picks randomly which half to take the next element from.</li>
+<li>Gilbert-Shannon-Reeds riffle: an unbiased version that applies a binomial split to the deck and makes each pick in proportion to the number of cards remaining in each deck.</li>
+<li>Inverse riffle: assign each card to one of two decks based on a coin flip and concatenate the decks.</li>
 <li>Overhand: mimics the common hand motion of reversing small packets of random size by moving them from the top of the old deck to the top of the new deck.</li>
 <li>Coin split: assign each card to either the earlier or the later deck by a random coin flip. Shuffle each deck by the same algorithm. Concatenate the earlier deck with the later deck.</li>
 <li>Dice book: place each card inside a book in one of 36 slots decided by two dice throws. For example, after the page numbered twice the two throws concatenated: 22..132. Then go through each page in sequence and add each card to the output which was alone on their page. Collect all remaining cards to a separate deck and shuffle by the same algorithm.</li>
@@ -58,6 +61,7 @@ Each metric estimates on a different scale how much the vector is different from
 <li>Distance: the average of the distance from the location of a value to its location in the ascending sequence.</li>
 <li>Offset: the average of the modulo offset to add to the original location of a value in the ascending sequence to arrive at its present location.</li>
 <li>Inversion: the inversion number of the permutation (the number of pairs of elements which are out of order to each other) divided by the number of elements.</li>
+<li>McGrath guess next: the number of correct guesses of the next card to be the first of the longest consecutive sequence in the remaining cards.</li>
 </ul>
 <h2
 >Requirements</h2
@@ -155,6 +159,8 @@ function replaceNl(s) {
 }
 
 // JS1
+// PRBS31
+// https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence
 function getRandomBits(n) {
   var x = st.random;
   var i = n + 1;
@@ -501,6 +507,81 @@ function rifflePick6Shuffle(v) {
   }
 }
 
+function inverseRiffleShuffle(v) {
+  var n = v.length;
+  var u = new Array;
+  var j = -1;
+  var w = new Array;
+  var k = -1;
+  var i = n;
+  while (i) {
+    if (getRandomBits(1)) {
+      u[j = j + 1] = v[i = i - 1];
+    } else {
+      w[k = k + 1] = v[i = i - 1];
+    }
+  }
+  i = -1;
+  j = j + 1;
+  while (j) {
+    v[i = i + 1] = u[j = j - 1];
+  }
+  k = k + 1;
+  while (k) {
+    v[i = i + 1] = w[k = k - 1];
+  }
+}
+
+function inverseRiffle6Shuffle(v) {
+  var i = 7;
+  while (i = i - 1) {
+    inverseRiffleShuffle(v);
+  }
+}
+
+function riffleGilbertShannonReedsShuffle(v) {
+  var n = v.length;
+  var m = 1;
+  var i = n + 1;
+  while (i = i - 1) {
+    if (getRandomBits(1)) {
+      m = m + 1;
+    }
+  }
+
+  var u = new Array;
+  var j = -1;
+  var w = new Array;
+  var k = -1;
+  i = -1;
+  while (m = m - 1) {
+    u[j = j + 1] = v[i = i + 1];
+  }
+  while (n > (i = i + 1)) {
+    w[k = k + 1] = v[i];
+  }
+  m = j;
+  var q = k;
+
+  j = -1;
+  k = -1;
+  var i = -1;
+  while (n > (i = i + 1)) {
+    if ((k >= q) || ((m > j) && ((m-j) > getRandom((q-k) + (m-j))))) {
+      v[i] = u[j = j + 1];
+    } else {
+      v[i] = w[k = k + 1];
+    }
+  }
+}
+
+function riffleGilbertShannonReeds6Shuffle(v) {
+  var i = 7;
+  while (i = i - 1) {
+    riffleGilbertShannonReedsShuffle(v);
+  }
+}
+
 function overhandShuffle(v) {
   var n = v.length;
   var w = new Array;
@@ -746,6 +827,46 @@ function inversionMetric(v) {
   return (s / n) | 0;
 }
 
+function mcGrathGuessNextMetric(v) {
+  var s = 0;
+  var n = v.length;
+  var seen = new Array;
+  var real;
+  var guess;
+  var longestLen = 0;
+  var len;
+  var j;
+
+  var i = -1;
+  while (n > (i = i + 1)) {
+    guess = 0;
+
+    longestLen = 0;
+    len = 0;
+    j = -1;
+    while (n > (j = j + 1)) {
+      if (seen[j]) {
+        if (len > longestLen) {
+          guess = j - len;
+          longestLen = len;
+        }
+        len = 0;
+      } else {
+        len = len + 1;
+      }
+    }
+    if (len > longestLen) {
+      guess = j - len;
+    }
+
+    if (!(guess - (real = v[i] - 1))) {
+      s = s + 1;
+    }
+    seen[real] = 1;
+  }
+  return s;
+}
+
 function runTests(o) {
   var m = new Object;
   m.rising = risingMetric;
@@ -757,9 +878,14 @@ function runTests(o) {
   m.distance = distanceMetric;
   m.offset = offsetMetric;
   m.inversion = inversionMetric;
+  m.mcGrathGuessNext = mcGrathGuessNextMetric;
   o.metrics = m;
 
   testShuffler(o, 'Fisher-Yates shuffle', fisherYatesShuffle);
+  testShuffler(o, 'Gilbert-Shannon-Reeds riffle shuffle', riffleGilbertShannonReedsShuffle);
+  testShuffler(o, 'Gilbert-Shannon-Reeds riffle shuffle 6 times', riffleGilbertShannonReeds6Shuffle);
+  testShuffler(o, 'Inverse riffle shuffle', inverseRiffleShuffle);
+  testShuffler(o, 'Inverse riffle shuffle 6 times', inverseRiffle6Shuffle);
   testShuffler(o, 'Riffle pair swap shuffle', rifflePairSwapShuffle);
   testShuffler(o, 'Riffle pair swap shuffle 6 times', rifflePairSwap6Shuffle);
   testShuffler(o, 'Riffle pick shuffle', rifflePickShuffle);
