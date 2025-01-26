@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Jump through holes</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='Avoid falling down. Play a JavaScript0 game on GemiWeb0' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=no-referrer>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta name=color-scheme content='light dark'>
+<style>
+textarea {
+  min-width: 32em;
+  max-width: 32em;
+  min-height: 7em;
+  max-height: 7em;
+  display: block;
+}
+</style>
+  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; img-src data: 'self'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+</head>
+<body
+><h2
+>Requirements</h2
+>You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
+><a target=_blank href=https://bkil.gitlab.io/gemiweb0
+>bkil.gitlab.io/gemiweb0</a
+><p
+><script>
+'use strict';
+var st = new Object;
+
+// JS1
+function getRandomBits(n) {
+  var x = st.random;
+  var i = n + 1;
+  while (i = i - 1) {
+    x = (((x >> 30) ^ (x >> 27)) & 1) ^ ((x & 1073741823) << 1);
+  }
+  st.random = x;
+  if (n > 31) {
+    n = 31;
+  }
+  return x & ((1 << n) - 1);
+}
+
+function getRandom(m) {
+  return getRandomBits(8) % m;
+}
+
+function step(y) {
+  var height = st.ele;
+  if (height) {
+    st.ele = (height + 1) % 5;
+  }
+  if (st.pressedJump) {
+    st.pressedJump = 0;
+    if (st.started && !height) {
+      st.ele = 1;
+    }
+  }
+  if ((height = st.ele) > 2) {
+    height = 5 - height;
+  }
+
+  var nl = String.fromCharCode(10);
+  var t = st.tick + ' ' + nl;
+  var i = 3;
+  var j = 0;
+  while (i) {
+    t = t + ' ';
+    if (!((i = i - 1) - height)) {
+      while (st.long >= (j = j + 1)) {
+        if (!st.started || (!st.ele && !st.map[j])) {
+          if (st.started) {
+            st.started = 0;
+            st.ele = 5;
+          }
+          t = t + '%';
+        } else {
+          t = t + '@';
+        }
+      }
+    }
+    t = t + nl;
+  }
+
+  i = 0;
+  while (st.cols > (i = i + 1)) {
+    if (st.map[i - 1]) {
+      t = t + '#';
+    } else {
+      t = t + ' ';
+    }
+    if (st.started) {
+      st.map[i - 1] = st.map[i];
+    }
+  }
+
+  window.f.t.value = t;
+  if (st.started || st.ele) {
+    st.setTimeout = 1;
+    setTimeout(function() { y(y); }, st.delay);
+  } else {
+    st.setTimeout = 0;
+  }
+  if (!st.started) {
+    return 0;
+  }
+
+  if (st.nextHole) {
+    st.map[i - 1] = 0;
+    st.nextHole = st.nextHole - 1;
+    if (!st.nextHole) {
+      st.nextRoad = st.long + st.long + getRandom(st.long);
+    }
+  } else {
+    st.map[i - 1] = 1;
+    if (st.nextRoad) {
+      st.nextRoad = st.nextRoad - 1;
+    }
+    if (!st.nextRoad) {
+      st.nextHole = getRandom(st.long);
+    }
+  }
+
+  st.tick = st.tick + 1;
+}
+
+function restart() {
+  st.tick = 0;
+  st.ele = 0;
+  st.map = new Array;
+  var i = -1;
+  while (st.cols > (i = i + 1)) {
+    st.map[i] = 1;
+  }
+  st.started = 1;
+  if (!st.setTimeout) {
+    step(step);
+  }
+}
+
+function init() {
+  st.random = (new Date) % 2147483648;
+  if (!st.random) {
+    st.random = 1;
+  }
+  getRandomBits(128);
+
+  st.delay = 500;
+  st.long = 3;
+  st.cols = 32;
+}
+
+function jump() {
+  if (st.ele) {
+    return 0;
+  }
+  if (!st.started) {
+    restart();
+    return 0;
+  }
+  st.pressedJump = 1;
+}
+
+function setFocus() {
+  if (window.f && window.f.s && window.f.s.focus) {
+    window.f.s.focus();
+  }
+}
+
+init();
+</script
+><form name=f action=javascript:jump()
+><textarea name=t role=img rows=6 cols=33 readonly disabled
+>Jump through holes without falling down!
+Press jump to start game</textarea
+><input name=s type=submit value=Jump autofocus
+></form
+><script>
+'use strict';
+setFocus();
+</script
+></body></html>
