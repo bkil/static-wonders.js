@@ -123,7 +123,9 @@ function render(msg) {
   var i = 10;
   var iy = 10 * st.height;
   var py = 1;
-  while (st.width > x) {
+  var xy;
+  var w = st.width;
+  while (w > x) {
     if (py = !py) {
       h = h + bs + '__';
       y = -1;
@@ -134,18 +136,25 @@ function render(msg) {
     }
     h = h + '/';
     while (st.height > (y = y + 2)) {
-      if (x >= st.width) {
+      xy = (y * w) + x;
+      if (x >= w) {
         c = '  ';
       } else if (!st.lost && !(x - st.x) && !(y - st.y)) {
         c = '@ ';
-      } else if (b[y] & (1 << x)) {
+      } else if (c = b[xy]) {
         if (st.win || st.lost) {
-          c = '# ';
+          if (10 > c) {
+            c = c + ' ';
+          }
         } else {
           c = '. ';
         }
       } else if (st.win || st.lost) {
-        c = '  ';
+        if (st.pet[xy]) {
+          c = ': ';
+        } else {
+          c = '  ';
+        }
       } else {
         if (st.inline) {
           c = '<a class=n href="javascript:step(' + i + ')">' + i + '</a>';
@@ -189,30 +198,35 @@ function setInline(i) {
 }
 
 function generate() {
+  st.step = 1;
   st.win = 0;
   st.lost = 0;
-  st.x = st.width >> 1;
+  var w = st.width;
+  st.x = w >> 1;
   st.y = st.height >> 1;
 
+  var pet = new Array;
   var o = new Array;
-
-  var y = st.height;
-  while (y) {
-    o[y = y - 1] = 0;
-  }
-  o[st.y] = 1 << st.x;
-
-  var x;
-  var i = st.barriers;
+  var i = w * st.height;
   while (i) {
-    x = 1 << getRandom(st.width);
-    y = getRandom(st.height);
-    if (!(o[y] & x)) {
-      o[y] = o[y] | x;
+    pet[i = i - 1] = 0;
+    o[i] = 0;
+  }
+  var xy0 = (w * st.y) + st.x;
+  pet[xy0] = 1;
+  o[xy0] = 1;
+  st.pet = pet;
+
+  var xy;
+  i = st.barriers;
+  while (i) {
+    xy = (getRandom(st.height) * w) + getRandom(w);
+    if (!o[xy]) {
+      o[xy] = 1;
       i = i - 1;
     }
   }
-  o[st.y] = o[st.y] ^ (1 << st.x);
+  o[xy0] = 0;
   st.board = o;
 }
 
@@ -222,9 +236,8 @@ function markNeighbor(xy0, x, y, t) {
     return 1;
   }
   var xy = (y * w) + x;
-  var m = 1 << x;
   var pxy = t.pxy;
-  if ((pxy[xy] >= 0) || (st.board[y] & m) || (!(x - st.x) && !(y - st.y))) {
+  if ((pxy[xy] >= 0) || st.board[xy] || (!(x - st.x) && !(y - st.y))) {
     return 0;
   }
 
@@ -250,11 +263,11 @@ function stepNumber(index) {
   if ((0 > x) || (0 > y) || (x >= w) || (y >= st.height)) {
     return err;
   }
-  var m = 1 << x;
-  if ((st.board[y] & m) || (!(x - st.x) && !(y - st.y))) {
+  var xy = (y * w) + x;
+  if (st.board[xy] || (!(x - st.x) && !(y - st.y))) {
     return err;
   }
-  st.board[y] = st.board[y] | m;
+  st.board[xy] = st.step = st.step + 1;
 
   var t = new Object;
   var pxy = new Array;
@@ -272,7 +285,6 @@ function stepNumber(index) {
   s[s.length] = st.y;
   t.s = s;
   var xi;
-  var xy;
   var xy0;
   while (s.length > si) {
     x = s[si];
@@ -298,6 +310,7 @@ function stepNumber(index) {
       }
       st.y = (xy0 / w) | 0;
       st.x = xy0 % w;
+      st.pet[xy0] = 1;
       return '';
     }
   }
