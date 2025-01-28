@@ -9,11 +9,8 @@
   <meta http-equiv=x-dns-prefetch-control content=off>
   <meta name=color-scheme content='light dark'>
 <style>
-pre {
-  display: inline-block;
-  border: 1px solid;
-  margin: 0.5em;
-  padding: 0.5em;
+.n {
+  text-decoration: none;
 }
 </style>
 <!-- -->
@@ -118,39 +115,51 @@ function getRandom(m) {
 function render(msg) {
   var h = '<pre role=img>';
   var nl = String.fromCharCode(10);
-  var y = -1;
+  var bs = String.fromCharCode(92);
+  var x = -1;
   var b = st.board;
   var c;
-  var x;
-  var i = 11;
-  var iy = 10 - st.width;
-  while (st.height > (y = y + 1)) {
-    if (y & 1) {
-      h = h + '  ';
+  var y;
+  var i = 10;
+  var iy = 10 * st.height;
+  var py = 1;
+  while (st.width > x) {
+    if (py = !py) {
+      h = h + bs + '__';
+      y = -1;
+    } else {
+      x = x + 1;
+      y = -2;
+      i = i + 1;
     }
-    x = -1;
-    while (st.width > (x = x + 1)) {
-      if (!st.lost && !(x - st.x) && !(y - st.y)) {
-        c = '  @';
+    h = h + '/';
+    while (st.height > (y = y + 2)) {
+      if (x >= st.width) {
+        c = '  ';
+      } else if (!st.lost && !(x - st.x) && !(y - st.y)) {
+        c = '@ ';
       } else if (b[y] & (1 << x)) {
         if (st.win || st.lost) {
-          c = '  #';
+          c = '# ';
         } else {
-          c = '  .';
+          c = '. ';
         }
       } else if (st.win || st.lost) {
-        c = '  _';
+        c = '  ';
       } else {
         if (st.inline) {
-          c = ' <a href="javascript:step(' + i + ')">' + i + '</a>';
+          c = '<a class=n href="javascript:step(' + i + ')">' + i + '</a>';
         } else {
-          c = ' ' + i;
+          c = '' + i;
         }
       }
-      i = i + 1;
-      h = h + c;
+      h = h + c + bs;
+      if (py || (iy >= i)) {
+        h = h + '__/';
+      }
+      i = i + 20;
     }
-    i = i + iy;
+    i = i - iy;
     h = h + nl;
   }
   h = h + '</pre>';
