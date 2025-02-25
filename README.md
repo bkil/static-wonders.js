@@ -32,6 +32,7 @@ See a generated file listing here:
 * https://github.com/javascript-tutorial/en.javascript.info
 * https://eloquentjavascript.net/
 * https://www.w3.org/wiki/JavaScript_best_practices
+* https://github.com/TheOdinProject/curriculum
 
 ### Distributable resources
 
