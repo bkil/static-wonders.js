@@ -26,6 +26,8 @@ See a generated file listing here:
 * https://github.com/OWASP/CheatSheetSeries
 * https://github.com/slightlyoff/never_slow_mode
 * https://github.com/denysdovhan/wtfjs
+* https://google.github.io/styleguide/jsguide.html
+* https://github.com/google/styleguide/blob/gh-pages/javascriptguide.xml
 
 ### Non-commercial copyleft resources
 
