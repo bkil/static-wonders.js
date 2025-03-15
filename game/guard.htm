@@ -175,13 +175,13 @@ function render(msg) {
 
   if (st.win || st.lost) {
     if (st.win) {
-      h = h + '<br>The pet is safe.';
+      h = h + 'The pet is safe.';
     } else {
-      h = h + '<br>The pet ran away.';
+      h = h + 'The pet ran away.';
     }
     h = h + ' <a href="javascript:restart()">Restart</a>';
   } else if (st.inline) {
-    h = h + '<br><a href="javascript:setInline(0)">Switch inline links to form input</a>';
+    h = h + '<a href="javascript:setInline(0)">Switch inline links to form input</a>';
   } else {
     h = h + '<form name=f autocomplete=off action="javascript:submitStep()">Select coordinate<input name=t type=number min=0 max=99 placeholder=11..99 minlength=2 maxlength=2 size=2><input type=submit></form>';
     h = h + ' Type 0 to switch form to inline links';
