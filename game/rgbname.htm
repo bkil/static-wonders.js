@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>RGB color names</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='Game of visual matching of color keywords named by CSS Color Module Level 4, X11 and SVG for GemiWeb0 using JavaScript0' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=unsafe-url>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta name=color-scheme content='light dark'>
+<!-- -->
+  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; img-src data: 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self' https://bkil-gitlab-io-23c48d.gitlab.io; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+</head>
+<body><h2
+>Introduction</h2
+>This is a game for matching the appearance of the CSS0 background color with the set of X11 colors and SVG 1.1 color keywords extended by:<br
+><a href=https://www.w3.org/TR/css-color-4/#named-colors target=_blank rel=noopener
+>The named colors defined by the CSS Color Module Level 4</a
+><h2
+>Requirements</h2
+>You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<br
+><a target=_blank rel=noopener href=https://bkil.gitlab.io/gemiweb0
+>bkil.gitlab.io/gemiweb0</a
+><h2
+>Play</h2
+><script>
+'use strict';
+var st = new Object;
+
+// JS1
+function strEqual(u, v) {
+  return !(u.length - v.length) && !u.indexOf(v);
+}
+
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  } else {
+    var o = '';
+    var c;
+    if (to > th.length) {
+      to = th.length;
+    }
+    from = from - 1;
+    to = to - 1;
+    while (to > from) {
+      c = th.charAt(from = from + 1);
+      o = o + c;
+    }
+    return o;
+  }
+}
+
+function removeAfter(s, t) {
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, 0, i + t.length);
+  }
+  return s;
+}
+
+function writeHtm(body) {
+  var h = '<head>';
+  if (document.documentElement && document.documentElement.innerHTML) {
+    h = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
+  }
+  h = '<!DOCTYPE html><html lang=en>' + h + st.head + '</head><body>' + body + '<' + '/body><' + '/html>';
+  document.write(h);
+  document.close();
+  if (window.f && window.f.t && window.f.t.focus) {
+    window.f.t.focus();
+  }
+}
+
+// JS1
+function getRandomBits(n) {
+  var x = st.random;
+  var i = n + 1;
+  while (i = i - 1) {
+    x = (((x >> 30) ^ (x >> 27)) & 1) ^ ((x & 1073741823) << 1);
+  }
+  st.random = x;
+  if (n > 31) {
+    n = 31;
+  }
+  return x & ((1 << n) - 1);
+}
+
+function getRandom(m) {
+  return getRandomBits(15) % m;
+}
+
+
+function swap(v, i, j) {
+  var x = v[i];
+  v[i] = v[j];
+  v[j] = x;
+}
+
+function shuffle(v) {
+  var n = v.length;
+  var m = n - 1;
+  var i = -1;
+  while (m > (i = i + 1)) {
+    swap(v, i, i + getRandom(n - i));
+  }
+}
+
+function nextMsg(msg) {
+  var body = msg;
+  var context = new Array;
+  var n = 10;
+  var i = -1;
+  var j = getRandom(st.colors);
+  while (n > (i = i + 1)) {
+    context[i] = j = ((j + 1) % st.colors);
+  }
+  shuffle(context);
+  var choice = new Array;
+
+  var m = n >> 1;
+  i = -1;
+  while (m > (i = i + 1)) {
+    choice[i] = context[i];
+  }
+  st.target = choice[getRandom(m)];
+  st.choice = choice;
+  context = undefined;
+  var target = st.v[st.target];
+
+  if (st.asked & 1) {
+    body = body + '<span class="b _' + target + '">Which color is the background of this text?</span>' +
+      '<span class="w _' + target + '"> Which color is the background of this text?</span><p>';
+    i = -1;
+    while (m > (i = i + 1)) {
+      j = st.n[choice[i]];
+      body = body + '<a href="javascript:choice(' + i + ')">' + j + '</a><p>';
+    }
+  } else {
+    body = body + 'Which color is ' + st.n[st.target] + '?<p>';
+    i = -1;
+    while (m > (i = i + 1)) {
+      j = st.v[choice[i]];
+      body = body + '<a href="javascript:choice(' + i + ')" class="b _' + j + '">#' + j + '</a>' +
+        '<a href="javascript:choice(' + i + ')" class="w _' + j + '"> #' + j + '</a><p>';
+    }
+  }
+
+  i = '';
+  if (st.asked) {
+    i = (((100 * st.good) / st.asked) | 0) + '';
+  }
+  var time = ((new Date / 1000) | 0) - st.start;
+  body = body + i + '% correct (' + st.good + ' of ' + st.asked + ') in ' + time + ' seconds. Hint: #' + target;
+  writeHtm(body);
+}
+
+function next() {
+  nextMsg('');
+}
+
+function showCorrect(guess) {
+  var body = 'Incorrect';
+  if (st.asked & 1) {
+    body = 'Bad';
+  }
+  body = '<h1>' + body + '</h1>';
+  var choice = st.choice;
+  var n = choice.length;
+  var j;
+  var name;
+  var code;
+  var i = -1;
+  var targetCode = st.v[st.target];
+  while (n > (i = i + 1)) {
+    j = choice[i];
+    name = st.n[j];
+    code = st.v[j];
+    if (strEqual(code, targetCode)) {
+      body = body + 'Correct answer: ';
+    } else if (!(i - guess)) {
+      body = body + 'Incorrect guess: ';
+    } else {
+      body = body + 'Bait: ';
+    }
+    body = body + '<span class="b _' + code + '"> ' + name + ' #' + code + ' </span>' +
+      '<span class="w _' + code + '"> ' + name + ' #' + code + ' </span>' +
+      '<br>';
+  }
+  body = body + '<a href="javascript:next()">Next question</a>';
+
+  writeHtm(body);
+}
+
+function choice(guess) {
+  st.asked = st.asked + 1;
+  var msg = 'Yes';
+  if (strEqual(st.v[st.choice[guess]], st.v[st.target])) {
+    st.good = st.good + 1;
+    if (st.asked & 1) {
+      msg = 'Good';
+    }
+    nextMsg('<h1>' + msg + '</h1>');
+  } else {
+    showCorrect(guess);
+  }
+}
+
+function showColors() {
+  var h = '';
+  var i = -1;
+  var a;
+  var c;
+  var n = st.n.length;
+  while (n > (i = i + 1)) {
+    a = st.n[i];
+    c = st.v[i];
+    h = h +
+      '<span class="b _' + c + '">' + a + ' #' + c + ' </span>' +
+      '<span class="w _' + c + '">' + a + ' #' + c + '</span>' +
+      '<br>';
+  }
+  writeHtm(h);
+}
+
+function c(alias, rgb) {
+  var i = st.colors;
+  st.n[i] = alias;
+  st.v[i] = rgb;
+  st.colors = st.colors + 1;
+  st.head = st.head + '._' + rgb + '{background-color:#' + rgb + '}';
+}
+
+function init() {
+  st.random = (new Date) % 2147483648;
+  if (!st.random) {
+    st.random = 1;
+  }
+  getRandomBits(128);
+
+  st.colors = 0;
+  st.n = new Array;
+  st.v = new Array;
+  st.head = '<style>' +
+    '.b{color:#000000}' +
+    '.w{color:#ffffff}';
+
+  c('mediumvioletred','c71585');
+  c('deeppink','ff1493');
+  c('palevioletred','db7093');
+  c('hotpink','ff69b4');
+  c('lightpink','ffb6c1');
+  c('pink','ffc0cb');
+
+  c('darkred','8b0000');
+  c('red','ff0000');
+  c('firebrick','b22222');
+  c('crimson','dc143c');
+  c('indianred','cd5c5c');
+  c('lightcoral','f08080');
+  c('salmon','fa8072');
+  c('darksalmon','e9967a');
+  c('lightsalmon','ffa07a');
+
+  c('orangered','ff4500');
+  c('tomato','ff6347');
+  c('darkorange','ff8c00');
+  c('coral','ff7f50');
+  c('orange','ffA500');
+
+  c('darkkhaki','bdb76b');
+  c('gold','ffd700');
+  c('khaki','f0e68c');
+  c('peachpuff','ffdab9');
+  c('yellow','ffff00');
+  c('palegoldenrod','eee8aa');
+  c('moccasin','ffe4b5');
+  c('papayawhip','ffefd5');
+  c('lightgoldenrodyellow','fafad2');
+  c('lemonchiffon','fffacd');
+  c('lightyellow','ffffe0');
+
+  c('maroon','800000');
+  c('brown','a52a2a');
+  c('saddlebrown','8b4513');
+  c('sienna','a0522d');
+  c('chocolate','d2691e');
+  c('darkgoldenrod','b8860b');
+  c('peru','cd853f');
+  c('rosybrown','bc8f8f');
+  c('goldenrod','daa520');
+  c('sandybrown','f4a460');
+  c('tan','d2b48c');
+  c('burlywood','deb887');
+  c('wheat','f5deb3');
+  c('navajowhite','ffdead');
+  c('bisque','ffe4c4');
+  c('blanchedalmond','ffebcd');
+  c('cornsilk','fff8dc');
+
+  c('rebeccapurple','663399');
+  c('indigo','4b0082');
+  c('purple','800080');
+  c('darkmagenta','8b008b');
+  c('darkviolet','9400d3');
+  c('darkslateblue','483d8b');
+  c('blueviolet','8a2be2');
+  c('darkorchid','9932cc');
+  c('fuchsia','ff00ff');
+  c('magenta','ff00ff');
+  c('slateblue','6a5acd');
+  c('mediumslateblue','7b68ee');
+  c('mediumorchid','ba55d3');
+  c('mediumpurple','9370db');
+  c('orchid','da70d6');
+  c('violet','ee82ee');
+  c('plum','dda0dd');
+  c('thistle','d8bfd8');
+  c('lavender','e6e6fa');
+
+  c('midnightblue','191970');
+  c('navy','000080');
+  c('darkblue','00008b');
+  c('mediumblue','0000cd');
+  c('blue','0000ff');
+  c('royalblue','4169e1');
+  c('steelblue','4682b4');
+  c('dodgerblue','1e90ff');
+  c('deepskyblue','00bfff');
+  c('cornflowerblue','6495ed');
+  c('skyblue','87ceeb');
+  c('lightskyblue','87cefa');
+  c('lightsteelblue','b0c4de');
+  c('lightblue','add8e6');
+  c('powderblue','b0e0e6');
+
+  c('teal','008080');
+  c('darkcyan','008b8b');
+  c('lightseagreen','20b2aa');
+  c('cadetblue','5f9ea0');
+  c('darkturquoise','00ced1');
+  c('mediumturquoise','48d1cc');
+  c('turquoise','40e0d0');
+  c('aqua','00ffff');
+  c('cyan','00ffff');
+  c('aquamarine','7fffd4');
+  c('paleturquoise','afeeee');
+  c('lightcyan','e0ffff');
+
+  c('darkgreen','006400');
+  c('green','008000');
+  c('darkolivegreen','556b2f');
+  c('forestgreen','228b22');
+  c('seagreen','2e8b57');
+  c('olive','808000');
+  c('olivedrab','6b8e23');
+  c('mediumseagreen','3cb371');
+  c('limegreen','32cd32');
+  c('lime','00ff00');
+  c('springgreen','00ff7f');
+  c('mediumspringgreen','00fa9a');
+  c('darkseagreen','8fbc8f');
+  c('mediumaquamarine','66cdaa');
+  c('yellowgreen','9acd32');
+  c('lawngreen','7cfc00');
+  c('chartreuse','7fff00');
+  c('lightgreen','90ee90');
+  c('greenyellow','adff2f');
+  c('palegreen','98fb98');
+
+  c('mistyrose','ffe4e1');
+  c('antiquewhite','faebd7');
+  c('linen','faf0e6');
+  c('beige','f5f5dc');
+  c('whitesmoke','f5f5f5');
+  c('lavenderblush','fff0f5');
+  c('oldlace','fdf5e6');
+  c('aliceblue','f0f8ff');
+  c('seashell','fff5ee');
+  c('ghostwhite','f8f8ff');
+  c('honeydew','f0fff0');
+  c('floralwhite','fffaf0');
+  c('azure','f0ffff');
+  c('mintcream','f5fffa');
+  c('snow','fffafa');
+  c('ivory','fffff0');
+  c('white','ffffff');
+
+  c('black','000000');
+  c('darkslategray','2f4f4f');
+  c('darkslategrey','2f4f4f');
+  c('dimgray','696969');
+  c('dimgrey','696969');
+  c('slategray','708090');
+  c('slategrey','708090');
+  c('gray','808080');
+  c('grey','808080');
+  c('lightslategray','778899');
+  c('lightslategrey','778899');
+  c('darkgray','a9a9a9');
+  c('darkgrey','a9a9a9');
+  c('silver','c0c0c0');
+  c('lightgray','d3d3d3');
+  c('lightgrey','d3d3d3');
+  c('gainsboro','dcdcdc');
+
+  st.head = st.head + '</style>';
+  st.asked = 0;
+  st.good = 0;
+}
+
+function start() {
+  st.start = (new Date / 1000) | 0;
+  next();
+}
+
+init();
+</script
+><a href=javascript:start()
+>Start</a
+><h2
+>Overview</h2
+><script>
+'use strict';
+showColors();
+</script
+></body
+></html>
