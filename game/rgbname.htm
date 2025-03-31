@@ -148,12 +148,15 @@ function nextMsg(msg) {
     }
   }
 
-  i = '';
+  i = '0';
   if (st.asked) {
     i = (((100 * st.good) / st.asked) | 0) + '';
   }
   var time = ((new Date / 1000) | 0) - st.start;
-  body = body + i + '% correct (' + st.good + ' of ' + st.asked + ') in ' + time + ' seconds. Hint: #' + target;
+  body = body + i + '% correct (' + st.good + ' of ' + st.asked + ') in ' + time + ' seconds.';
+  if (st.asked & 1) {
+    body = body + ' Hint: #' + target;
+  }
   writeHtm(body);
 }
 
