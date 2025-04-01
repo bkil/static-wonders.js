@@ -133,8 +133,8 @@ function nextMsg(msg) {
   var target = st.v[st.target];
 
   if (st.asked & 2) {
-    body = body + '<span class="b _' + target + '">Which color is the background of this text?</span>' +
-      '<span class="w _' + target + '"> Which color is the background of this text?</span><p>';
+    body = body + '<span class="b _' + target + '">Which color is </span>' +
+      '<span class="w _' + target + '">the background of this text?</span><p>';
     i = -1;
     while (m > (i = i + 1)) {
       j = st.n[choice[i]];
@@ -169,7 +169,7 @@ function next() {
 function showCorrect(guess) {
   var body = 'Incorrect';
   if (st.asked & 1) {
-    body = 'Bad';
+    body = 'Failed';
   }
   body = '<h1>' + body + '</h1>';
   var choice = st.choice;
@@ -184,11 +184,11 @@ function showCorrect(guess) {
     name = st.n[j];
     code = st.v[j];
     if (strEqual(code, targetCode)) {
-      body = body + 'Correct answer: ';
+      body = body + 'Is ';
     } else if (!(i - guess)) {
-      body = body + 'Incorrect guess: ';
+      body = body + 'Guessed ';
     } else {
-      body = body + 'Bait: ';
+      body = body + 'Not ';
     }
     body = body + '<span class="b _' + code + '"> ' + name + ' #' + code + ' </span>' +
       '<span class="w _' + code + '"> ' + name + ' #' + code + ' </span>' +
