@@ -130,7 +130,7 @@ function nextMsg(msg) {
   context = undefined;
   var target = st.v[st.target];
 
-  if (st.asked & 1) {
+  if (st.asked & 2) {
     body = body + '<span class="b _' + target + '">Which color is the background of this text?</span>' +
       '<span class="w _' + target + '"> Which color is the background of this text?</span><p>';
     i = -1;
@@ -139,7 +139,7 @@ function nextMsg(msg) {
       body = body + '<a href="javascript:choice(' + i + ')">' + j + '</a><p>';
     }
   } else {
-    body = body + 'Which color is ' + st.n[st.target] + '?<p>';
+    body = body + 'Which background color is ' + st.n[st.target] + '?<p>';
     i = -1;
     while (m > (i = i + 1)) {
       j = st.v[choice[i]];
@@ -154,7 +154,7 @@ function nextMsg(msg) {
   }
   var time = ((new Date / 1000) | 0) - st.start;
   body = body + i + '% correct (' + st.good + ' of ' + st.asked + ') in ' + time + ' seconds.';
-  if (st.asked & 1) {
+  if (st.asked & 2) {
     body = body + ' Hint: #' + target;
   }
   writeHtm(body);
