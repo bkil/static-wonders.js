@@ -111,7 +111,7 @@ function shuffle(v) {
 function nextMsg(msg) {
   var body = msg;
   var context = new Array;
-  var n = 10;
+  var n = st.choiceSuperset;
   var i = -1;
   var j = getRandom(st.colors);
   while (n > (i = i + 1)) {
@@ -120,7 +120,7 @@ function nextMsg(msg) {
   shuffle(context);
   var choice = new Array;
 
-  var m = n >> 1;
+  var m = st.choices;
   i = -1;
   while (m > (i = i + 1)) {
     choice[i] = context[i];
@@ -412,6 +412,8 @@ function init() {
   st.head = st.head + '</style>';
   st.asked = 0;
   st.good = 0;
+  st.choiceSuperset = 10;
+  st.choices = 5;
 }
 
 function start() {
