@@ -111,16 +111,18 @@ function shuffle(v) {
 function nextMsg(msg) {
   var body = msg;
   var context = new Array;
-  var n = st.choiceSuperset;
+
+  var m = st.choices;
+  var n = st.colors - (((((st.colors + 1) - (m << 1)) * st.good) / (st.asked + 1)) | 0);
+
   var i = -1;
   var j = getRandom(st.colors);
   while (n > (i = i + 1)) {
     context[i] = j = ((j + 1) % st.colors);
   }
   shuffle(context);
-  var choice = new Array;
 
-  var m = st.choices;
+  var choice = new Array;
   i = -1;
   while (m > (i = i + 1)) {
     choice[i] = context[i];
@@ -199,14 +201,21 @@ function showCorrect(guess) {
 
 function choice(guess) {
   st.asked = st.asked + 1;
-  var msg = 'Yes';
   if (strEqual(st.v[st.choice[guess]], st.v[st.target])) {
     st.good = st.good + 1;
-    if (st.asked & 1) {
-      msg = 'Good';
+    var m = (((9 * st.good) / (st.asked + 1)) | 0) + 2;
+    if (m > st.choices) {
+      st.choices = st.choices + 1;
     }
-    nextMsg('<h1>' + msg + '</h1>');
+    if (st.asked & 1) {
+      nextMsg('<h1>Good</h1>');
+    } else {
+      nextMsg('<h1>Yes</h1>');
+    }
   } else {
+    if (st.choices > 2) {
+      st.choices = st.choices - 1;
+    }
     showCorrect(guess);
   }
 }
@@ -412,8 +421,7 @@ function init() {
   st.head = st.head + '</style>';
   st.asked = 0;
   st.good = 0;
-  st.choiceSuperset = 10;
-  st.choices = 5;
+  st.choices = 2;
 }
 
 function start() {
