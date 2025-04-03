@@ -92,6 +92,104 @@ function String_split(th, d) {
   return a;
 }
 
+// ES3, NS5?
+function encodeURIComponent_(s) {
+  if (!strEqual(typeof encodeURIComponent, 'undefined')) {
+    return encodeURIComponent(s);
+  }
+  var zero = String.fromCharCode(0);
+  var i = 0;
+  var safeList = "!'()*-._~0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  var safe = zero;
+  var hex = '0123456789abcdef';
+  while (127 > (i = i + 1)) {
+    if (0 > safeList.indexOf(String.fromCharCode(i))) {
+      safe = safe + zero;
+    } else {
+      safe = safe + '1';
+    }
+  }
+
+  var o = '';
+  i = -1;
+  var n;
+  var c;
+  while (1) {
+    c = s.charAt(i = i + 1);
+    while (safe.charCodeAt(n = c.charCodeAt(0))) {
+      o = o + c;
+      c = s.charAt(i = i + 1);
+    }
+    if (isNaN(n)) {
+      return o;
+    }
+    if (128 > n) {
+      c = hex[n >> 4] + hex[n & 15];
+      o = o + '%';
+    }
+    o = o + c;
+  }
+}
+
+function getHexDigit(n) {
+  if ((n > 47) && (58 > n)) {
+    return n - 48;
+  } else if ((n > 96) && (103 > n)) {
+    return n - 87;
+  } else if ((n > 64) && (71 > n)) {
+    return n - 55;
+  } else {
+    return -1;
+  }
+}
+
+// web API: Chrome 38, Firefox 20
+function TextDecoder_decode(a) {
+  if (!strEqual(typeof TextDecoder, 'undefined') &&
+    !strEqual(typeof Uint8Array, 'undefined')) {
+    return (new TextDecoder).decode(new Uint8Array(a));
+  }
+  var s = '';
+  var i = -1;
+  var n = a.length;
+  var c;
+  while (n > (i = i + 1)) {
+    c = a[i];
+    // FIXME
+    if (128 > c) {
+      c = String.fromCharCode(c);
+      s = s + c;
+    }
+  }
+  return s;
+}
+
+// ES3, NS5?
+function decodeURIComponent_(s) {
+  if (!strEqual(typeof decodeURIComponent, 'undefined')) {
+    return decodeURIComponent(s);
+  }
+  var a = new Array;
+  var j = -1;
+  var i = -1;
+  var n;
+  var u;
+  var v;
+  while (s.length > (i = i + 1)) {
+    n = s.charCodeAt(i);
+    if (!(n - 37) && (s.length > (i + 2))) {
+      u = getHexDigit(s.charCodeAt(i + 1));
+      v = getHexDigit(s.charCodeAt(i + 2));
+      if ((u >= 0) && (v >= 0)) {
+        n = (u << 4) | v;
+        i = i + 2;
+      }
+    }
+    a[j = j + 1] = n;
+  }
+  return TextDecoder_decode(a);
+}
+
 function compute() {
   var nl = String.fromCharCode(10);
   var t = '';
@@ -130,6 +228,17 @@ function compute() {
     }
   }
   window.f.t.value = t + nl + '=' + sum;
+  window.location.href = '#' + encodeURIComponent_(t);
+}
+
+function processAnchor() {
+  var h = window.location.href;
+  var i = h.indexOf('#');
+  if (i > 0) {
+    console.log(i);
+    window.f.t.value = decodeURIComponent_(String_substring(h, i + 1, h.length));
+  }
+  compute();
 }
 </script
 ><form name=f action=javascript:compute()
@@ -139,5 +248,5 @@ function compute() {
 ></form
 ><script>
 'use strict';
-compute();
+processAnchor();
 </script></body></html>
