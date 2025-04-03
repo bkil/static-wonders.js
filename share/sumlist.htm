@@ -97,7 +97,7 @@ function compute() {
   var t = '';
   var sum = 0;
   var lines = String_split(window.f.t.value, nl);
-  var i = 0;
+  var i = -1;
   var line;
   var prod;
   var fields;
@@ -105,7 +105,7 @@ function compute() {
   var field;
   var factor;
 
-  while (lines.length > i) {
+  while (lines.length > (i = i + 1)) {
     line = lines[i];
     prod = 0;
     fields = String_split(line, ' ');
@@ -121,13 +121,15 @@ function compute() {
         prod = prod * factor;
       }
     }
-    if ((lines.length > (i = i + 1)) || prod) {
+    if ((lines.length > i + 1) || prod) {
       sum = sum + prod;
-      t = t + line + nl;
+      if (i) {
+        t = t + nl;
+      }
+      t = t + line;
     }
   }
-  t = t + '=' + sum;
-  window.f.t.value = t;
+  window.f.t.value = t + nl + '=' + sum;
 }
 </script
 ><form name=f action=javascript:compute()
