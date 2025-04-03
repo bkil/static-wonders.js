@@ -9,7 +9,7 @@
   <meta name=referrer content=unsafe-url>
   <meta http-equiv=x-dns-prefetch-control content=off>
   <meta name=color-scheme content='light dark'>
-  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; img-src data: 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self' https://bkil-gitlab-io-23c48d.gitlab.io; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; img-src data: 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://bkil-gitlab-io-23c48d.gitlab.io; base-uri 'none'; form-action javascript:; navigate-to 'none';">
 <style>
 textarea {
   display: block;
@@ -147,7 +147,7 @@ function getHexDigit(n) {
 function TextDecoder_decode(a) {
   if (!strEqual(typeof TextDecoder, 'undefined') &&
     !strEqual(typeof Uint8Array, 'undefined')) {
-    return (new TextDecoder).decode(new Uint8Array(a));
+    return eval('(new TextDecoder).decode(new Uint8Array(a))');
   }
   var s = '';
   var i = -1;
@@ -222,7 +222,7 @@ function compute() {
         prod = prod * factor;
       }
     }
-    if ((lines.length > i + 1) || prod) {
+    if ((lines.length > (i + 1)) || prod) {
       sum = sum + prod;
       if (i) {
         t = t + nl;
