@@ -167,7 +167,10 @@ function TextDecoder_decode(a) {
 // ES3, NS5?
 function decodeURIComponent_(s) {
   if (!strEqual(typeof decodeURIComponent, 'undefined')) {
-    return decodeURIComponent(s);
+    try {
+      return decodeURIComponent(s);
+    } catch (e) {
+    }
   }
   var a = new Array;
   var j = -1;
