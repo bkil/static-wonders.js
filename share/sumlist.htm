@@ -235,7 +235,6 @@ function processAnchor() {
   var h = window.location.href;
   var i = h.indexOf('#');
   if (i > 0) {
-    console.log(i);
     window.f.t.value = decodeURIComponent_(String_substring(h, i + 1, h.length));
   }
   compute();
