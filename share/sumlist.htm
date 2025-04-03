@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset=utf-8>
+  <title>Sum-product list</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='Sum product of space delimited numbers in commented lines using JavaScript0 on GemiWeb0' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=unsafe-url>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta name=color-scheme content='light dark'>
+  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; img-src data: 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self' https://bkil-gitlab-io-23c48d.gitlab.io; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+<style>
+textarea {
+  display: block;
+  width: 100%;
+}
+</style>
+</head>
+<body><h2
+>Explanation</h2
+>Sum the first few, space delimited numbers within each line, possibly trailed by comments and appends the result as the last line<h2
+>Requirements</h2
+>You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
+><a target=_blank href=https://bkil.gitlab.io/gemiweb0
+>bkil.gitlab.io/gemiweb0</a
+><script>
+'use strict';
+var st = new Object;
+
+// JS1
+function strEqual(u, v) {
+  return !(u.length - v.length) && !u.indexOf(v);
+}
+
+// JS1
+function parseIntPlus(s) {
+  if (!strEqual(typeof parseInt, 'undefined')) {
+    return parseInt(s);
+  } else {
+    var k = NaN;
+    var i = -1;
+    var c;
+    while (s.length > (i = i + 1)) {
+      c = s.charCodeAt(i) - 48;
+      if ((0 > c) || (c > 9)) {
+        return k;
+      }
+      if (!i) {
+        k = 0;
+      }
+      k = (k * 10) + c;
+    }
+    return k;
+  }
+}
+
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  } else {
+    var o = '';
+    var c;
+    if (to > th.length) {
+      to = th.length;
+    }
+    from = from - 1;
+    to = to - 1;
+    while (to > from) {
+      c = th.charAt(from = from + 1);
+      o = o + c;
+    }
+    return o;
+  }
+}
+
+// ES1, NS3
+function String_split(th, d) {
+  if (th.split) {
+    return th.split(d);
+  } else {
+    var a = new Array;
+    var j = 0;
+    var from = 0;
+    var i = th.indexOf(d, from);
+    while (i >= 0) {
+      a[j] = String_substring(th, from, i);
+      j = j + 1;
+      from = i + d.length;
+      i = th.indexOf(d, from);
+    }
+    a[j] = String_substring(th, from, th.length);
+    return a;
+  }
+}
+
+function compute() {
+  var nl = String.fromCharCode(10);
+  var t = '';
+  var sum = 0;
+  var lines = String_split(window.f.t.value, nl);
+  var i = 0;
+  var line;
+  var prod;
+  var fields;
+  var j;
+  var field;
+  var factor;
+
+  while (lines.length > i) {
+    line = lines[i];
+    prod = 0;
+    fields = String_split(line, ' ');
+    j = -1;
+    while (fields.length > (j = j + 1)) {
+      factor = parseIntPlus(field = fields[j]);
+      if (isNaN(factor) || (!strEqual(field, '' + factor))) {
+        j = fields.length;
+      } else {
+        if (!j) {
+          prod = 1;
+        }
+        prod = prod * factor;
+      }
+    }
+    if ((lines.length > (i = i + 1)) || prod) {
+      sum = sum + prod;
+      t = t + line + nl;
+    }
+  }
+  t = t + '=' + sum;
+  window.f.t.value = t;
+}
+</script
+><form name=f action=javascript:compute()
+><textarea name=t rows=12 cols=32
+></textarea
+><input type=submit value=Compute
+></form
+><script>
+'use strict';
+compute();
+</script></body></html>
