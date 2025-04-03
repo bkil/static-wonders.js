@@ -37,62 +37,59 @@ function strEqual(u, v) {
 function parseIntPlus(s) {
   if (!strEqual(typeof parseInt, 'undefined')) {
     return parseInt(s);
-  } else {
-    var k = NaN;
-    var i = -1;
-    var c;
-    while (s.length > (i = i + 1)) {
-      c = s.charCodeAt(i) - 48;
-      if ((0 > c) || (c > 9)) {
-        return k;
-      }
-      if (!i) {
-        k = 0;
-      }
-      k = (k * 10) + c;
-    }
-    return k;
   }
+  var k = NaN;
+  var i = -1;
+  var c;
+  while (s.length > (i = i + 1)) {
+    c = s.charCodeAt(i) - 48;
+    if ((0 > c) || (c > 9)) {
+      return k;
+    }
+    if (!i) {
+      k = 0;
+    }
+    k = (k * 10) + c;
+  }
+  return k;
 }
 
 // JS1
 function String_substring(th, from, to) {
   if (th.substring) {
     return th.substring(from, to);
-  } else {
-    var o = '';
-    var c;
-    if (to > th.length) {
-      to = th.length;
-    }
-    from = from - 1;
-    to = to - 1;
-    while (to > from) {
-      c = th.charAt(from = from + 1);
-      o = o + c;
-    }
-    return o;
   }
+  var o = '';
+  var c;
+  if (to > th.length) {
+    to = th.length;
+  }
+  from = from - 1;
+  to = to - 1;
+  while (to > from) {
+    c = th.charAt(from = from + 1);
+    o = o + c;
+  }
+  return o;
 }
 
 // ES1, NS3
 function String_split(th, d) {
   if (th.split) {
     return th.split(d);
-  } else {
-    var a = new Array;
-    var j = 0;
-    var from = 0;
-    var i = th.indexOf(d, from);
-    while (i >= 0) {
-      a[j] = String_substring(th, from, i);
-      j = j + 1;
-      from = i + d.length;
-      i = th.indexOf(d, from);
-    }
-    a[j] = String_substring(th, from, th.length);
-    return a;
   }
+  var a = new Array;
+  var j = 0;
+  var from = 0;
+  var i = th.indexOf(d, from);
+  while (i >= 0) {
+    a[j] = String_substring(th, from, i);
+    j = j + 1;
+    from = i + d.length;
+    i = th.indexOf(d, from);
+  }
+  a[j] = String_substring(th, from, th.length);
+  return a;
 }
 
 function compute() {
