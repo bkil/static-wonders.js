@@ -163,7 +163,7 @@ function nextMsg(msg) {
 }
 
 function next() {
-  nextMsg('');
+  nextMsg('<h1>Question</h1>');
 }
 
 function showCorrect(guess) {
@@ -192,7 +192,7 @@ function showCorrect(guess) {
     }
     body = body + '<span class="b _' + code + '"> ' + name + ' #' + code + ' </span>' +
       '<span class="w _' + code + '"> ' + name + ' #' + code + ' </span>' +
-      '<br>';
+      '<p>';
   }
   body = body + '<a href="javascript:next()">Next question</a>';
 
@@ -305,7 +305,7 @@ function init() {
   c('Goldenrod','daa520');
   c('SandyBrown','f4a460');
   c('Tan','d2b48c');
-  c('Burlywood','deb887');
+  c('BurlyWood','deb887');
   c('Wheat','f5deb3');
   c('NavajoWhite','ffdead');
   c('Bisque','ffe4c4');
@@ -368,7 +368,7 @@ function init() {
   c('SeaGreen','2e8b57');
   c('Olive','808000');
   c('OliveDrab','6b8e23');
-  c('MediumseaGreen','3cb371');
+  c('MediumSeaGreen','3cb371');
   c('LimeGreen','32cd32');
   c('Lime','00ff00');
   c('SpringGreen','00ff7f');
