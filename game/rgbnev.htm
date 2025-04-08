@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang=hu>
+<head>
+  <meta charset=utf-8>
+  <title>RGB színek nevei</title>
+  <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
+  <meta property='og:description' content='Játék háttérszín-kulcsszavak felismerésére CSS, X11 és SVG szabványok színkód-palettája alapján GemiWeb0 és JavaScript0 böngésző támogatással' name='description'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=unsafe-url>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta name=color-scheme content='light dark'>
+<!-- -->
+  <meta http-equiv='Content-Security-Policy' content="default-src 'none'; img-src data: 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self' https://bkil-gitlab-io-23c48d.gitlab.io; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+</head>
+<body><h2
+>Bemutatkozás</h2
+>Ebben a játékban kinézetre kell felismerni, hogy melyik CSS0 háttérszín felel meg egy színkód elnevezésnek a HTML, X11 és SVG szabványok palettája alapján:
+<br
+><a href=https://www.w3.org/TR/css-color-4/#named-colors target=_blank rel=noopener
+>4-es szintű CSS Szín Modul által definiált kulcsszavak</a
+><p
+><a href=rgbname.htm rel=alternate hreflang=en lang=en>(English translation of this game)</a
+><h2
+>Játék</h2
+><script>
+'use strict';
+var st = new Object;
+
+// JS1
+function strEqual(u, v) {
+  return !(u.length - v.length) && !u.indexOf(v);
+}
+
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  } else {
+    var o = '';
+    var c;
+    if (to > th.length) {
+      to = th.length;
+    }
+    from = from - 1;
+    to = to - 1;
+    while (to > from) {
+      c = th.charAt(from = from + 1);
+      o = o + c;
+    }
+    return o;
+  }
+}
+
+function removeAfter(s, t) {
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, 0, i + t.length);
+  }
+  return s;
+}
+
+function writeHtm(body) {
+  var h = '<head>';
+  if (document.documentElement && document.documentElement.innerHTML) {
+    h = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
+  }
+  h = '<!DOCTYPE html><html lang=en>' + h + st.head + '</head><body>' + body + '<' + '/body><' + '/html>';
+  document.write(h);
+  document.close();
+  if (window.f && window.f.t && window.f.t.focus) {
+    window.f.t.focus();
+  }
+}
+
+// JS1
+function getRandomBits(n) {
+  var x = st.random;
+  var i = n + 1;
+  while (i = i - 1) {
+    x = (((x >> 30) ^ (x >> 27)) & 1) ^ ((x & 1073741823) << 1);
+  }
+  st.random = x;
+  if (n > 31) {
+    n = 31;
+  }
+  return x & ((1 << n) - 1);
+}
+
+function getRandom(m) {
+  return getRandomBits(15) % m;
+}
+
+
+function swap(v, i, j) {
+  var x = v[i];
+  v[i] = v[j];
+  v[j] = x;
+}
+
+function shuffle(v) {
+  var n = v.length;
+  var m = n - 1;
+  var i = -1;
+  while (m > (i = i + 1)) {
+    swap(v, i, i + getRandom(n - i));
+  }
+}
+
+function nextMsg(msg) {
+  var body = msg;
+  var context = new Array;
+
+  var m = st.choices;
+  var n = st.colors - (((((st.colors + 1) - (m << 1)) * st.good) / (st.asked + 1)) | 0);
+
+  var i = -1;
+  var j = getRandom(st.colors);
+  while (n > (i = i + 1)) {
+    context[i] = j = ((j + 1) % st.colors);
+  }
+  shuffle(context);
+
+  var choice = new Array;
+  i = -1;
+  while (m > (i = i + 1)) {
+    choice[i] = context[i];
+  }
+  st.target = choice[getRandom(m)];
+  st.choice = choice;
+  context = undefined;
+  var target = st.v[st.target];
+
+  if (st.asked & 2) {
+    body = body + '<span class="b _' + target + '">Melyik szín </span>' +
+      '<span class="w _' + target + '">ennek a háttere?</span><p>';
+    i = -1;
+    while (m > (i = i + 1)) {
+      j = st.n[choice[i]];
+      body = body + '<a href="javascript:choice(' + i + ')">' + j + '</a><p>';
+    }
+  } else {
+    body = body + 'Melyik háttérszín ' + st.n[st.target] + '?<p>';
+    i = -1;
+    while (m > (i = i + 1)) {
+      j = st.v[choice[i]];
+      body = body + '<a href="javascript:choice(' + i + ')" class="b _' + j + '">#' + j + '</a>' +
+        '<a href="javascript:choice(' + i + ')" class="w _' + j + '"> #' + j + '</a><p>';
+    }
+  }
+
+  i = '0';
+  if (st.asked) {
+    i = (((100 * st.good) / st.asked) | 0) + '';
+  }
+  var time = ((new Date / 1000) | 0) - st.start;
+  body = body + st.asked + ' kérdésből ' + st.good + ' helyes (' + i + '%) ' + time + ' másodperc alatt.';
+  if (st.asked & 2) {
+    body = body + ' Segítség: #' + target;
+  }
+  writeHtm(body);
+}
+
+function next() {
+  nextMsg('<h1>Kérdés</h1>');
+}
+
+function showCorrect(guess) {
+  var body = 'Helytelen';
+  if (st.asked & 1) {
+    body = 'Hibás';
+  }
+  body = '<h1>' + body + '</h1>';
+  var choice = st.choice;
+  var n = choice.length;
+  var j;
+  var name;
+  var code;
+  var i = -1;
+  var targetCode = st.v[st.target];
+  while (n > (i = i + 1)) {
+    j = choice[i];
+    name = st.n[j];
+    code = st.v[j];
+    if (strEqual(code, targetCode)) {
+      body = body + 'Megoldás ';
+    } else if (!(i - guess)) {
+      body = body + 'Kiválasztott ';
+    } else {
+      body = body + 'Nem ';
+    }
+    body = body + '<span class="b _' + code + '"> ' + name + ' #' + code + ' </span>' +
+      '<span class="w _' + code + '"> ' + name + ' #' + code + ' </span>' +
+      '<p>';
+  }
+  body = body + '<a href="javascript:next()">Következő kérdés</a>';
+
+  writeHtm(body);
+}
+
+function choice(guess) {
+  st.asked = st.asked + 1;
+  if (strEqual(st.v[st.choice[guess]], st.v[st.target])) {
+    st.good = st.good + 1;
+    var m = (((9 * st.good) / (st.asked + 1)) | 0) + 2;
+    if (m > st.choices) {
+      st.choices = st.choices + 1;
+    }
+    if (st.asked & 1) {
+      nextMsg('<h1>Jó</h1>');
+    } else {
+      nextMsg('<h1>Igen</h1>');
+    }
+  } else {
+    if (st.choices > 2) {
+      st.choices = st.choices - 1;
+    }
+    showCorrect(guess);
+  }
+}
+
+function showColors() {
+  var h = '';
+  var i = -1;
+  var a;
+  var c;
+  var n = st.n.length;
+  while (n > (i = i + 1)) {
+    a = st.n[i];
+    c = st.v[i];
+    h = h +
+      '<span class="b _' + c + '">' + a + ' #' + c + ' </span>' +
+      '<span class="w _' + c + '">' + a + ' #' + c + '</span>' +
+      '<br>';
+  }
+  writeHtm(h);
+}
+
+function c(alias, rgb) {
+  var i = st.colors;
+  st.n[i] = alias;
+  st.v[i] = rgb;
+  st.colors = st.colors + 1;
+  st.head = st.head + '._' + rgb + '{background-color:#' + rgb + '}';
+}
+
+function init() {
+  st.random = (new Date) % 2147483648;
+  if (!st.random) {
+    st.random = 1;
+  }
+  getRandomBits(128);
+
+  st.colors = 0;
+  st.n = new Array;
+  st.v = new Array;
+  st.head = '<style>' +
+    '.b{color:#000000}' +
+    '.w{color:#ffffff}';
+
+  c('KözepesIbolyaVörös','c71585');
+  c('MélyRózsaszín','ff1493');
+  c('FakóIbolyaVörös','db7093');
+  c('ÉlénkRózsaszín','ff69b4');
+  c('VilágosRózsaszín','ffb6c1');
+  c('Rózsaszín','ffc0cb');
+
+  c('SötétVörös','8b0000');
+  c('Piros','ff0000');
+  c('ÉgetettTégla','b22222');
+  c('Karmazsin','dc143c');
+  c('IndiaVörös','cd5c5c');
+  c('VilágosKorall','f08080');
+  c('Lazac','fa8072');
+  c('SötétLazac','e9967a');
+  c('VilágosLazac','ffa07a');
+
+  c('NarancsVörös','ff4500');
+  c('Paradicsom','ff6347');
+  c('SötétNarancs','ff8c00');
+  c('Korall','ff7f50');
+  c('Narancs','ffA500');
+
+  c('SötétKhaki','bdb76b');
+  c('Arany','ffd700');
+  c('Khaki','f0e68c');
+  c('ŐszibarackosProfiterol','ffdab9');
+  c('Sárga','ffff00');
+  c('FakóAranyvessző','eee8aa');
+  c('Mokaszin','ffe4b5');
+  c('PapayaKrém','ffefd5');
+  c('VilágosAranyvesszőSárga','fafad2');
+  c('CitromosSifon','fffacd');
+  c('VilágosSárga','ffffe0');
+
+  c('GesztenyeBarna','800000');
+  c('Barna','a52a2a');
+  c('NyeregBarna','8b4513');
+  c('SiennaAgyag','a0522d');
+  c('Csokoládé','d2691e');
+  c('SötétAranyvessző','b8860b');
+  c('PeruiGyapot','cd853f');
+  c('RózsásBarna','bc8f8f');
+  c('Aranyvessző','daa520');
+  c('HomokBarna','f4a460');
+  c('Napbarnított','d2b48c');
+  c('NyersFa','deb887');
+  c('Búza','f5deb3');
+  c('NavajoFehér','ffdead');
+  c('MázatlanPorcelán','ffe4c4');
+  c('BlansírozottMandula','ffebcd');
+  c('KukoricaBajusz','fff8dc');
+
+  c('RebekaBíbor','663399');
+  c('Indigó','4b0082');
+  c('Bíbor','800080');
+  c('SötétBíborVörös','8b008b');
+  c('SötétIbolya','9400d3');
+  c('SötétPalaKék','483d8b');
+  c('KékIbolya','8a2be2');
+  c('SötétOrchidea','9932cc');
+  c('Fukszin','ff00ff');
+  c('BíborVörös','ff00ff');
+  c('PalaKék','6a5acd');
+  c('KözepesPalaKék','7b68ee');
+  c('KözepesOrchidea','ba55d3');
+  c('KözepesBíbor','9370db');
+  c('Orchidea','da70d6');
+  c('Ibolya','ee82ee');
+  c('Szilva','dda0dd');
+  c('Bogáncs','d8bfd8');
+  c('Levendula','e6e6fa');
+
+  c('ÉjKék','191970');
+  c('Haditegnerész','000080');
+  c('SötétKék','00008b');
+  c('KözepesKék','0000cd');
+  c('Kék','0000ff');
+  c('KirályKék','4169e1');
+  c('AcélKék','4682b4');
+  c('DodgerKék','1e90ff');
+  c('MélyÉgKék','00bfff');
+  c('BúzavirágKék','6495ed');
+  c('ÉgszínKék','87ceeb');
+  c('VilágosÉgKék','87cefa');
+  c('VilágosAcélKék','b0c4de');
+  c('VilágosKék','add8e6');
+  c('PúderKék','b0e0e6');
+
+  c('CsörgőRéce','008080');
+  c('SötétCián','008b8b');
+  c('VilágosTengerZöld','20b2aa');
+  c('KadétKék','5f9ea0');
+  c('SötétTürkiz','00ced1');
+  c('KözepesTürkiz','48d1cc');
+  c('Türkiz','40e0d0');
+  c('VízKék','00ffff');
+  c('Cián','00ffff');
+  c('Akvamarin','7fffd4');
+  c('FakóTürkiz','afeeee');
+  c('VilágosCián','e0ffff');
+
+  c('SötétZöld','006400');
+  c('Zöld','008000');
+  c('SötétOlajbogyóZöld','556b2f');
+  c('ErdőZöld','228b22');
+  c('TengerZöld','2e8b57');
+  c('Olajbogyó','808000');
+  c('DrappOlajbogyó','6b8e23');
+  c('KözepesTengerZöld','3cb371');
+  c('LimeZöld','32cd32');
+  c('Lime','00ff00');
+  c('TavaszZöld','00ff7f');
+  c('KözepesTavaszZöld','00fa9a');
+  c('SötétTengerZöld','8fbc8f');
+  c('KözepesAkvamarin','66cdaa');
+  c('SárgásZöld','9acd32');
+  c('PázsitZöld','7cfc00');
+  c('KarthauziLikőr','7fff00');
+  c('VilágosZöld','90ee90');
+  c('ZöldesSárga','adff2f');
+  c('FakóZöld','98fb98');
+
+  c('HarmatosRózsa','ffe4e1');
+  c('AntikFehér','faebd7');
+  c('LenVászon','faf0e6');
+  c('Bézs','f5f5dc');
+  c('FüstösFehér','f5f5f5');
+  c('LevendulaPír ','fff0f5');
+  c('RégiCsipke','fdf5e6');
+  c('AlízKék','f0f8ff');
+  c('Kagyló','fff5ee');
+  c('SzellemFehér','f8f8ff');
+  c('Mézharmat','f0fff0');
+  c('VirágFehér','fffaf0');
+  c('AzúrKék','f0ffff');
+  c('MentaLikőr','f5fffa');
+  c('Hófehér','fffafa');
+  c('Elefántcsont','fffff0');
+  c('Fehér','ffffff');
+
+  c('Fekete','000000');
+  c('SötétPalaSzürke','2f4f4f');
+  c('HalványSzürke','696969');
+  c('PalaSzürke','708090');
+  c('Szürke','808080');
+  c('VilágosPalaSzürke','778899');
+  c('SötétSzürke','a9a9a9');
+  c('Ezüst','c0c0c0');
+  c('VilágosSzürke','d3d3d3');
+  c('GainsboroKalap','dcdcdc');
+
+  st.head = st.head + '</style>';
+  st.asked = 0;
+  st.good = 0;
+  st.choices = 2;
+}
+
+function start() {
+  st.start = (new Date / 1000) | 0;
+  next();
+}
+
+init();
+</script
+><a href=javascript:start()
+>Kezdés</a
+><h2
+>Áttekintés</h2
+><script>
+'use strict';
+showColors();
+</script
+><h2
+>Követelmények</h2
+>Ennek az alkalmazásnak a használatához egy olyan böngésző szükséges ami legalább JavaScript 1.0 (1995) támogatással rendelkezik, de az is elég, ha a látogató megvalósít egy GemiWeb0 böngészőt JavaScript0 támogatással az alábbi specifikációnak megfelelően:<br
+><a href=https://bkil.gitlab.io/gemiweb0 target=_blank rel=noopener
+>bkil.gitlab.io/gemiweb0</a
+><h2
+>Copyright</h2
+><a href=../LICENSE target=_blank rel=noopener lang=en>SPDX-License-Identifier: MIT</a><br
+>Copyright (c) 2025 bkil.hu</body
+></html>
