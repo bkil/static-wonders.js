@@ -60,16 +60,20 @@ function removeAfter(s, t) {
 }
 
 function writeHtm(body) {
-  var h = '<head>';
-  if (document.documentElement && document.documentElement.innerHTML) {
-    h = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
+  var styles = '<style>.b{color:#000000}.w{color:#ffffff}' + st.styles + '</style>';
+  if (st.docClosed) {
+    var h = '<head>';
+    if (document.documentElement && document.documentElement.innerHTML) {
+      h = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
+    }
+    h = '<!DOCTYPE html><html lang=hu>' + h + styles + '</head><body>' + body + '<' + '/body><' + '/html>';
+    document.write(h);
+    document.close();
+  } else {
+    body = styles + body;
+    document.write(body);
   }
-  h = '<!DOCTYPE html><html lang=en>' + h + st.head + '</head><body>' + body + '<' + '/body><' + '/html>';
-  document.write(h);
-  document.close();
-  if (window.f && window.f.t && window.f.t.focus) {
-    window.f.t.focus();
-  }
+  st.styles = '';
 }
 
 // JS1
@@ -105,6 +109,9 @@ function shuffle(v) {
   }
 }
 
+function useColor(rgb) {
+  st.styles = st.styles + '._' + rgb + '{background-color:#' + rgb + '}';
+}
 function nextMsg(msg) {
   var body = msg;
   var context = new Array;
@@ -130,6 +137,7 @@ function nextMsg(msg) {
   var target = st.v[st.target];
 
   if (st.asked & 2) {
+    useColor(target);
     body = body + '<span class="b _' + target + '">Melyik szín </span>' +
       '<span class="w _' + target + '">ennek a háttere?</span><p>';
     i = -1;
@@ -142,6 +150,7 @@ function nextMsg(msg) {
     i = -1;
     while (m > (i = i + 1)) {
       j = st.v[choice[i]];
+      useColor(j);
       body = body + '<a href="javascript:choice(' + i + ')" class="b _' + j + '">#' + j + '</a>' +
         '<a href="javascript:choice(' + i + ')" class="w _' + j + '"> #' + j + '</a><p>';
     }
@@ -180,6 +189,7 @@ function showCorrect(guess) {
     j = choice[i];
     name = st.n[j];
     code = st.v[j];
+    useColor(code);
     if (strEqual(code, targetCode)) {
       body = body + 'Megoldás ';
     } else if (!(i - guess)) {
@@ -226,12 +236,14 @@ function showColors() {
   while (n > (i = i + 1)) {
     a = st.n[i];
     c = st.v[i];
+    useColor(c);
     h = h +
       '<span class="b _' + c + '">' + a + ' #' + c + ' </span>' +
       '<span class="w _' + c + '">' + a + ' #' + c + '</span>' +
       '<br>';
   }
   writeHtm(h);
+  st.docClosed = 1;
 }
 
 function c(alias, rgb) {
@@ -239,7 +251,6 @@ function c(alias, rgb) {
   st.n[i] = alias;
   st.v[i] = rgb;
   st.colors = st.colors + 1;
-  st.head = st.head + '._' + rgb + '{background-color:#' + rgb + '}';
 }
 
 function init() {
@@ -252,9 +263,7 @@ function init() {
   st.colors = 0;
   st.n = new Array;
   st.v = new Array;
-  st.head = '<style>' +
-    '.b{color:#000000}' +
-    '.w{color:#ffffff}';
+  st.styles = '';
 
   c('KözépIbolyaVörös','c71585');
   c('MélyRózsaszín','ff1493');
@@ -408,7 +417,6 @@ function init() {
   c('VilágosSzürke','d3d3d3');
   c('GainsboroKalap','dcdcdc');
 
-  st.head = st.head + '</style>';
   st.asked = 0;
   st.good = 0;
   st.choices = 2;
