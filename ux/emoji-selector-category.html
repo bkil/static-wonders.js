@@ -65,37 +65,6 @@ textarea,
 <script>
 'use strict';
 
-function showEmojiSelector() {
-  var catDiv = document.querySelector('.categories');
-  var emojiDiv = document.querySelector('.emoji');
-
-  var buttons = getCategoryEmoji().map(function(nce) {
-    var name = nce[0];
-    var count = nce[1];
-    var emoji = nce[2];
-    var div = document.createElement('div');
-    div.className = name;
-    div.innerHTML = emoji;
-    div.hidden = true;
-    div.querySelectorAll('span').forEach(function(span) {
-      var textarea = document.querySelector('textarea');
-      span.onclick = function(e) { textarea.value += span.textContent; };
-    });
-    emojiDiv.appendChild(div);
-
-    var button = document.createElement('button');
-    button.textContent = name + ' (' + count + ')';
-    button.onclick = function(e) {
-      emojiDiv.querySelector('.' + name).hidden = false;
-      emojiDiv.querySelectorAll('div:not(.' + name + ')').forEach(function(e) { e.hidden = true; });
-    };
-    catDiv.appendChild(button);
-    return button;
-  });
-  document.querySelector('.status').hidden = true;
-  buttons[0] ? buttons[0].onclick() : 0;
-}
-
 function getCategoryEmoji() {
   var ranges = {
     _Hieroglyphs: /[\u{10000}-\u{100FA}\u{10600}-\u{10767}\u{101D0}-\u{101FC}\u{10980}-\u{1099F}\u{13000}-\u{16A38}]/u,
@@ -143,6 +112,37 @@ function getCategoryEmoji() {
     var name = r[0];
     return emoji[name] ? [name, emoji[name].count, emoji[name].html] : [name, 0, '']
     });
+}
+
+function showEmojiSelector() {
+  var catDiv = document.querySelector('.categories');
+  var emojiDiv = document.querySelector('.emoji');
+
+  var buttons = getCategoryEmoji().map(function(nce) {
+    var name = nce[0];
+    var count = nce[1];
+    var emoji = nce[2];
+    var div = document.createElement('div');
+    div.className = name;
+    div.innerHTML = emoji;
+    div.hidden = true;
+    div.querySelectorAll('span').forEach(function(span) {
+      var textarea = document.querySelector('textarea');
+      span.onclick = function(e) { textarea.value += span.textContent; };
+    });
+    emojiDiv.appendChild(div);
+
+    var button = document.createElement('button');
+    button.textContent = name + ' (' + count + ')';
+    button.onclick = function(e) {
+      emojiDiv.querySelector('.' + name).hidden = false;
+      emojiDiv.querySelectorAll('div:not(.' + name + ')').forEach(function(e) { e.hidden = true; });
+    };
+    catDiv.appendChild(button);
+    return button;
+  });
+  document.querySelector('.status').hidden = true;
+  buttons[0] ? buttons[0].onclick() : 0;
 }
 
 showEmojiSelector();
