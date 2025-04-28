@@ -1,8 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang=en>
 <head>
-  <meta charset=utf-8>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <title>Emoji Selector</title>
+  <link rel="shortcut icon" type="image/x-icon" href="data:image/x-icon;,">
+  <meta property="og:description" content="Compute Unicode categories using JavaScript" name="description">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="unsafe-url">
+  <meta http-equiv="x-dns-prefetch-control" content="off">
+  <meta name="color-scheme" content="light dark">
 <style>
 
 body {
@@ -19,6 +27,11 @@ button:focus {
   background-color: white;
   border: 1px solid;
   line-height: 1.5em;
+}
+
+textarea,
+.emoji span {
+  font-family: emoji;
 }
 
 .emoji span {
@@ -41,6 +54,8 @@ button:focus {
 }
 
 </style>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; navigate-to 'none';">
+</head>
 <body>
   <textarea autofocus></textarea>
   <div class=categories></div>
@@ -50,37 +65,42 @@ button:focus {
 <script>
 'use strict';
 
-const showEmojiSelector = () => {
-  const catDiv = document.querySelector('.categories');
-  const emojiDiv = document.querySelector('.emoji');
+function showEmojiSelector() {
+  var catDiv = document.querySelector('.categories');
+  var emojiDiv = document.querySelector('.emoji');
 
-  getCategoryEmoji().forEach(([name, count, emoji]) => {
-    const div = document.createElement('div');
+  var buttons = getCategoryEmoji().map(function(nce) {
+    var name = nce[0];
+    var count = nce[1];
+    var emoji = nce[2];
+    var div = document.createElement('div');
     div.className = name;
     div.innerHTML = emoji;
     div.hidden = true;
-    div.querySelectorAll('span').forEach((span) => {
-      const textarea = document.querySelector('textarea');
-      span.onclick = (e) => textarea.value += span.textContent;
+    div.querySelectorAll('span').forEach(function(span) {
+      var textarea = document.querySelector('textarea');
+      span.onclick = function(e) { textarea.value += span.textContent; };
     });
     emojiDiv.appendChild(div);
 
-    const button = document.createElement('button');
-    button.textContent = `${name} (${count})`;
-    button.onclick = (e) => {
-      emojiDiv.querySelector(`.${name}`).hidden = false;
-      emojiDiv.querySelectorAll(`div:not(.${name})`).forEach((e) => e.hidden = true);
+    var button = document.createElement('button');
+    button.textContent = name + ' (' + count + ')';
+    button.onclick = function(e) {
+      emojiDiv.querySelector('.' + name).hidden = false;
+      emojiDiv.querySelectorAll('div:not(.' + name + ')').forEach(function(e) { e.hidden = true; });
     };
     catDiv.appendChild(button);
+    return button;
   });
   document.querySelector('.status').hidden = true;
-};
+  buttons[0] ? buttons[0].onclick() : 0;
+}
 
-const getCategoryEmoji = () => {
-  const ranges = {
+function getCategoryEmoji() {
+  var ranges = {
     _Hieroglyphs: /[\u{10000}-\u{100FA}\u{10600}-\u{10767}\u{101D0}-\u{101FC}\u{10980}-\u{1099F}\u{13000}-\u{16A38}]/u,
   };
-  const props = [
+  var props = [
     'Regional_Indicator',
     'Emoji_Modifier_Base',
     'Emoji_Presentation',
@@ -89,41 +109,43 @@ const getCategoryEmoji = () => {
     'Pattern_Syntax',
     ];
 
-  let emoji = {};
-  let last = {};
-  const regexp = Object.entries(ranges).concat(props.map(prop =>
-    [prop, new RegExp(`\\p\{${prop}\}`, 'u')]
-  )).concat([['_Misc', /[\u{1F000}-\u{1FAFF}]/u]]);
-  for (let i = 0; i < 0x20000; i++) {
-    const char = String.fromCodePoint(i);
+  var emoji = {};
+  var last = {};
+  var regexp = Object.entries(ranges).concat(props.map(function(prop) {
+    return [prop, new RegExp('\\p\{' + prop + '\}', 'u')]
+  })).concat([['_Misc', /[\u{1F000}-\u{1FAFF}]/u]]);
+  for (var i = 0; i < 0x20000; i++) {
+    var char = String.fromCodePoint(i);
     if (/\P{Assigned}/u.test(char)) {
       continue;
     }
-    let names = [];
-    regexp.forEach(([name, r]) => {
-      if (r.test(char)) {
-        names.push(name);
+    var names = [];
+    regexp.forEach(function(nr) {
+      if (nr[1].test(char)) {
+        names.push(nr[0]);
       }
     });
 
     if (names.length) {
-      const name = names[0];
+      var name = names[0];
       if (!emoji[name]) {
         emoji[name] = {html: '', count: 0};
       }
       if (last[name] && (i !== last[name] + 1)) {
-        emoji[name].html += `<span>&nbsp;<`+`/span> `;
+        emoji[name].html += '<span>&' + 'nbsp;<' + '/span> ';
       }
-      emoji[name].html += `<span data-char="${char}" title="${i.toString(16)} ${names.join(' ')}">${char}<`+`/span> `;
+      emoji[name].html += '<span data-char="' + char + '" title="' + (i.toString(16)) + ' ' + (names.join(' ')) + '">' + char + '<' + '/span> ';
       emoji[name].count++;
       last[name] = i;
     }
   }
-  const emojis = regexp.map(([name,]) =>
-    [name, emoji[name]?.count ?? 0, emoji[name]?.html ?? '']);
-  return emojis;
-};
+  return regexp.map(function(r) {
+    var name = r[0];
+    return emoji[name] ? [name, emoji[name].count, emoji[name].html] : [name, 0, '']
+    });
+}
 
 showEmojiSelector();
-
 </script>
+</body>
+</html>
