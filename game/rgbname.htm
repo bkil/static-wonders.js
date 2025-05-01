@@ -117,7 +117,10 @@ function nextMsg(msg) {
   var context = new Array;
 
   var m = st.choices;
-  var n = st.colors - (((((st.colors + 1) - (m << 1)) * st.good) / (st.asked + 1)) | 0);
+  var n = m << 1;
+  if (!st.hard) {
+    n = st.colors - (((((st.colors + 1) - (m + (m >> 1))) * st.good) / (st.asked + 1)) | 0);
+  }
 
   var i = -1;
   var j = getRandom(st.colors);
@@ -434,10 +437,23 @@ function start() {
   next();
 }
 
+function startHard() {
+  st.hard = 1;
+  start();
+}
+
 init();
 </script
+><ul
+><li
 ><a href=javascript:start()
->Start</a
+>Easy game</a
+></li
+><li
+><a href=javascript:startHard()
+>Hard game</a
+></li
+></ul
 ><h2
 >Overview</h2
 ><script>
