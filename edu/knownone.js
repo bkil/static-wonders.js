@@ -785,7 +785,7 @@ function screenMenu() {
     '<' + 'h2 id=menu>Menu</h2>' +
     '<a href=javascript:screenLearn() accesskey=l>Learn</a><p>' +
     '<a href=javascript:screenOrderedOverview() accesskey=v>ordered data overView</a><p>' +
-    '<a href=javascript:screenShuffledOverview() accesskey=j>shuffled data overview [J]</a><p>' +
+    '<a href=javascript:screenShuffledOverview() accesskey=j>Jittered data overview</a><p>' +
     '<a href=javascript:screenNewCard("screenMenu()") accesskey=n>New card</a><p>' +
     '<a href=javascript:screenPurge() accesskey=g>purGe all cards</a><p>' +
     '<a href=javascript:screenSave() accesskey=p>save Progress</a><p>');
