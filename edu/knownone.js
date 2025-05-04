@@ -1,11 +1,13 @@
 'use strict';
-var st = new Object;
-var nl = String.fromCharCode(10);
-var day = 3600 * 24;
-
 // JS1
 function strEqual(u, v) {
   return !(u.length - v.length) && !u.indexOf(v);
+}
+
+if (strEqual(typeof st, 'undefined')) {
+var st = new Object;
+var nl = String.fromCharCode(10);
+var day = 3600 * 24;
 }
 
 // JS1
@@ -870,6 +872,9 @@ function loaded() {
 }
 
 function init() {
+  if (st.random) {
+    return undefined;
+  }
   st.random = (new Date) % 2147483648;
   if (!st.random) {
     st.random = 1;
