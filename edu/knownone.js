@@ -835,6 +835,7 @@ function loadHtm(h) {
   } else {
     st.beg = String_substring(h, 0, i);
   }
+  st.beg = String_trim(st.beg) + nl;
   st.beg = '<' + '!DOCTYPE html><' + 'html lang=en>' +  st.beg;
   var cs = String_split(h, '<' + 'h2>');
   i = 0;
