@@ -322,6 +322,7 @@ function writeHtmBody(body, cls) {
     var h = '<head>';
     if (document.documentElement && document.documentElement.innerHTML) {
       h = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
+      h = removeAfter(h, '</head>');
     }
     if (cls) {
       cls = ' class=' + cls;
