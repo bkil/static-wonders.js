@@ -233,7 +233,11 @@ function removeStarting(s, t) {
 }
 
 function removeAfter(s, t) {
-  return removeStarting(s, t) + t;
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, 0, i + t.length);
+  }
+  return s;
 }
 
 function fillSafeHtm() {
