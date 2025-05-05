@@ -815,18 +815,33 @@ function screenPurge() {
   }
 }
 
-function loadHtm(h) {
-  var j = -1;
-  var card;
-  var a;
-  var k;
-  var n;
-  var cards = new Array;
+function sliceBegTail(h) {
+  var j = h.indexOf('<' + '/body>');
+  if (j >= 0) {
+    h = String_substring(h, 0, j)
+  }
+  j = h.indexOf('<body');
+  if (0 > j) {
+    j = h.indexOf('<h2');
+  }
+  st.tail = st.addScript + '<' + '/body>';
+  h = h + st.tail;
   var i = h.indexOf('<script');
-  st.tail = '<' + '/body>';
   if (i >= 0) {
-    st.tail = String_substring(h, i, h.length);
-    h = String_substring(h, 0, i);
+    if ((0 > j) || (j > i))  {
+      var k = h.indexOf('<' + '/script>', i);
+      if ((k >= 0) && (j > k)) {
+        h = String_substring(h, 0, i) + String_substring(h, k + 9, h.length);
+        j = j - k - i - 9;
+      }
+    }
+    if (j >= 0) {
+      i = h.indexOf('<script', j);
+    }
+    if (i >= 0) {
+      st.tail = String_substring(h, i, h.length);
+      h = String_substring(h, 0, i);
+    }
   }
   st.tail = st.tail + '<' + '/html>' + nl;
   i = h.indexOf('<' + 'h2>');
@@ -837,8 +852,18 @@ function loadHtm(h) {
   }
   st.beg = String_trim(st.beg) + nl;
   st.beg = '<' + '!DOCTYPE html><' + 'html lang=en>' +  st.beg;
+  return h;
+}
+
+function loadHtm(h) {
+  h = sliceBegTail(h);
+  var j = -1;
+  var card;
+  var a;
+  var n;
+  var cards = new Array;
   var cs = String_split(h, '<' + 'h2>');
-  i = 0;
+  var i = 0;
   while (cs.length > (i = i + 1)) {
     card = new Object;
     card.id = i - 1;
@@ -870,6 +895,28 @@ function loaded() {
     st.doc = document.documentElement.innerHTML;
   }
   loadHtm(st.doc);
+  if (st.inHead) {
+    screenOrderedOverview();
+  }
+}
+
+function screenInitialMenu() {
+  var h = document.documentElement.innerHTML;
+  var i = h.indexOf('<body');
+  var j = h.indexOf('<' + 'script');
+  if ((j >= 0) && ((0 > i) || (i > j))) {
+    h = String_substring(h, j, h.length);
+    j = h.indexOf('<' + '/script>');
+    if (j >= 0) {
+      h = String_substring(h, 0, j + 9);
+    }
+    st.addScript = h;
+    st.inHead = 1;
+  } else {
+    st.addScript = '';
+    st.doc = h;
+    screenMenu();
+  }
 }
 
 function init() {
@@ -882,12 +929,11 @@ function init() {
   }
   getRandomBits(128);
 
-  st.doc = document.documentElement.innerHTML;
   st.queue = new Array;
   st.queueI = 0;
-  screenMenu();
-  st.docClosed = 1;
+  screenInitialMenu();
   setTimeout(loaded, 0);
+  st.docClosed = 1;
 }
 
 init();
