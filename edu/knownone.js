@@ -606,7 +606,6 @@ function screenGrade(g) {
   if (!q) {
     return screenMenu();
   }
-  var initialInterval = [0, 0, 1, 3, 4, 7];
   var late = 0;
   var scheduledInterval = 0;
   var actualInterval = 0;
@@ -627,12 +626,12 @@ function screenGrade(g) {
       } else if (!(g - 3)) {
         newInterval = getRandom2(3, 4) * day;
         if (!newInterval) {
-          newInterval = 1;
+          newInterval = day;
         }
       } else if (!(g - 4)) {
         newInterval = getRandom2(3, 4) * day;
         if (!newInterval) {
-          newInterval = 2;
+          newInterval = 2 * day;
         }
       } else if (!(g - 5)) {
         newInterval = 2 * day;
@@ -686,7 +685,7 @@ function screenGrade(g) {
     q.ret_reps = 0;
     q.lapses = 0;
     q.ret_reps_since_lapse = 0;
-    newInterval = initialInterval[g];
+    newInterval = st.initialInterval[g];
   }
   newInterval = perturbedInterval(newInterval);
   q.grade = g;
@@ -929,6 +928,14 @@ function init() {
   }
   getRandomBits(128);
 
+  var a = new Array;
+  a[0] = 0;
+  a[1] = 0;
+  a[2] = day;
+  a[3] = 3 * day;
+  a[4] = 4 * day;
+  a[5] = 7 * day;
+  st.initialInterval = a;
   st.queue = new Array;
   st.queueI = 0;
   screenInitialMenu();
