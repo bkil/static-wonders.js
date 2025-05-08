@@ -323,9 +323,11 @@ function step() {
     p = st.p[i];
     if (p.h) {
       p.r = p.r + 1;
-      allAlive = allAlive + 1;
     } else {
       p.r = 0;
+    }
+    if (p.h + p.s[0] + p.s[1] + p.s[2]) {
+      allAlive = allAlive + 1;
     }
     i = i + 1;
   }
