@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <title>LFSR random hashing</title>
+  <link rel="shortcut icon" type="image/x-icon" href="data:image/x-icon;,">
+  <meta property="og:description" content="Model of the simplest effective universal hash function built on a PRBS31 LFSR inspired by Zobrist hashing with JavaScript0 on GemiWeb0" name="description">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="unsafe-url">
+  <meta http-equiv="x-dns-prefetch-control" content="off">
+  <meta name="color-scheme" content="light dark">
+  <style>
+  textarea {
+    width: 100%;
+  }
+  </style>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+</head>
+<body>
+Model of the simplest effective universal hash function built on a PRBS31 LFSR inspired by<br>
+<a href="https://en.wikipedia.org/wiki/Zobrist_hashing" target="_blank" rel="noopener">Zobrist hashing</a>
+<p>
+You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<br>
+<a href="https://bkil.gitlab.io/gemiweb0" target="_blank" rel="noopener">bkil.gitlab.io/gemiweb0</a>
+<p>
+<script>
+'use strict';
+
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  }
+  var c;
+  from = from - 1;
+  var o = '';
+  while ((th.length > (from = from + 1)) && (to > from)) {
+    c = th.charAt(from);
+    o = o + c;
+  }
+  return o;
+}
+
+// ES1, NS3
+function String_split(th, d) {
+  if (th.split) {
+    return th.split(d);
+  }
+  var a = new Array;
+  var j = -1;
+  var from = 0;
+  var i;
+  while ((i = th.indexOf(d, from)) >= 0) {
+    a[j = j + 1] = String_substring(th, from, i);
+    from = i + d.length;
+  }
+  a[j = j + 1] = String_substring(th, from, th.length);
+  return a;
+}
+
+function prbs31(r) {
+  var i = 32;
+  while (i = i - 1) {
+    r = (((r >> 30) ^ (r >> 27)) & 1) ^ ((r & 1073741823) << 1);
+  }
+  return r;
+}
+
+function hash(s) {
+  var n = s.length;
+  var i = -1;
+  var c;
+  var r = 1234567890;
+  var h = r;
+  while (n > (i = i + 1)) {
+    c = (s.charCodeAt(i) << 1) | 1;
+    while (c & 255) {
+      r = prbs31(r);
+      if ((c = c << 1) & 512) {
+        h = h ^ r;
+      }
+      h = h ^ (r = prbs31(r));
+    }
+  }
+  return h;
+}
+
+function update() {
+  var t = window.f.t.value;
+  var nl = String.fromCharCode(10);
+  var a = String_split(t, nl);
+  var o = '';
+  var n = a.length;
+  var j;
+  var i = -1;
+  while (n > (i = i + 1)) {
+    t = a[i];
+    if (((j = t.indexOf(' ')) > 0) && (t.charCodeAt(0) > 47) && (58 > t.charCodeAt(0))) {
+      t = String_substring(t, j + 1, t.length);
+    }
+    if (i) {
+      o = o + nl;
+    }
+    o = o + hash(t) + ' ' + t;
+  }
+  window.f.t.value = o;
+  if (window.f.t.focus) {
+    window.f.t.focus();
+  }
+}
+</script>
+<form name=f action=javascript:update()>
+Type in one string per line to hash
+<br>
+<textarea name=t rows=10 cols=32 autofocus
+>a
+aa
+aaa
+ab
+ba
+baa
+aba
+aab
+</textarea>
+<br>
+<input type=submit value=Update>
+</form>
+<script>
+'use strict';
+update();
+</script>
+</body>
+</html>
