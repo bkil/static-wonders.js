@@ -6,7 +6,7 @@
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <title>LFSR random hashing</title>
   <link rel="shortcut icon" type="image/x-icon" href="data:image/x-icon;,">
-  <meta property="og:description" content="Model of the simplest effective universal hash function built on a PRBS31 LFSR inspired by Zobrist hashing with JavaScript0 on GemiWeb0" name="description">
+  <meta property="og:description" content="Model of the simplest effective universal hash function built on PRBS31 LFSR inspired by Zobrist hashing with JavaScript0 on GemiWeb0" name="description">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="referrer" content="unsafe-url">
   <meta http-equiv="x-dns-prefetch-control" content="off">
@@ -19,12 +19,6 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
 </head>
 <body>
-Model of the simplest effective universal hash function built on a PRBS31 LFSR inspired by<br>
-<a href="https://en.wikipedia.org/wiki/Zobrist_hashing" target="_blank" rel="noopener">Zobrist hashing</a>
-<p>
-You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<br>
-<a href="https://bkil.gitlab.io/gemiweb0" target="_blank" rel="noopener">bkil.gitlab.io/gemiweb0</a>
-<p>
 <script>
 'use strict';
 
@@ -113,8 +107,9 @@ function update() {
 </script>
 <form name=f action=javascript:update()>
 Type in one string per line to hash
+<input type=submit value=Update accesskey=u>
 <br>
-<textarea name=t rows=10 cols=32 autofocus
+<textarea name=t rows=10 cols=32 autofocus accesskey=t
 >a
 aa
 aaa
@@ -124,9 +119,13 @@ baa
 aba
 aab
 </textarea>
-<br>
-<input type=submit value=Update>
 </form>
+<p>
+Model of the simplest effective universal hash function built on a PRBS31 LFSR inspired by<br>
+<a href="https://en.wikipedia.org/wiki/Zobrist_hashing" target=_blank rel=noopener>Zobrist hashing</a>
+<p>
+You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<br>
+<a href="https://bkil.gitlab.io/gemiweb0" target=_blank rel=noopener>bkil.gitlab.io/gemiweb0</a>
 <script>
 'use strict';
 update();
