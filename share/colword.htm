@@ -96,16 +96,6 @@ function writeHtm(body) {
   }
 }
 
-function hashCode(s, b) {
-  var h = 0;
-  var n = s.length;
-  var i = -1;
-  while (n > (i = i + 1)) {
-    h = ((h << 5) - h) + s.charCodeAt(i);
-  }
-  return h & ((1 << b) - 1);
-}
-
 function escapeHtmChar(c) {
   var n = c.charCodeAt(0);
   if (!(n - 34)) {
@@ -134,8 +124,18 @@ function escapeHtm(s) {
   return h;
 }
 
+function hashCode(s) {
+  var h = 0;
+  var n = s.length;
+  var i = -1;
+  while (n > (i = i + 1)) {
+    h = (((h << 5) - h) + s.charCodeAt(i)) | 0;
+  }
+  return h;
+}
+
 function colorWord(s) {
-  var h = hashCode(s, 12) << 4;
+  var h = hashCode(s) & 65520;
   var c = 0;
   var i = 4;
   while (i = i - 1) {
