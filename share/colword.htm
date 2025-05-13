@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang=en prefix="og: http://ogp.me/ns#">
+<head>
+  <meta charset=utf-8>
+  <meta http-equiv=content-type content='text/html; charset=UTF-8'>
+  <meta http-equiv=x-content-type-options content=nosniff>
+  <title>Highlight words in snippet</title>
+  <link rel='shortcut icon' type='image/x-icon' href='data:image/x-icon;,'>
+  <meta name=description property='og:description' content='Color determined by the hash code of each word you input as source text using JavaScript0 and CSS0 on GemiWeb0'>
+  <meta property='og:title' content='Highlight words in snippet'>
+  <meta property='og:type' content=article>
+  <meta property='og:url' content='https://bkil.gitlab.io/static-wonders.js/share/colword.htm'>
+  <meta property='og:image' content='https://bkil.gitlab.io/gemiweb0/gemiweb0-avatar.png'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=unsafe-url>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta name=color-scheme content='light dark'>
+  <style>
+textarea {
+  width: 100%;
+  min-width: calc(100% - 1rem);
+  max-width: calc(100% - 1rem);
+  height: calc(50vh - 2rem);
+  min-height: 2rem;
+  max-height: calc(100vh - 4rem);
+  display: block;
+}
+
+pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+  </style>
+<!-- -->
+  <meta http-equiv=content-security-policy content="default-src 'none'; img-src data: 'self'; script-src 'unsafe-inline' 'unsafe-eval'; style-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+</head>
+<body>
+<form name=f width='100%' action='javascript:app.submit()'
+><textarea name=t accesskey=t width='100%' cols=40 rows=9
+>'use strict';
+var st = new Object;
+
+// ES1
+function Number_toString(x, base) {
+  if ((2 > base) || (base > 16)) {
+    throw 'radix must be between 2 and 16';
+  }
+  var h = '0123456789abcdef';
+  var s = h.charAt(x % base);
+  while (x = (x / base) | 0) {
+    s = h.charAt(x % base) + s;
+  }
+  return s;
+}
+
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  }
+  var c;
+  from = from - 1;
+  var o = '';
+  while ((th.length > (from = from + 1)) && (to > from)) {
+    c = th.charAt(from);
+    o = o + c;
+  }
+  return o;
+}
+
+function removeAfter(s, t) {
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, 0, i + t.length);
+  }
+  return s;
+}
+
+function writeHtm(body) {
+  if (st.docClosed) {
+    var h = '<' + 'head>';
+    if (document.documentElement && document.documentElement.innerHTML) {
+      h = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
+      h = removeAfter(h, '<' + '/head>');
+    }
+    h = '<' + '!DOCTYPE html><' + 'html lang=en>' + h + '<' + '/head><' + 'body>' + body + '<' + '/body><' + '/html>';
+    document.write(h);
+    document.close();
+  } else {
+    document.write(body);
+  }
+  if (window.f && window.f.t && window.f.t.focus) {
+    window.f.t.focus();
+  }
+}
+
+function hashCode(s, b) {
+  var h = 0;
+  var n = s.length;
+  var i = -1;
+  while (n > (i = i + 1)) {
+    h = ((h << 5) - h) + s.charCodeAt(i);
+  }
+  return h & ((1 << b) - 1);
+}
+
+function escapeHtmChar(c) {
+  var n = c.charCodeAt(0);
+  if (!(n - 34)) {
+    return '&' + 'quot;';
+  } else if (!(n - 38)) {
+    return '&' + 'amp;';
+  } else if (!(n - 39)) {
+    return '&' + 'apos;';
+  } else if (!(n - 60)) {
+    return '&' + 'lt;';
+  } else if (!(n - 62)) {
+    return '&' + 'gt;';
+  } else {
+    return c;
+  }
+}
+
+function escapeHtm(s) {
+  var h = '';
+  var c;
+  var i = -1;
+  while (s.length > (i = i + 1)) {
+    c = escapeHtmChar(s.charAt(i));
+    h = h + c;
+  }
+  return h;
+}
+
+function colorWord(s) {
+  var h = hashCode(s, 12) << 4;
+  var c = 0;
+  var i = 4;
+  while (i = i - 1) {
+    c = (c << 8) | ((512 + ((15 & (h = h >> 4)) * 192)) / 16);
+  }
+  c = Number_toString(c, 16);
+  return '<' + 'span style="color:#' + c + '">' + s + '<' + '/span>';
+}
+
+function colorText(s) {
+  var h = '<' + 'pre>';
+  var i = -1;
+  var n = s.length;
+  var c;
+  var x;
+  var word = '';
+  while (n > (i = i + 1)) {
+    c = s.charAt(i);
+    x = c.charCodeAt(0);
+    if (((x > 47) && (58 > x)) || ((x > 64) && (91 > x)) || (!(x-95)) || ((x > 96) && (123 > x))) {
+      word = word + c;
+    } else {
+      if (word) {
+        word = colorWord(word);
+        h = h + word;
+        word = '';
+      }
+      c = escapeHtmChar(c);
+      h = h + c;
+    }
+  }
+  if (word) {
+    word = colorWord(word);
+    h = h + word;
+  }
+  h = h + '<' + '/pre>';
+  return h;
+}
+
+function submit() {
+  var s = window.f.t.value;
+  var h = colorText(s);
+  if (st.docClosed) {
+    s = escapeHtm(s);
+    h = '<' + 'form name=f width="100%" action="javascript:app.submit()">' +
+      '<' + 'textarea name=t accesskey=t width="100%" cols=40 rows=9>' +
+      s + '<' + '/textarea><' + 'br>' +
+      '<' + 'input type=submit value=Update accesskey=u>' +
+      ' You can input source text to process' +
+      '<' + '/form>' +
+      h;
+  }
+  writeHtm(h);
+}
+
+function init() {
+  submit();
+  st.docClosed = 1;
+  var app = new Object;
+  app.submit = submit;
+  return app;
+}
+
+init();</textarea><br>
+<input type=submit value=Update accesskey=u>
+You can input source text to process
+</form>
+<script>
+'use strict';
+var app = eval(window.f.t.value);
+</script>
+<h2>Introduction</h2>
+Color determined by the hash code of each word.
+<p>
+You can install a web browser that supports at least JavaScript 1.0 (1995) and CSS1 to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 and CSS0 yourself according to the following specification:<br>
+<a href='https://bkil.gitlab.io/gemiweb0' target='_blank' rel=noopener>bkil.gitlab.io/gemiweb0</a>
+</body>
+</html>
