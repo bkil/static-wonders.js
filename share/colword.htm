@@ -97,27 +97,27 @@ function writeHtm(body) {
 }
 
 function escapeHtmChar(c) {
-  var n = c.charCodeAt(0);
-  if (!(n - 34)) {
+  var u = c.charCodeAt(0);
+  if (!(u - 34)) {
     return '&' + 'quot;';
-  } else if (!(n - 38)) {
+  } else if (!(u - 38)) {
     return '&' + 'amp;';
-  } else if (!(n - 39)) {
+  } else if (!(u - 39)) {
     return '&' + 'apos;';
-  } else if (!(n - 60)) {
+  } else if (!(u - 60)) {
     return '&' + 'lt;';
-  } else if (!(n - 62)) {
+  } else if (!(u - 62)) {
     return '&' + 'gt;';
-  } else {
-    return c;
   }
+  return c;
 }
 
 function escapeHtm(s) {
   var h = '';
   var c;
+  var n = s.length;
   var i = -1;
-  while (s.length > (i = i + 1)) {
+  while (n > (i = i + 1)) {
     c = escapeHtmChar(s.charAt(i));
     h = h + c;
   }
@@ -150,12 +150,12 @@ function colorText(s) {
   var i = -1;
   var n = s.length;
   var c;
-  var x;
+  var u;
   var word = '';
   while (n > (i = i + 1)) {
     c = s.charAt(i);
-    x = c.charCodeAt(0);
-    if (((x > 47) && (58 > x)) || ((x > 64) && (91 > x)) || (!(x-95)) || ((x > 96) && (123 > x))) {
+    u = c.charCodeAt(0);
+    if (((u > 47) && (58 > u)) || ((u > 64) && (91 > u)) || (!(u - 95)) || ((u > 96) && (123 > u))) {
       word = word + c;
     } else {
       if (word) {
