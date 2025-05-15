@@ -135,11 +135,11 @@ function hashCode(s) {
 }
 
 function colorWord(s) {
-  var h = hashCode(s) & 65520;
+  var h = hashCode(s + '~' + s) << 5;
   var c = 0;
   var i = 4;
   while (i = i - 1) {
-    c = (c << 8) | ((512 + ((15 & (h = h >> 4)) * 192)) / 16);
+    c = (c << 4) | ((64 + ((31 & (h = h >> 5)) * 12)) / 32);
   }
   c = Number_toString(c, 16);
   return '<' + 'span style="color:#' + c + '">' + s + '<' + '/span>';
