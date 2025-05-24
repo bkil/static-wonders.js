@@ -28,6 +28,7 @@ See a generated file listing here:
 * https://github.com/denysdovhan/wtfjs
 * https://google.github.io/styleguide/jsguide.html
 * https://github.com/google/styleguide/blob/gh-pages/javascriptguide.xml
+* https://github.com/airbnb/javascript
 
 ### Non-commercial copyleft resources
 
