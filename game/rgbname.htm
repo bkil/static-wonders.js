@@ -141,15 +141,15 @@ function nextMsg(msg) {
 
   if (st.asked & 2) {
     useColor(target);
-    body = body + '<span class="b _' + target + '">Which color is </span>' +
-      '<span class="w _' + target + '">the background of this text?</span><p>';
+    body = body + '<p><span class="b _' + target + '">Which color is </span>' +
+      '<span class="w _' + target + '">the background of this text?</span></p>';
     i = -1;
     while (m > (i = i + 1)) {
       j = st.n[choice[i]];
       body = body + '<a href="javascript:choice(' + i + ')">' + j + '</a><p>';
     }
   } else {
-    body = body + 'Which background color is ' + st.n[st.target] + '?<p>';
+    body = body + '<p>Which background color is ' + st.n[st.target] + '?</p>';
     i = -1;
     while (m > (i = i + 1)) {
       j = st.v[choice[i]];
@@ -164,10 +164,11 @@ function nextMsg(msg) {
     i = (((100 * st.good) / st.asked) | 0) + '';
   }
   var time = ((new Date / 1000) | 0) - st.start;
-  body = body + i + '% correct (' + st.good + ' of ' + st.asked + ') in ' + time + ' seconds.';
+  body = body + '<p>' + i + '% correct (' + st.good + ' of ' + st.asked + ') in ' + time + ' seconds.';
   if (st.asked & 2) {
     body = body + ' Hint: #' + target;
   }
+  body = body + '</p>';
   writeHtm(body);
 }
 
@@ -193,6 +194,7 @@ function showCorrect(guess) {
     name = st.n[j];
     code = st.v[j];
     useColor(code);
+    body = body + '<p>';
     if (strEqual(code, targetCode)) {
       body = body + 'Is ';
     } else if (!(i - guess)) {
@@ -202,7 +204,7 @@ function showCorrect(guess) {
     }
     body = body + '<span class="b _' + code + '"> ' + name + ' #' + code + ' </span>' +
       '<span class="w _' + code + '"> ' + name + ' #' + code + ' </span>' +
-      '<p>';
+      '</p>';
   }
   body = body + '<a href="javascript:next()">Next question</a>';
 
