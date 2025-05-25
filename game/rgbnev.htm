@@ -9,6 +9,26 @@
   <meta name=referrer content=unsafe-url>
   <meta http-equiv=x-dns-prefetch-control content=off>
   <meta name=color-scheme content='light dark'>
+<style>
+.a, .c {
+  padding: 8px;
+  display: block;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.a {
+  border-style: solid;
+}
+
+.c {
+  border-bottom-style: solid;
+}
+
+.p {
+  margin: 0;
+}
+</style>
 <!-- -->
   <meta http-equiv='Content-Security-Policy' content="default-src 'none'; img-src data: 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self' https://bkil-gitlab-io-23c48d.gitlab.io; base-uri 'none'; form-action javascript:; navigate-to 'none';">
 </head>
@@ -146,7 +166,7 @@ function nextMsg(msg) {
     i = -1;
     while (m > (i = i + 1)) {
       j = st.n[choice[i]];
-      body = body + '<a href="javascript:choice(' + i + ')">' + j + '</a><p>';
+      body = body + '<p class=p><a href="javascript:choice(' + i + ')" class=a>' + j + '</a></p>';
     }
   } else {
     body = body + '<p>Melyik háttérszín ' + st.n[st.target] + '?</p>';
@@ -154,8 +174,8 @@ function nextMsg(msg) {
     while (m > (i = i + 1)) {
       j = st.v[choice[i]];
       useColor(j);
-      body = body + '<a href="javascript:choice(' + i + ')" class="b _' + j + '">#' + j + '</a>' +
-        '<a href="javascript:choice(' + i + ')" class="w _' + j + '"> #' + j + '</a><p>';
+      body = body + '<p class=p><a href="javascript:choice(' + i + ')" class="b _' + j + ' c">#' + j + '</a>' +
+        '<a href="javascript:choice(' + i + ')" class="w _' + j + ' c"> #' + j + '</a></p>';
     }
   }
 
@@ -439,16 +459,14 @@ function startHard() {
 
 init();
 </script
-><ul
-><li
-><a href=javascript:start()
+><p class=p
+><a href=javascript:start() class=a
 >Könnyű játék</a
-></li
-><li
-><a href=javascript:startHard()
+></p
+><p class=p
+><a href=javascript:startHard() class=a
 >Nehéz játék</a
-></li
-></ul
+></p
 ><h2
 >Áttekintés</h2
 ><script>
