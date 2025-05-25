@@ -181,7 +181,8 @@ function showCorrect(guess) {
   if (st.asked & 1) {
     body = 'Hibás';
   }
-  body = '<h1>' + body + '</h1>';
+  body = '<h1>' + body + '</h1>' +
+    '<a href="javascript:next()" class=a>Következő kérdés</a>';
   var choice = st.choice;
   var n = choice.length;
   var j;
@@ -206,7 +207,6 @@ function showCorrect(guess) {
       '<span class="w _' + code + '"> ' + name + ' #' + code + ' </span>' +
       '</p>';
   }
-  body = body + '<a href="javascript:next()">Következő kérdés</a>';
 
   writeHtm(body);
 }
