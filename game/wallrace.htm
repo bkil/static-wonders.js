@@ -47,6 +47,7 @@ function reset() {
   st.m = m;
 
   st.won = st.lost = st.left = st.turn = 0;
+  st.step = 2;
   st.dx1 = 1;
   st.dy1 = 0;
   st.x1 = 0;
@@ -85,7 +86,7 @@ function player() {
   if (map(st.x1 = st.x1 + st.dx1, st.y1 = st.y1 + st.dy1)) {
     st.lost = 1;
   } else {
-    setMap(st.x1, st.y1, 1);
+    setMap(st.x1, st.y1, st.step);
   }
 }
 
@@ -132,7 +133,7 @@ function ai() {
   if (map(x2, y2)) {
     st.won = 1;
   } else {
-    setMap(st.x2, st.y2, 2);
+    setMap(st.x2, st.y2, 0 - st.step);
   }
 }
 
@@ -151,11 +152,14 @@ function draw() {
     r = st.m[i];
     j = -1;
     while (st.w > (j = j + 1)) {
-      if (!(j - st.x2) && !(i - st.y2)) {
-        c = '#';
-      } else if (!(j - st.x1) && !(i - st.y1)) {
+      c = r[j];
+      if (!(j - st.x1) && !(i - st.y1)) {
         c = bs;
-        if (st.dx1) {
+        if (st.lost) {
+          c = ':';
+        } else if (st.won) {
+          c = '@';
+        } else if (st.dx1) {
           if (st.left) {
             c = '/';
           }
@@ -164,22 +168,27 @@ function draw() {
             c = '/';
           }
         }
-        if (st.lost) {
-          c = ':';
-        } else if (st.won) {
-          c = '@';
-        }
-      } else if (!(r[j] - 1)) {
-        c = '.';
-      } else if (!(r[j] - 2)) {
-        c = '+';
-      } else {
+      } else if (!(j - st.x2) && !(i - st.y2)) {
+        c = '#';
+      } else if (!c) {
         c = ' ';
+      } else if (st.lost || st.won) {
+        if (c > 0) {
+          c = (c - 1) % 26;
+        } else {
+          c = ((0 - 1 - c) % 26) + 32;
+        }
+        c = String.fromCharCode(c + 65);
+      } else if (c > 0) {
+        c = '.';
+      } else {
+        c = '+';
       }
       t = t + c;
     }
   }
   window.f.t.value = t;
+  st.step = st.step + 1;
 }
 
 function animate(y) {
