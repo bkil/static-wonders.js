@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang=en prefix="og: http://ogp.me/ns#">
+<head>
+  <meta charset=utf-8>
+  <meta http-equiv=content-type content='text/html; charset=UTF-8'>
+  <meta http-equiv=x-content-type-options content=nosniff>
+  <title>Wall race game</title>
+  <link rel='shortcut icon' type='image/x-icon' href='data:image/x-icon;,'>
+  <meta name=description property='og:description' content='Leave a trail which acts as barrier. Lure your AI opponent to a trap. Single button control. Using JavaScript0 on GemiWeb0'>
+  <meta property='og:title' content='Wall race game'>
+  <meta property='og:type' content=article>
+  <meta property='og:url' content='https://bkil.gitlab.io/static-wonders.js/game/wallrace.htm'>
+  <meta property='og:image' content='https://bkil.gitlab.io/gemiweb0/gemiweb0-avatar.png'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=unsafe-url>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta name=color-scheme content='light dark'>
+  <style>
+textarea {
+  font-family: monospace;
+}
+  </style>
+  <meta http-equiv=content-security-policy content="default-src 'none'; img-src data: 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+</head>
+<body>
+<script>
+'use strict';
+var st = new Object;
+
+function reset() {
+  var m = new Array;
+  var r;
+  var j;
+  var i = -1;
+  while (st.h > (i = i + 1)) {
+    r = new Array;
+    j = -1;
+    while (st.w > (j = j + 1)) {
+      if (!i || !j || (!(st.w - 1 - j)) || (!(st.h - 1 - i))) {
+        r[j] = 1;
+      } else {
+        r[j] = 0;
+      }
+    }
+    m[i] = r;
+  }
+  st.m = m;
+
+  st.won = st.lost = st.left = st.turn = 0;
+  st.dx1 = 1;
+  st.dy1 = 0;
+  st.x1 = 0;
+  st.y1 = st.h >> 1;
+  st.x2 = st.w - 1 - st.x1;
+  st.y2 = st.h - 1 - st.y1;
+}
+
+function map(x, y) {
+  var r = st.m[y];
+  return r[x];
+}
+
+function setMap(x, y, v) {
+  var r = st.m[y];
+  r[x] = v;
+}
+
+function player() {
+  var x;
+  if (st.turn) {
+    if (st.left) {
+      x = st.dy1;
+      st.dy1 = 0 - st.dx1;
+      st.dx1 = x;
+    } else {
+      x = st.dx1;
+      st.dx1 = 0 - st.dy1;
+      st.dy1 = x;
+    }
+    st.turn = 0;
+  } else {
+    st.left = !st.left;
+  }
+
+  if (map(st.x1 = st.x1 + st.dx1, st.y1 = st.y1 + st.dy1)) {
+    st.lost = 1;
+  } else {
+    setMap(st.x1, st.y1, 1);
+  }
+}
+
+function distance(x, y) {
+  var inf = (st.h * st.h) + (st.w * st.w) + 1;
+  if (map(x, y)) {
+    return (st.h + st.w + 1) * inf;
+  }
+  x = x - st.x1;
+  if (0 > x) {
+    x = 0 - x;
+  }
+  y = y - st.y1;
+  if (0 > y) {
+    y = 0 - y;
+  }
+  return ((x + y) * inf) + ((x * x) + (y * y));
+}
+
+function ai() {
+  var x = st.x2;
+  var y = st.y2;
+  var x2 = x - 1;
+  var y2 = y;
+  var d = distance(x2, y2);
+  var d2;
+  if (d > (d2 = distance(x + 1, y))) {
+    d = d2;
+    x2 = x + 1;
+  }
+  if (d > (d2 = distance(x, y - 1))) {
+    d = d2;
+    x2 = x;
+    y2 = y - 1;
+  }
+  if (d > (d2 = distance(x, y + 1))) {
+    d = d2;
+    x2 = x;
+    y2 = y + 1;
+  }
+  st.x2 = x2;
+  st.y2 = y2;
+
+  if (map(x2, y2)) {
+    st.won = 1;
+  } else {
+    setMap(st.x2, st.y2, 2);
+  }
+}
+
+function draw() {
+  var nl = String.fromCharCode(10);
+  var bs = String.fromCharCode(92);
+  var t = '';
+  var c;
+  var r;
+  var j;
+  var i = -1;
+  while (st.h > (i = i + 1)) {
+    if (i) {
+      t = t + nl;
+    }
+    r = st.m[i];
+    j = -1;
+    while (st.w > (j = j + 1)) {
+      if (!(j - st.x2) && !(i - st.y2)) {
+        c = '#';
+      } else if (!(j - st.x1) && !(i - st.y1)) {
+        c = bs;
+        if (st.dx1) {
+          if (st.left) {
+            c = '/';
+          }
+        } else {
+          if (!st.left) {
+            c = '/';
+          }
+        }
+        if (st.lost) {
+          c = ':';
+        } else if (st.won) {
+          c = '@';
+        }
+      } else if (!(r[j] - 1)) {
+        c = '.';
+      } else if (!(r[j] - 2)) {
+        c = '+';
+      } else {
+        c = ' ';
+      }
+      t = t + c;
+    }
+  }
+  window.f.t.value = t;
+}
+
+function animate(y) {
+  player();
+  if (!st.lost) {
+    ai();
+  }
+  draw();
+
+  if (st.lost || st.won) {
+    st.run = 0;
+  } else {
+    setTimeout(function() { y(y); }, 1000);
+  }
+}
+
+function submit() {
+  if (st.run) {
+    st.turn = 1;
+  } else {
+    reset();
+    st.run = 1;
+    animate(animate);
+  }
+}
+
+function init() {
+  st.w = 32;
+  st.h = 15;
+}
+
+init();
+</script>
+<form name=f action='javascript:submit()'>
+<textarea name=t role=img cols=33 rows=16 readonly disabled></textarea>
+<br>
+<input name=s type=submit value=Turn accesskey=t autofocus>
+</form>
+<h2>Introduction</h2>
+Each player leaves a trail after each step that acts as a barrier. The aim is to lure the opponent to a dead end trap so there is no way out for them. The control is a single button that turns 90 degrees either to the left or to the right depending on whether it was pressed in an even or odd step. Includes a computer controlled AI player.
+<p>
+You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:</p>
+<a href='https://bkil.gitlab.io/gemiweb0' target='_blank' rel=noopener>bkil.gitlab.io/gemiweb0</a>
+<script>
+'use strict';
+if (window.f && window.f.s && window.f.s.focus) {
+  window.f.s.focus();
+}
+</script>
+</body>
+</html>
