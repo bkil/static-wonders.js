@@ -190,7 +190,6 @@ function draw() {
     }
   }
   window.f.t.value = t;
-  st.step = st.step + 1;
 }
 
 function animate(y) {
@@ -199,6 +198,7 @@ function animate(y) {
     ai();
   }
   draw();
+  st.step = st.step + 1;
 
   if (st.lost || st.won) {
     st.run = 0;
