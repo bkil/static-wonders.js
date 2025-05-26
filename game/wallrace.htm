@@ -127,13 +127,11 @@ function ai() {
     x2 = x;
     y2 = y + 1;
   }
-  st.x2 = x2;
-  st.y2 = y2;
 
-  if (map(x2, y2)) {
+  if (map(st.x2 = x2, st.y2 = y2)) {
     st.won = 1;
   } else {
-    setMap(st.x2, st.y2, 0 - st.step);
+    setMap(x2, y2, 0 - st.step);
   }
 }
 
