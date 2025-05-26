@@ -19,6 +19,10 @@
 textarea {
   font-family: monospace;
 }
+
+input {
+  padding: 1em;
+}
   </style>
   <meta http-equiv=content-security-policy content="default-src 'none'; img-src data: 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
 </head>
@@ -223,7 +227,7 @@ init();
 <form name=f action='javascript:submit()'>
 <textarea name=t role=img cols=33 rows=16 readonly disabled></textarea>
 <br>
-<input name=s type=submit value=Turn accesskey=t autofocus>
+<input name=s type=submit value='Turn/start' accesskey=t autofocus>
 </form>
 <h2>Introduction</h2>
 Each player leaves a trail after each step that acts as a barrier. The aim is to lure the opponent to a dead end trap so there is no way out for them. The control is a single button that turns 90 degrees either to the left or to the right depending on whether it was pressed in an even or odd step. Includes a computer controlled AI player.
