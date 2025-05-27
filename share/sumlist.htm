@@ -215,7 +215,7 @@ function compute() {
         prod = prod * factor;
       }
     }
-    if ((lines.length > (i + 1)) || prod) {
+    if ((lines.length > (i + 1)) || prod || (line.length && line.indexOf('='))) {
       sum = sum + prod;
       if (i) {
         t = t + nl;
