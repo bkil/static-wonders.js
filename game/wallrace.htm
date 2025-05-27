@@ -179,17 +179,19 @@ function draw() {
         c = '#';
       } else if (!c) {
         c = ' ';
+      } else if (!(c - 1)) {
+        c = '.';
       } else if (st.lost || st.won) {
         if (c > 0) {
-          c = (c - 1) % 26;
+          c = (c - 2) % 26;
         } else {
-          c = ((0 - 1 - c) % 26) + 32;
+          c = ((0 - 2 - c) % 26) + 32;
         }
         c = String.fromCharCode(c + 65);
       } else if (c > 0) {
-        c = '.';
-      } else {
         c = '+';
+      } else {
+        c = '*';
       }
       t = t + c;
     }
