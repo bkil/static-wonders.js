@@ -59,8 +59,8 @@ function reset() {
   st.step = 2;
   st.dx1 = 1;
   st.dy1 = 0;
-  st.x1 = 0;
-  st.y1 = st.h >> 1;
+  st.x1 = (i = (new Date) % ((st.h - 2) << 2)) & 3;
+  st.y1 = (i >> 2) + 1;
   st.x2 = st.w - 1 - st.x1;
   st.y2 = st.h - 1 - st.y1;
 }
