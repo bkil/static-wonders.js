@@ -118,19 +118,19 @@ function ai() {
   var y = st.y2;
   var x2 = x - 1;
   var y2 = y;
-  var d = distance(x2, y2);
-  var d2;
-  if (d > (d2 = distance(x + 1, y))) {
-    d = d2;
+  var d2 = distance(x2, y2);
+  var d;
+  if (d2 > (d = distance(x + 1, y))) {
+    d2 = d;
     x2 = x + 1;
   }
-  if (d > (d2 = distance(x, y - 1))) {
-    d = d2;
+  if (d2 > (d = distance(x, y - 1))) {
+    d2 = d;
     x2 = x;
     y2 = y - 1;
   }
-  if (d > (d2 = distance(x, y + 1))) {
-    d = d2;
+  if (d2 > (d = distance(x, y + 1))) {
+    d2 = d;
     x2 = x;
     y2 = y + 1;
   }
