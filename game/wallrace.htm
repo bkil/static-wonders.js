@@ -100,19 +100,17 @@ function player() {
 }
 
 function distance(x, y) {
-  var inf = (st.h * st.h) + (st.w * st.w) + 1;
+  var scale = (st.w * st.w) + (st.h * st.h) + 1;
   if (map(x, y)) {
-    return (st.h + st.w + 1) * inf;
+    return (st.w + st.h + 1) * scale;
   }
-  x = x - st.x1;
-  if (0 > x) {
+  if (0 > (x = x - st.x1)) {
     x = 0 - x;
   }
-  y = y - st.y1;
-  if (0 > y) {
+  if (0 > (y = y - st.y1)) {
     y = 0 - y;
   }
-  return ((x + y) * inf) + ((x * x) + (y * y));
+  return ((x + y) * scale) + (x * x) + (y * y);
 }
 
 function ai() {
