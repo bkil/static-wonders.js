@@ -57,8 +57,8 @@ function reset() {
 
   st.won = st.lost = st.left = st.turn = 0;
   st.step = 2;
-  st.dx1 = 1;
-  st.dy1 = 0;
+  st.dx = 1;
+  st.dy = 0;
   st.x1 = (i = (new Date) % ((st.h - 2) << 2)) & 3;
   st.y1 = (i >> 2) + 1;
   st.x2 = st.w - 1 - st.x1;
@@ -79,20 +79,20 @@ function player() {
   var x;
   if (st.turn) {
     if (st.left) {
-      x = st.dy1;
-      st.dy1 = 0 - st.dx1;
-      st.dx1 = x;
+      x = st.dy;
+      st.dy = 0 - st.dx;
+      st.dx = x;
     } else {
-      x = st.dx1;
-      st.dx1 = 0 - st.dy1;
-      st.dy1 = x;
+      x = st.dx;
+      st.dx = 0 - st.dy;
+      st.dy = x;
     }
     st.turn = 0;
   } else {
     st.left = !st.left;
   }
 
-  if (map(st.x1 = st.x1 + st.dx1, st.y1 = st.y1 + st.dy1)) {
+  if (map(st.x1 = st.x1 + st.dx, st.y1 = st.y1 + st.dy)) {
     st.lost = 1;
   } else {
     setMap(st.x1, st.y1, st.step);
@@ -166,7 +166,7 @@ function draw() {
           c = ':';
         } else if (st.won) {
           c = '@';
-        } else if (st.dx1) {
+        } else if (st.dx) {
           if (st.left) {
             c = '/';
           }
