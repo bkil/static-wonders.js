@@ -358,11 +358,25 @@ function step() {
   print();
 }
 
+function autoStep(self) {
+  if (st.auto && !st.gameOver) {
+    if (!st.pause) {
+      step();
+    }
+    setTimeout(function(){ self(self); }, 2000);
+  }
+}
+
+function startAuto() {
+  print();
+  if (st.auto && !st.gameOver) {
+    setTimeout(function(){ autoStep(autoStep); }, 2000);
+  }
+}
+
 function restart() {
   var p;
   st.gameOver = 0;
-  st.auto = 0;
-
   st.round = 0;
   st.p = new Array;
   var i = -1;
@@ -381,14 +395,7 @@ function restart() {
     p.s[2] = 0;
     st.p[i] = p;
   }
-  print();
-}
-
-function autoStep(self) {
-  if (st.auto && !st.gameOver) {
-    step();
-    setTimeout(function(){ self(self); }, 2000);
-  }
+  startAuto();
 }
 
 function key(k) {
@@ -405,10 +412,7 @@ function key(k) {
     print();
   } else if (!(k - 5)) {
     st.auto = !st.auto;
-    if (st.auto && !st.gameOver) {
-      setTimeout(function(){ autoStep(autoStep); }, 2000);
-    }
-    print();
+    startAuto();
   } else {
     if (k) {
       var p = st.p[0];
@@ -446,6 +450,7 @@ function init() {
 
   st.showForm = 0;
   st.ai = 1;
+  st.auto = 0;
   restart();
   st.docClosed = 1;
 }
