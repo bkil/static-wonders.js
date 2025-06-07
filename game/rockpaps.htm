@@ -15,6 +15,19 @@
   <meta name=referrer content=unsafe-url>
   <meta http-equiv=x-dns-prefetch-control content=off>
   <meta name=color-scheme content='light dark'>
+<style>
+.a {
+  padding: 8px;
+  display: block;
+  display: inline-block;
+  text-decoration: none;
+  border-style: solid;
+}
+
+.p {
+  margin: 0;
+}
+</style>
 <!-- -->
   <meta http-equiv=content-security-policy content="default-src 'none'; img-src data: 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
 </head>
@@ -49,6 +62,18 @@ function removeAfter(s, t) {
     s = String_substring(s, 0, i + t.length);
   }
   return s;
+}
+
+function ifElse(b, x, y) {
+  if (b) {
+    return x;
+  } else {
+    return y;
+  }
+}
+
+function getEnable(b) {
+  return ifElse(b, 'enable', 'disable');
 }
 
 function writeHtm(body) {
@@ -86,131 +111,186 @@ function getRandom(m) {
   return getRandomBits(8) % m;
 }
 
-function printPlayer(out, who) {
-  if (who) {
-    out = out + 'Bot-' + String.fromCharCode(65 + who);
+
+
+function playerName(who) {
+  if (!who) {
+    return 'You';
+  } else if (!(who-1)) {
+    return 'Tim';
   } else {
-    out = out + 'Me';
+    return 'Ray';
   }
-  return out;
 }
 
-function printBar(out, char, x) {
-  var i = 0;
-  while (i < x) {
-    out = out + char;
-    i = i + 1;
+function printBar(s, c, n) {
+  n = n + 1;
+  while (n = n - 1) {
+    s.h = s.h + c;
   }
-  return out;
 }
 
-function printShip(out, which) {
-  var i = 0;
-  var name;
+function printShipVisual(s, which) {
   var char;
   if (!which) {
-    name = 'Scout';
     char = 's';
   } else if (which - 1) {
-    name = 'Defender';
-    char = 'd';
+    char = 'D';
   } else {
-    name = 'Bomber';
-    char = 'B';
-  }
-
-  if (st.gameOver || st.showForm) {
-    out = out + name + '';
-  } else {
-    out = out + '<a href=javascript:key(' + (which + 1) + ')>build ' + name + '</a>';
+    char = 'b';
   }
 
   var p;
   var width;
   var maxWidth = 5;
-  out = out + '<pre role=img>';
-  while (i < st.p.length) {
-    p = st.p[i];
+  var i = -1;
+  while (st.p.length > (i = i + 1)) {
     if (i) {
-      out = out + ' ';
+      s.h = s.h + ' ';
     }
-    out = printPlayer(out, i);
-    out = out + ' ' + (p.s[which]) + ' ';
-    width = p.s[which];
-    if (width > maxWidth) {
-      width = maxWidth;
-    }
-    out = printBar(out, char, width);
-    if (p.action - (which + 1)) {
-      out = out + ' ';
+    if (which >= 0) {
+      p = st.p[i];
+      s.h = s.h + p.s[which] + ' ';
+      width = p.s[which];
+      if (width > maxWidth) {
+        width = maxWidth;
+      }
+      printBar(s, char, width);
+      if (p.action - (which + 1)) {
+        s.h = s.h + ' ';
+      } else {
+        s.h = s.h + '+';
+      }
     } else {
-      out = out + '+';
+      s.h = s.h + (char = playerName(i));
+      width = char.length;
+      if (width > maxWidth) {
+        width = maxWidth;
+      }
+      width = width - 3;
     }
-    out = printBar(out, ' ', (maxWidth - width) + 1);
-    i = i + 1;
+    if (st.p.length > (i + 1)) {
+      printBar(s, ' ', (maxWidth - width) + 1);
+    }
   }
-  return out + '</pre>';
+  s.h = s.h + String.fromCharCode(10);
+}
+
+function printVisual(s) {
+  s.h = s.h + '<pre role=img>'
+  printShipVisual(s, -1);
+  printShipVisual(s, 0);
+  printShipVisual(s, 1);
+  printShipVisual(s, 2);
+  s.h = s.h + '</pre><ul>';
+  var p;
+  var i = -1;
+  while (st.p.length > (i = i + 1)) {
+    p = st.p[i];
+    s.h = s.h + '<li>.';
+    printBar(s, '.', p.h);
+    s.h = s.h + ' ' + p.h + ' life, ';
+    if (p.h) {
+      s.h = s.h + p.r + ' funds, ';
+    }
+    s.h = s.h + playerName(i) + '</li>';
+  }
+  s.h = s.h + '</ul>';
+}
+
+
+function printLifeText(s, who) {
+  var p = st.p[who];
+  if (s.first) {
+    s.first = 0;
+  } else {
+    s.h = s.h + '; ';
+  }
+  s.h = s.h + playerName(who) + ' ' + p.h;
+  if (p.h) {
+    s.h = s.h + ', ' + p.r;
+    if (!(p.action - 1)) {
+      s.h = s.h + ', scout';
+    } else if (!(p.action - 2)) {
+      s.h = s.h + ', bomber';
+    } else if (!(p.action - 3)) {
+      s.h = s.h + ', defender';
+    }
+  }
+}
+
+function printShipText(s, who) {
+  var p = st.p[who];
+  if (s.first) {
+    s.first = 0;
+  } else {
+    s.h = s.h + '; ';
+  }
+  s.h = s.h + playerName(who) + ' ' + p.s[0] + ', ' + p.s[1] + ', ' + p.s[2] ;
+}
+
+function printText(s) {
+  s.h = s.h + 'Scout, bomber, defender:<br>';
+  s.first = 1;
+  printShipText(s, 1);
+  printShipText(s, 2);
+  printShipText(s, 0);
+  s.h = s.h + '.<br>Life, funds, building:<br>';
+  s.first = 1;
+  printLifeText(s, 1);
+  printLifeText(s, 2);
+  printLifeText(s, 0);
+  s.h = s.h + '.';
+}
+
+function printMenu() {
+  st.pause = 1;
+  var h = 'Round ' + st.round;
+  h = h + '<p class=p><a href="javascript:key(5)" accesskey=a class=a>' + getEnable(!st.auto) + ' Automatic stepping</a></p>';
+  h = h + '<p class=p><a href="javascript:key(9)" accesskey=v class=a>' + getEnable(!st.visual) + ' Visual interface</a></p>';
+  h = h + '<p class=p><a href="javascript:key(6)" accesskey=i class=a>' + getEnable(!st.showForm) + ' form Input</a></p>';
+  h = h + '<p class=p><a href="javascript:print()" accesskey=r class=a>Return to game</a></p>';
+  writeHtm(h);
 }
 
 function print() {
-  var i;
-  var p;
-  var out = '';
-  if (!st.gameOver && !st.showForm) {
-    out = out + '<a href=javascript:key(0)>next round</a><br>';
+  st.pause = 0;
+  var s = new Object;
+  s.h = '';
+  if (st.visual) {
+    printVisual(s);
+  } else {
+    printText(s);
   }
-  out = out + 'Round ' + st.round + '<br>';
-  out = printShip(out, 0);
-  out = printShip(out, 1);
-  out = printShip(out, 2);
-  if (!st.gameOver && !st.showForm) {
-    out = out + '<a href=javascript:key(4)>stop building</a>';
-  }
-
-  out = out + '<ul>';
-  i = 0;
-  while (i < st.p.length) {
-    p = st.p[i];
-    out = out + '<li>.';
-    out = printBar(out, '.', p.h);
-    out = out + ' ' + p.h + ' health, ' + p.r + ' funds ';
-    out = printPlayer(out, i);
-    out = out + '</li>';
-    i = i + 1;
-  }
-  out = out + '</ul>';
-
-  if (!st.gameOver && !st.showForm) {
-    out = out + '<a href=javascript:key(5)>';
-    if (st.auto) {
-      out = out + 'pause';
-    } else {
-      out = out + 'resume';
-    }
-    out = out + ' automatic stepping</a><br>';
-  }
-
-  if (!st.showForm) {
-    out = out + '<a href=javascript:key(6)>show form input</a><br>';
-  }
+  var h = s.h;
+  s = undefined;
 
   if (st.gameOver) {
-    out = out + 'Game over.<br>';
+    h = h + '<p>Game over.</p>';
     if (!st.showForm) {
-      out = out + '<a href=javascript:key(7)>restart easy</a>';
-      out = out + '<br><a href=javascript:key(8)>restart hard</a>';
+      h = h + '<p class=p><a href=javascript:key(7) accesskey=r class=a>Restart easy</a></p>' +
+        '<p class=p><a href=javascript:key(8) accesskey=h class=a>restart Hard</a></p>';
     }
+  } else if (!st.showForm) {
+    h = h + '<p class=p><a href="javascript:key(4)" accesskey=n class=a>do Not build</a></p>' +
+      '<p class=p><a href="javascript:key(1)" accesskey=s class=a>build Scout</a></p>' +
+      '<p class=p><a href="javascript:key(2)" accesskey=b class=a>build Bomber</a></p>' +
+      '<p class=p><a href="javascript:key(3)" accesskey=r class=a>build defendeR</a></p>';
   }
 
   if (st.showForm) {
-    out = out + 'Keys: 0=next 1=Scout 2=Bomber 3=Defender 4=idle 5=auto 6=links';
+    h = h + '<form name=f action="javascript:onSubmit()">';
     if (st.gameOver) {
-      out = out + ' 7=restart easy 8=restart hard';
+      h = h + 'Keys: 6=exit form, 7=restart easy, 8=restart hard';
+    } else {
+      h = h + 'Keys: 1=scout, 2=bomber, 3=defender, 4=idle, 5=auto, 6=links, 9=visual';
     }
-    out = out + '<form name=f action=javascript:onSubmit()><input name=t><input type=submit></form>';
+    h = h + '<br><input name=t><input type=submit></form>';
+  } else {
+    h = h + '<p class=p><a href="javascript:printMenu()" accesskey=M class=a>Menu</a></p>';
   }
 
-  writeHtm(out);
+  writeHtm(h);
 }
 
 function build(player, ship, cost) {
@@ -399,7 +479,7 @@ function restart() {
 }
 
 function key(k) {
-  if ((0 > k) || (k > 8)) {
+  if ((1 > k) || (k > 9)) {
     print();
   } else if (!(k - 8)) {
     st.ai = 1;
@@ -410,14 +490,15 @@ function key(k) {
   } else if (!(k - 6)) {
     st.showForm = !st.showForm;
     print();
+  } else if (!(k - 9)) {
+    st.visual = !st.visual;
+    print();
   } else if (!(k - 5)) {
     st.auto = !st.auto;
     startAuto();
   } else {
-    if (k) {
-      var p = st.p[0];
-      p.action = k;
-    }
+    var p = st.p[0];
+    p.action = k;
     step();
   }
 }
@@ -449,6 +530,7 @@ function init() {
   getRandomBits(128);
 
   st.showForm = 0;
+  st.visual = 0;
   st.ai = 1;
   st.auto = 0;
   restart();
