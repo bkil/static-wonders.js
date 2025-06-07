@@ -51,18 +51,19 @@ function removeAfter(s, t) {
   return s;
 }
 
-function writeHtm(text) {
+function writeHtm(body) {
   if (st.docClosed) {
-    var before = '';
+    var h = '<head>';
     if (document.documentElement && document.documentElement.innerHTML) {
-      before = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
+      h = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
     }
-    document.write('<!DOCTYPE html><html lang=en>' + before + '</head><body>' + text + '<' + '/body><' + '/html>');
+    h = '<!DOCTYPE html><html lang=en>' + h + '</head><body>' + body + '<' + '/body><' + '/html>';
+    document.write(h);
     document.close();
   } else {
-    document.write(text);
+    document.write(body);
   }
-  if (window.f && (window.f.t && window.f.t.focus)) {
+  if (window.f && window.f.t && window.f.t.focus) {
     window.f.t.focus();
   }
 }
@@ -213,7 +214,7 @@ function print() {
 }
 
 function build(player, ship, cost) {
-  if ((player.action - (ship + 1)) || (player.r < cost)) {
+  if ((player.action - ship - 1) || (player.r < cost)) {
     return 0;
   }
   player.s[ship] = player.s[ship] + 1;
@@ -358,14 +359,15 @@ function step() {
 }
 
 function restart() {
+  var p;
   st.gameOver = 0;
   st.auto = 0;
 
   st.round = 0;
   st.p = new Array;
-  var i = 0;
-  while (i < 3) {
-    var p = new Object;
+  var i = -1;
+  while (3 > (i = i + 1)) {
+    p = new Object;
     if (i) {
       p.action = getRandom(3) + 1;
     } else {
@@ -378,7 +380,6 @@ function restart() {
     p.s[1] = 0;
     p.s[2] = 0;
     st.p[i] = p;
-    i = i + 1;
   }
   print();
 }
