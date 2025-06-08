@@ -378,7 +378,7 @@ function getSaveHtm() {
 }
 
 function getReturnToMenu() {
-  return '<a href=javascript:screenMenu() accesskey=m>return to Menu</a>';
+  return '<a href=javascript:screenMenu() class=a accesskey=m>return to Menu</a>';
 }
 
 function screenOverview(cards) {
@@ -395,7 +395,7 @@ function screenOverview(cards) {
     } else {
       t = t + '(' + card.id + ')';
     }
-    t = t + '</h2><a href=javascript:screenEdit(' + card.id + ',"screenOrderedOverview()")>';
+    t = t + '</h2><a href=javascript:screenEdit(' + card.id + ',"screenOrderedOverview()") class=a>';
     if (card.a) {
       t = t + card.a;
     } else {
@@ -455,7 +455,7 @@ function screenSaveUri() {
     name = String_substring(name, i + 1, name.length);
   }
   name = escapeHtm(name);
-  s = '<a download="' + name + '" target=_blank href="' + s + '#/' + name + '" accesskey=k>' + name + '</a> [K]';
+  s = '<a download="' + name + '" target=_blank href="' + s + '#/' + name + '" class=a accesskey=k>' + name + '</a> [K]';
   var t = getReturnToMenu();
   s = s + '<p class=p>' + t;
   writeHtm(s);
@@ -464,10 +464,10 @@ function screenSaveUri() {
 function screenSave() {
   writeHtm(
     '<h2>save Progress</h2>' +
-    '<a href=javascript:screenSaveUri() accesskey=w>doWnload as data URI</a><p class=p>' +
-    '<a href=javascript:screenSaveBody() accesskey=b>copy from Body</a><p class=p>' +
-    '<a href=javascript:screenSavePre() accesskey=y>copY from preformatted block</a><p class=p>' +
-    '<a href=javascript:screenSaveTextarea() accesskey=x>copy from teXtarea</a><p class=p>' +
+    '<a href=javascript:screenSaveUri() class=a accesskey=w>doWnload as data URI</a><p class=p>' +
+    '<a href=javascript:screenSaveBody() class=a accesskey=b>copy from Body</a><p class=p>' +
+    '<a href=javascript:screenSavePre() class=a accesskey=y>copY from preformatted block</a><p class=p>' +
+    '<a href=javascript:screenSaveTextarea() class=a accesskey=x>copy from teXtarea</a><p class=p>' +
     getReturnToMenu());
 }
 
@@ -548,7 +548,7 @@ function makeQueue() {
 
 function screenAhead() {
   writeHtm('You are finished for today<p class=p>' +
-    '<a href=javascript:screenQuestion(screenQuestion) accesskey=h>learn aHead of schedule</a><p class=p>' +
+    '<a href=javascript:screenQuestion(screenQuestion) class=a accesskey=h>learn aHead of schedule</a><p class=p>' +
     getReturnToMenu());
 }
 
@@ -556,7 +556,7 @@ function screenQuestion(y) {
   var q = st.queue[st.queueI];
   if (q) {
     writeHtm('<h2>' + q.q + '</h2><p class=p>' +
-      '<a href=javascript:screenAnswer() accesskey=r>Reveal answer</a>');
+      '<a href=javascript:screenAnswer() class=a accesskey=r>Reveal answer</a>');
   } else {
     makeQueue();
     if (st.queueAhead) {
@@ -581,13 +581,13 @@ function screenAnswer() {
     return screenMenu();
   }
   writeHtm('<h2>' + q.q + '</h2><h3>' + q.a + '</h3>' +
-    '<a href=javascript:screenGrade(0) accesskey=u>grade 0 [U]</a><p class=p>' +
-    '<a href=javascript:screenGrade(1) accesskey=v>grade 1 [V]</a><p class=p>' +
-    '<a href=javascript:screenGrade(2) accesskey=w>grade 2 [W]</a><p class=p>' +
-    '<a href=javascript:screenGrade(3) accesskey=x>grade 3 [X]</a><p class=p>' +
-    '<a href=javascript:screenGrade(4) accesskey=y>grade 4 [Y]</a><p class=p>' +
-    '<a href=javascript:screenGrade(5) accesskey=z>grade 5 [Z]</a><p class=p>' +
-    '<a href=javascript:screenEdit(' + q.id +',"screenQuestion(screenQuestion)") accesskey=i>edIt</a><p class=p>' +
+    '<a href=javascript:screenGrade(0) class=a accesskey=u>grade 0 [U]</a><p class=p>' +
+    '<a href=javascript:screenGrade(1) class=a accesskey=v>grade 1 [V]</a><p class=p>' +
+    '<a href=javascript:screenGrade(2) class=a accesskey=w>grade 2 [W]</a><p class=p>' +
+    '<a href=javascript:screenGrade(3) class=a accesskey=x>grade 3 [X]</a><p class=p>' +
+    '<a href=javascript:screenGrade(4) class=a accesskey=y>grade 4 [Y]</a><p class=p>' +
+    '<a href=javascript:screenGrade(5) class=a accesskey=z>grade 5 [Z]</a><p class=p>' +
+    '<a href=javascript:screenEdit(' + q.id +',"screenQuestion(screenQuestion)") class=a accesskey=i>edIt</a><p class=p>' +
     getReturnToMenu());
 }
 
@@ -715,17 +715,17 @@ function screenEdit(i, b) {
     a = '(answer)';
   }
   var h = '<h2>edIt card</h2>' +
-    '<a href=javascript:screenEditQuestion(' + i + ',"' + b + '") accesskey=q>edit Question: ' + qs + '</a><p class=p>' +
-    '<a href=javascript:screenEditAnswer(' + i + ',"' + b + '") accesskey=a>edit Answer: ' + a + '</a><p class=p>';
+    '<a href=javascript:screenEditQuestion(' + i + ',"' + b + '") class=a accesskey=q>edit Question: ' + qs + '</a><p class=p>' +
+    '<a href=javascript:screenEditAnswer(' + i + ',"' + b + '") class=a accesskey=a>edit Answer: ' + a + '</a><p class=p>';
   if (q.del) {
-    h = h + '<a href=javascript:screenUndeleteCard(' + i + ',"' + b + '") accesskey=u>Undelete</a><p class=p>';
+    h = h + '<a href=javascript:screenUndeleteCard(' + i + ',"' + b + '") class=a accesskey=u>Undelete</a><p class=p>';
   } else {
-    h = h + '<a href=javascript:screenDeleteCard(' + i + ',"' + b + '") accesskey=t>deleTe</a><p class=p>';
+    h = h + '<a href=javascript:screenDeleteCard(' + i + ',"' + b + '") class=a accesskey=t>deleTe</a><p class=p>';
   }
   h = h +
-    '<a href=javascript:screenCloneCard(' + i + ',"' + b + '") accesskey=c>Clone</a><p class=p>' +
-    '<a href=javascript:screenNewCard("' + b + '") accesskey=n>New</a><p class=p>' +
-    '<a href=javascript:' + b + ' accesskey=o>dOne</a>';
+    '<a href=javascript:screenCloneCard(' + i + ',"' + b + '") class=a accesskey=c>Clone</a><p class=p>' +
+    '<a href=javascript:screenNewCard("' + b + '") class=a accesskey=n>New</a><p class=p>' +
+    '<a href=javascript:' + b + ' class=a accesskey=o>dOne</a>';
   writeHtm(h);
 }
 
@@ -797,12 +797,12 @@ function screenEditAnswer(i, b) {
 function screenMenu() {
   writeHtm(
     '<' + 'h2 id=menu>Menu</h2>' +
-    '<a href=javascript:screenLearn() accesskey=l>Learn</a><p class=p>' +
-    '<a href=javascript:screenOrderedOverview() accesskey=v>ordered data overView</a><p class=p>' +
-    '<a href=javascript:screenShuffledOverview() accesskey=j>Jittered data overview</a><p class=p>' +
-    '<a href=javascript:screenNewCard("screenMenu()") accesskey=n>New card</a><p class=p>' +
-    '<a href=javascript:screenPurge() accesskey=g>purGe all cards</a><p class=p>' +
-    '<a href=javascript:screenSave() accesskey=p>save Progress</a><p class=p>');
+    '<a href=javascript:screenLearn() class=a accesskey=l>Learn</a><p class=p>' +
+    '<a href=javascript:screenOrderedOverview() class=a accesskey=v>ordered data overView</a><p class=p>' +
+    '<a href=javascript:screenShuffledOverview() class=a accesskey=j>Jittered data overview</a><p class=p>' +
+    '<a href=javascript:screenNewCard("screenMenu()") class=a accesskey=n>New card</a><p class=p>' +
+    '<a href=javascript:screenPurge() class=a accesskey=g>purGe all cards</a><p class=p>' +
+    '<a href=javascript:screenSave() class=a accesskey=p>save Progress</a><p class=p>');
 }
 
 function screenPurgeConfirmed() {
@@ -816,7 +816,7 @@ function screenPurge() {
   if (st.unsaved) {
     writeHtm('<h2>purGe all cards</h2>' +
       'You have unsaved changes. Please confirm that you really want to delete your progress and all cards.<p class=p>' +
-      '<a href=javascript:screenPurgeConfirmed() accesskey=z>Zap all cards</a><p class=p>' +
+      '<a href=javascript:screenPurgeConfirmed() class=a accesskey=z>Zap all cards</a><p class=p>' +
       getReturnToMenu());
   } else {
     screenPurgeConfirmed();
