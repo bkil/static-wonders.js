@@ -136,10 +136,10 @@ function ai() {
     y2 = y + 1;
   }
 
-  if (map(st.x2 = x2, st.y2 = y2)) {
+  if (map(x2, y2)) {
     st.won = 1;
   } else {
-    setMap(x2, y2, 0 - st.step);
+    setMap(st.x2 = x2, st.y2 = y2, 0 - st.step);
   }
 }
 
