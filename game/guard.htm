@@ -9,8 +9,15 @@
   <meta http-equiv=x-dns-prefetch-control content=off>
   <meta name=color-scheme content='light dark'>
 <style>
-.n {
+.n, .a {
   text-decoration: none;
+}
+
+.a {
+  padding: 8px;
+  display: block;
+  display: inline-block;
+  border-style: solid;
 }
 </style>
 <!-- -->
@@ -174,9 +181,9 @@ function render(msg) {
     } else {
       h = h + 'The pet ran away.';
     }
-    h = h + ' <a href="javascript:restart()">Restart</a>';
+    h = h + ' <a href="javascript:restart()" class=a>Restart</a>';
   } else if (st.inline) {
-    h = h + '<a href="javascript:setInline(0)">Switch inline links to form input</a>';
+    h = h + '<a href="javascript:setInline(0)" class=a>Switch inline links to form input</a>';
   } else {
     h = h + '<form name=f autocomplete=off action="javascript:submitStep()">Select coordinate<input name=t type=number min=0 max=99 placeholder=11..99 minlength=2 maxlength=2 size=2><input type=submit></form>';
     h = h + ' Type 0 to switch form to inline links';
@@ -353,7 +360,7 @@ function init() {
   restart();
 }
 </script
-><a href=javascript:init()
+><a href=javascript:init() class=a
 >Start the game</a
 ><h2
 >Requirements</h2
