@@ -156,11 +156,11 @@ function init() {
 
 function jump() {
   if (st.ele) {
-    return 0;
+    return undefined;
   }
   if (!st.started) {
     restart();
-    return 0;
+    return undefined;
   }
   st.pressedJump = 1;
 }
