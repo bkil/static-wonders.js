@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang=en prefix="og: http://ogp.me/ns#">
+<head>
+  <meta charset=utf-8>
+  <meta http-equiv=content-type content='text/html; charset=UTF-8'>
+  <meta http-equiv=x-content-type-options content=nosniff>
+  <title>ANSI sheet music in data: embed</title>
+  <link rel='shortcut icon' type='image/x-icon' href='data:image/x-icon;,'>
+  <meta name=description property='og:description' content='Simple square wave based monophonic synthesizer for playing short snippets of escapes as uncompressed wave file using JavaScript0 on GemiWeb0'>
+  <meta property='og:title' content='ANSI sheet music in data: embed'>
+  <meta property='og:type' content=article>
+  <meta property='og:url' content='https://bkil.gitlab.io/static-wonders.js/audio/ansimus.htm'>
+  <meta property='og:image' content='https://bkil.gitlab.io/gemiweb0/gemiweb0-avatar.png'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=unsafe-url>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta name=color-scheme content='light dark'>
+<style>
+  textarea {
+    min-width: 100%;
+    max-width: 100%;
+    width: 100%;
+    min-height: 4em;
+  }
+
+.a {
+  padding: 8px;
+  display: block;
+  display: inline-block;
+  text-decoration: none;
+  border-style: solid;
+}
+
+.p {
+  margin: 0;
+}
+</style>
+<!-- -->
+  <meta http-equiv=content-security-policy content="default-src 'none'; img-src data: 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; object-src data:; frame-src data:; media-src data:; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+</head>
+<body>
+<script>
+'use strict';
+var st = new Object;
+
+function oneOf(hay, needle) {
+  return hay.indexOf(needle) >= 0;
+}
+
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  }
+  var c;
+  from = from - 1;
+  var o = '';
+  while ((th.length > (from = from + 1)) && (to > from)) {
+    c = th.charAt(from);
+    o = o + c;
+  }
+  return o;
+}
+
+
+function removeBefore(s, t) {
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, i, s.length);
+  }
+  return s;
+}
+
+function removeAfter(s, t) {
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, 0, i + t.length);
+  }
+  return s;
+}
+
+function writeHtm(body) {
+  if (st.docClosed) {
+    var h = '<head>';
+    var tail = '<' + '/body>';
+    if (document.documentElement && document.documentElement.innerHTML) {
+      h = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
+      tail = removeBefore(document.documentElement.innerHTML, '<' + '!-- body --' + '>');
+      tail = removeAfter(tail, '<' + '!-- end --' + '>');
+    }
+    h = '<!DOCTYPE html><html lang=en>' + h + '</head><body>' + body + tail + '<' + '/html>';
+    document.write(h);
+    document.close();
+  } else {
+    document.write(body);
+  }
+}
+
+function escapeHtmChar(c) {
+  var n = c.charCodeAt(0);
+  if (!(n - 34)) {
+    return '&' + 'quot;';
+  } else if (!(n - 38)) {
+    return '&' + 'amp;';
+  } else if (!(n - 39)) {
+    return '&' + 'apos;';
+  } else if (!(n - 60)) {
+    return '&' + 'lt;';
+  } else if (!(n - 62)) {
+    return '&' + 'gt;';
+  } else {
+    return c;
+  }
+}
+
+function escapeHtm(s) {
+  var o = '';
+  var c;
+  var i = -1;
+  while (s.length > (i = i + 1)) {
+    c = escapeHtmChar(s.charAt(i));
+    o = o + c;
+  }
+  return o;
+}
+
+function base64(a) {
+  var t = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  var s = '';
+  var n = a.length;
+  var i = -1;
+  var j = 0;
+  var b = 0;
+  var c;
+  while (n > (i = i + 1)) {
+    b = (b << 8) | a[i];
+    j = j + 8;
+    while (j > 5) {
+      c = t.charAt(b >> ((j = j - 6)));
+      b = b & ((1 << j) - 1);
+      s = s + c;
+    }
+  }
+  if (j) {
+    c = t.charAt(b << (6 - j));
+    s = s + c;
+  }
+  while (s.length % 4) {
+    s = s + '=';
+  }
+  return s;
+}
+
+function playNote(a, sr, f, l) {
+  var i = a.length - 1;
+  l = l + i;
+  var limit = sr << 15;
+  var step = f >>> 2;
+  var b = 0;
+  var phase = 0;
+  while (l > (i = i + 1)) {
+    a[i] = b;
+    if ((phase = phase + step) > limit) {
+      phase = phase - limit;
+      b = 255 - b;
+    }
+  }
+}
+
+function getNum(o) {
+  var s = o.s;
+  var n = s.length;
+  var i = o.i;
+  var c;
+  var x = 0;
+  while ((n > (i = i + 1)) &&
+    (c = s.charCodeAt(i)) &&
+    (58 > c) && (c > 47) &&
+    ((x = ((x * 10) + c) - 48) || 1)) {
+  }
+  if (n > i) {
+    i = i - 1;
+  }
+  o.i = i;
+  return x;
+}
+
+function getChar(o) {
+  var n = o.s.length;
+  var p = o.locked;
+  o.locked = 4;
+  var k;
+  while (n > (o.i = o.i + 1)) {
+    k = o.s.charCodeAt(o.i);
+    if (!(k-27)) {
+      p = 1;
+    } else if (!p) {
+    } else if (!(p-1)) {
+      if (!(k-91)) {
+        p = 2;
+      } else {
+        p = 0;
+      }
+    } else if (!(p-2)) {
+      if (!(k-77)) {
+        p = 3;
+      } else {
+        p = 0;
+      }
+    } else if (!(p-3)) {
+      if (!(k-70) || !(k-66)) {
+        p = 4;
+      } else {
+        p = 0;
+      }
+    } else if (!(p-4)) {
+      if (k-9) {
+        return o.s.charAt(o.i);
+      } else {
+        p = 0;
+      }
+    }
+  }
+  return '';
+}
+
+function synth(a, sr, m) {
+  var notef = [1097337155,1162588217,1231719310,1304961152,1382558180,1464769368,1551869087,1644148025,1741914154,1845493760,1955232529,2071496705]; // 1.13.18f
+  var notes = 'PCCDDEFFGGAAB';
+
+  var octave = 4;
+  var defFrac = 4;
+  var frac;
+  var tempo = 120;
+  var duration = 0;
+  var duty = 7;
+  var note = -1;
+  var o = new Object;
+  o.i = -1;
+  o.s = m;
+
+  var c;
+  var ni;
+  var fq;
+  while (c = getChar(o)) {
+    if (oneOf('#+', c)) {
+      if (84 > note) {
+        note = note + 1;
+      }
+    } else if (oneOf('-', c)) {
+      if (note > 1) {
+        note = note - 1;
+      }
+    } else if (oneOf('.', c)) {
+      duration = 1;
+    } else if (((o.i = o.i - 1) || 1) && ((ni = getNum(o)) || ((o.i = o.i + 1) && 0))) {
+      frac = ni;
+    } else {
+      if (note >= 0) {
+        if (note) {
+          fq = notef[(note - 1) % 12] >> (7 - (((note - 1) / 12) | 0));
+        } else {
+          fq = 0;
+        }
+        playNote(a, sr, fq, ((((15 * sr * (duration + 2) * duty) / frac) | 0) / tempo) | 0);
+        playNote(a, sr, 0, ((((15 * sr * (duration + 2) * (8 - duty)) / frac) | 0) / tempo) | 0);
+        duration = 0;
+        frac = defFrac;
+        note = -1;
+      }
+
+      if ((ni = notes.indexOf(c)) > -1) {
+        note = 0;
+        if (ni) {
+          note = (octave * 12) + ni;
+        }
+      } else if (oneOf('P', c)) {
+        note = 0;
+        frac = getNum(o);
+      } else if (oneOf('N', c)) {
+        note = getNum(o);
+      } else if (oneOf('L', c)) {
+        defFrac = getNum(o);
+        frac = defFrac;
+      } else if (oneOf('O', c)) {
+        if ((octave = getNum(o)) > 6) {
+          octave = 6;
+        }
+      } else if (oneOf('<', c)) {
+        if (octave > 0) {
+          octave = octave - 1;
+        }
+      } else if (oneOf('>', c)) {
+        if (6 > octave) {
+          octave = octave + 1;
+        }
+      } else if (oneOf('T', c)) {
+        if ((tempo = getNum(o)) > 255) {
+          tempo = 255;
+        } else if (32 > tempo) {
+          tempo = 32;
+        }
+      } else if (oneOf('M', c)) {
+        if (oneOf('N', c = getChar(o))) {
+          duty = 7;
+        } else if (oneOf('L', c)) {
+          duty = 8;
+        } else if (oneOf('S', c)) {
+          duty = 6;
+        }
+      }
+    }
+  }
+}
+
+function write4(a, ofs, d) {
+  a[ofs] = d & 255;
+  a[ofs + 1] = (d >> 8) & 255;
+  a[ofs + 2] = (d >> 16) & 255;
+  a[ofs + 3] = d >> 24;
+}
+
+function getWav(m) {
+  var sr = 8000;
+  var a = [82, 73, 70, 70, 0, 0, 0, 0, 87, 65, 86, 69, 102, 109, 116, 32,
+    16, 0, 0, 0, 1, 0, 1, 0, sr & 255, sr >> 8, 0, 0, sr & 255, sr >> 8, 0, 0, 1, 0, 8, 0,
+    100, 97, 116, 97, 0, 0, 0, 0];
+  var headers = a.length;
+  synth(a, sr, m);
+  var n = a.length;
+  write4(a, 4, n - 8);
+  write4(a, headers - 4, n - headers);
+  return a;
+}
+
+function submit(m) {
+  var h = '';
+  var t;
+  if (st.docClosed) {
+    t = escapeHtm(m);
+    h = h + "<form name=f action='javascript:submitForm()'><textarea rows=6 cols=32 name=t>" + t + '</textarea><input type=submit></form>';
+  }
+  h = h + '<embed autostart="true" loop="true" src="data:audio/x-wav;base64,';
+  t = base64(getWav(m));
+  h = h + t + '">';
+  writeHtm(h);
+}
+
+function submitForm() {
+  submit(window.f.t.value);
+}
+</script>
+<form name=f action='javascript:submitForm()'><textarea rows=6 cols=32 name=t>
+"Ode to Joy" (1824) from the 9th Symphony of Ludwig van Beethoven transcribed by Daniel Liebling on 1992-06-07.
+[MFO2L4F+F+GAAGF+EDDEF+F+EE2L4F+F+GAAGF+EDDEF+EDD2[1A
+[MFP64[1A
+
+"Can-Can" (1858) from Orpheus in the Underworld by J. Oftenbach transcribed by Daniel Liebling on 1992-06-07:
+[MFO2L4DDL8EGF+EL4AAL8ABF+GL4EEL8EGF+ED&gt;DC+&lt;BAGF+E
+[MFO2L4DDL8EFG+EL4AAL8ABF+GL4EEL8EGF+EDAEF+L4DD
+</textarea><input type=submit></form>
+<script>
+'use strict';
+submitForm();
+st.docClosed = 1;
+console.log('hi');
+</script>
+<!-- body -->
+<h2>Warning! Prepare for loud music!</h2>
+<p class=p><a href='javascript:submit("[MFT225O3L8GL8GL8GL2E-P8L8FL8FL8FMLL2DL2DMNP8[1A\n[MFO3L8GL8GL8GL8E-L8A-L8A-L8A-L8GO4L8E-L8E-L8E-MLL2C[1A\n[MFL8CMNO3L8GL8GL8GL8DL8A-L8A-L8A-L8GO4L8FL8FL8FMLL2DL2DMN[1A\n[MFO4L8GL8GL8FL8E-O3L8E-L8E-L8FL8GO4L8GL8GL8FL8E-O3L8E-L8E-[1A\n[MFL8FL8GO4L8GL8GL8FL8E-P4L8CP4L1GO3L8A-L8A-L8A-MLL2FL2FMN[1A\n[MFP8O3L8A-L8A-L8A-L8FL8DL8DL8DO2L8BL8A-L8A-L8A-L8GO1L8GL8[1A\n[MFGL8GL8CO3L8A-L8A-L8A-L8FL8DL8DL8DO2L8B-L8A-L8A-L8A-L8GO1[1A\n[MFL8GL8GL8GL8CO3L8GO4L8CL8CL2CO3L8BL8BL8BO4L8DL2DL8DL8DL8D[1A\n[MFL8E-L8E-L8DL8DL8FL8FL8EL8E-L8G[1A")' class=a>"5th Symphony" (1808) by Ludwig van Beethoven transcribed by Ed Bragg on 1992-04-03.</a></p>
+<p class=p><a href='javascript:submit("[MFMNL16T160[23H\n[MFO1P16G#O2C#EG#C#EG#O3C#O2EG#O3C#EO2G#O3C#E[23H\n[MFO3G#C#EG#O4C#EG#O4C#EO3MLG#O4C#EMSG#8G#8MN[23H\n[MFO1P16G#O2CD#G#CD#G#O3CO2D#G#O3CD#O2G#CD#[23H\n[MFO3G#CD#G#O4CO3D#G#O4CD#O3MLG#O4CD#MSG#8G#8MN[23H\n[MFO2C#FG#O3C#O2FG#O3C#FO2G#O3C#FG#C#FG#[23H\n[MFO4C#O3FG#O4C#FO3G#O4C#FG#MLC#FG#O5MSC#8C#8MN[23H\n[MFO2P16MLC#F#AO3MSC#MLC#F#AO4MSC#MLC#F#AO5MSC#8C#8MN[23H\n[MFO2P16MLC#EGO3MSC#MLC#EGO4MSC#MLC#EGO5MSC#8C#8MN[23H")' class=a>Music arranged by Bob Clarke and Ludwig van Beethoven transcribed by Red Gambrell on 1992-04-19.</a></p>
+<p class=p><a href='javascript:submit("[MFT255O1C1O1C1O3L8GG+O4C+O3AA+O4D+O3BO4CFDD+G+EFA+G[1A\n[MFG+O5C+O4AA+O5D+O4BO5CFDD+G+EFA+GG+C+O4AA+O5F+F+2[1A\n[MFT100MSP8O5L16ED#L8EO4BG#B L16EF#ED#L8EO3BG#B MLL16EBF#B[1A\n[MFG#BABG#BF#B EO4ED#C#O3BO4ED#C#O3BAG#F#[1A\n[MFMSL16EBF#BG#BABG#BF#B EO4ED#C#O3BO4ED#C#O3BAG#F#[1A\n[MFMLEF#G#ABO4C#D#EF#G#AF# G#BEF#G#ABO5C#D#EC#D# EO4B[1A\n[MFABG#BABG#BF#B EO5ED#C#O4BEO5C#O4EBEAE[1A\n[MFMS G#BF#BG#BABG#BF#B EO5ED#C#O4BEO5C#O4EBEAE[1A\n[MFMN G#EEED#EEEF#ED#E EEG#EF#EG#EAEF#E[1A")' class=a>"Sonata IV in E Major, 1st Movement" (1796) by Ludwig van Beethoven transcribed by Ed Bragg on 1992-06-01.</a></p>
+<p class=p><a href='javascript:submit("[MFT160L16O2MNB4P8MSB[1A\n[MFBMNB4P8MSBBB8G#8E8G#8B8G#8B8O3E8O2B8G#8E8G#8B8G#8B8O3E8O2[1A\n[MFMNB4P8MSBBMNB4P8MSBBMNB4P8MSBBMNB4P8MSBBB8BBB8B8B8BBB8B8B8[1A\n[MFBBB8B8B8BBB8B8MLB2B2B8P8P4P4P8MSO1BBB8BBB8BBO2E8F#8G#8O1BB[1A\n[MFB8BBO2E8G#G#F#8D#8O1B8BBB8BBB8BBO2E8F#8G#8EG#MLB4BMSAG#F#E8[1A\n[MFG#8E8O3BBB8BBB8BBO4E8F#8G#8O3BBB8BBO4E8G#G#F#8D#8O3B8BBB8BB[1A\n[MFB8BBO4E8F#8G#8MLEG#B4BAG#F#MSE8G#8E8O3G#G#G#8G#G#G#8G#G#G#8[1A\n[MFO4C#8O3G#8O4C#8O3G#8O4C#8O3G#8F#8E8D#8C#8G#G#G#8G#G#G#8G#G#[1A\n[MFG#8O4C#8O3G#8O4C#8O3G#8O4C#8O3B8A#8B8A#8B8G#G#G#8G#G#G#8G#G#[1A\n[MFG#8O4C#8O3G#8O4C#8O3G#8O4C#8O3G#8F#8E8D#8C#8G#G#G#8G#G#G#8G#[1A\n[MFG#G#8O4C#8O3G#8O4C#8O3G#8O4C#8O3B8A#8B8O2BBB8F#F#F#8F#F#F#8[1A\n[MFG#8A8F#4MNA8MSG#8MNE4MSG#8F#8F#8F#8O3F#F#F#8F#F#F#8G#8A8MNF#4[1A\n[MFMSA8G#8MNE4MSG#8F#8O2BBB8O1BBB8BBB8BBO2MNE8F#8G#8O1BBB8BBO2[1A\n[MFE8G#G#F#8D#8O1B8BBB8BBB8BBO2E8F#8G#8EG#MLB4MNBAG#F#E8G#8E8O3[1A")' class=a>"William Tell Overture" (1829) by Rossini transcribed by Ed Bragg on 1992-06-12.</a></p>
+<p class=p><a href='javascript:submit("[MFL16T120MSO2CEGO3CEO2GO3CEO2CEGO3CEO2GO3CEO2CDAO3DFO2AO3DFO2C[1A\n[MFDAO3DFO2AO3DFO1BO2DGO3DFO2GO3DFO1BO2DGO3DFO2GO3DFO2CEGO3CEO2G[1A\n[MFO3CEO2CEGO3CEO2GO3CEO2CEAO3EAO2AO3EAO2CEAO3EAO2AO3EAO2CDF#AO3D[1A\n[MFO2F#AO3DO2CDF#AO3DO2F#AO3DO1BO2DGO3DGO2GO3DGO1BO2DGO3DGO2GO3DG[1A\n[MFO1BO2CEGO3CO2EGO3CO1BO2CEGO3CO2EGO3CO1AO2CEGO3CO2EGO3CO1AO2CEG[1A\n[MFO3CO2EGO3CO1DAO2DF#O3CO2DF#O3CO1DAO2DF#O3CO2DF#O3CO1GBO2DGBDGB[1A\n[MFO1GBO2DGBDGBO1GA#O2EGO3C#O2EGO3C#O1GA#O2EGO3C#O2EGO3C#O1FAO2DA[1A\n[MFO3DO2DAO3DO1FAO2DAO3DO2DAO3DO1FG#O2DFBDFBO1FG#O2DFBDFBO1EGO2CG[1A\n[MFO3CO2CGO3CO1EGO2CGO3CO2CGO3CO1EFAO2CFO1AO2CFO1EFAO2CFO1AO2CFO1[1A\n[MFDFAO2CFO1AO2CFO1DFAO2CFO1AO2CFO0GO1DGBO2FO1GBO2FO0GO1DGBO2FO1G[1A\n[MFBO2FO1CEGO2CEO1GO2CEO1CEGO2CEO1GO2CEO1CGA#O2CEO1A#O2CEO1CGA#O2[1A\n[MFCEO1A#O2CEO0FO1FAO2CEO1AO2CEO0FO1FAO2CEO1AO2CEO0F#O1CAO2CD#O1A[1A\n[MFO2CD#O0F#O1CAO2CD#O1AO2CD#O0GO1D#BO2CD#O1BO2CD#O0GO1D#BO2CD#O1[1A\n[MFBO2CD#O0G#O1FBO2CDO1BO2CDO0G#O1FBO2CDO1BO2CDO0GO1FGBO2DO1GBO2D[1A\n[MFO0GO1FGBO2DO1GBO2DO0GO1EGO2CEO1GO2CEO0GO1EGO2CEO1GO2CEO0GO1DG[1A\n[MFO2CFO1GO2CFO0GO1DGO2CFO1GO2CFO0GO1DGBO2FO1GBO2FO0GO1DGBO2FO1GB[1A\n[MFO2FO0GO1D#AO2CF#O1AO2CF#O0GO1D#AO2CF#O1AO2CF#O0GO1EGO2CGO1GO2C[1A\n[MFGO0GO1EGO2CGO1GO2CGO0GO1DGO2CFO1GO2CFO0GO1DGO2CFO1GO2CFO0GO1DG[1A\n[MFBO2FO1GBO2FO0GO1DGBO2FO1GBO2FO0CO1CGA#O2EO1GA#O2EO0CO1CGA#O2E[1A\n[MFO1GA#O2ET125O0CO1CFAO2CFCO1AO2CO1AFAFDFDT90O0CBO2GBO3DFDO2BO3D[1A\n[MFO2BGBDFEDC1[1A")' class=a>"Praeludium I From The Well-Tempered Clavier" (1722) by Johann Sebastian Bach transcribed by John D. Brink in 1983-07 and Ed Bragg on 1992-07-06.</a></p>
+<h2>Introduction</h2>
+<p>This is a simple square wave based monophonic synthesizer for playing short snippets of musical ANSI escapes. It inlines the music sheet as an uncompressed wave file for maximal retro-compatibility.</p>
+<ul>
+<li><a href='http://artscene.textfiles.com/ansimusic/' target='_blank' rel=noopener>Further more music samples and information</a></li>
+<li><a href='https://www.syncterm.net/cterm.html#_ansi_music' target='_blank' rel=noopener>CTerm escape sequence specification</a></li>
+</ul>
+<p>You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:</p>
+<ul><li><a href='https://bkil.gitlab.io/gemiweb0' target='_blank' rel=noopener>bkil.gitlab.io/gemiweb0</a></li></ul>
+<!-- end -->
+</body>
+</html>
