@@ -160,7 +160,7 @@ function playNote(a, sr, f, l) {
   var phase = 0;
   while (l > (i = i + 1)) {
     a[i] = b;
-    if ((phase = phase + step) > limit) {
+    if ((phase = phase + step) >= limit) {
       phase = phase - limit;
       b = 255 - b;
     }
