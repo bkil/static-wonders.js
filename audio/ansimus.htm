@@ -44,7 +44,7 @@ textarea {
 var st = new Object;
 
 function oneOf(hay, needle) {
-  return hay.indexOf(needle) >= 0;
+  return hay.indexOf(needle) + 1;
 }
 
 // JS1
@@ -226,7 +226,7 @@ function getChar(o) {
 
 function synth(a, sr, m) {
   var notef = [1097337155,1162588217,1231719310,1304961152,1382558180,1464769368,1551869087,1644148025,1741914154,1845493760,1955232529,2071496705]; // 1.13.18f
-  var notes = 'PCCDDEFFGGAAB';
+  var notes = 'CCDDEFFGGAAB';
 
   var octave = 4;
   var defFrac = 4;
@@ -269,11 +269,8 @@ function synth(a, sr, m) {
         note = -1;
       }
 
-      if ((ni = notes.indexOf(c)) > -1) {
-        note = 0;
-        if (ni) {
-          note = (octave * 12) + ni;
-        }
+      if (ni = oneOf(notes, c)) {
+        note = (octave * 12) + ni;
       } else if (oneOf('N', c)) {
         note = getNum(o);
       } else if (oneOf('P', c)) {
@@ -300,12 +297,8 @@ function synth(a, sr, m) {
           tempo = 32;
         }
       } else if (oneOf('M', c)) {
-        if (oneOf('N', c = getChar(o))) {
-          duty = 7;
-        } else if (oneOf('L', c)) {
-          duty = 8;
-        } else if (oneOf('S', c)) {
-          duty = 6;
+        if (ni = oneOf('SNL', getChar(o))) {
+          duty = ni + 5;
         }
       }
     }
