@@ -151,40 +151,6 @@ function base64(a) {
   return s;
 }
 
-function playNote(a, sr, f, l) {
-  var i = a.length - 1;
-  l = l + i;
-  var limit = sr << 15;
-  var step = f >>> 2;
-  var b = 0;
-  var phase = 0;
-  while (l > (i = i + 1)) {
-    a[i] = b;
-    if ((phase = phase + step) >= limit) {
-      phase = phase - limit;
-      b = 255 - b;
-    }
-  }
-}
-
-function getNum(o) {
-  var s = o.s;
-  var n = s.length;
-  var i = o.i;
-  var c;
-  var x = 0;
-  while ((n > (i = i + 1)) &&
-    (c = s.charCodeAt(i)) &&
-    (58 > c) && (c > 47) &&
-    ((x = ((x * 10) + c) - 48) || 1)) {
-  }
-  if (n > i) {
-    i = i - 1;
-  }
-  o.i = i;
-  return x;
-}
-
 function getChar(o) {
   var n = o.s.length;
   var p = o.locked;
@@ -222,6 +188,40 @@ function getChar(o) {
     }
   }
   return '';
+}
+
+function getNum(o) {
+  var s = o.s;
+  var n = s.length;
+  var i = o.i;
+  var c;
+  var x = 0;
+  while ((n > (i = i + 1)) &&
+    (c = s.charCodeAt(i)) &&
+    (58 > c) && (c > 47) &&
+    ((x = ((x * 10) + c) - 48) || 1)) {
+  }
+  if (n > i) {
+    i = i - 1;
+  }
+  o.i = i;
+  return x;
+}
+
+function playNote(a, sr, f, l) {
+  var i = a.length - 1;
+  l = l + i;
+  var limit = sr << 15;
+  var step = f >>> 2;
+  var b = 0;
+  var phase = 0;
+  while (l > (i = i + 1)) {
+    a[i] = b;
+    if ((phase = phase + step) >= limit) {
+      phase = phase - limit;
+      b = 255 - b;
+    }
+  }
 }
 
 function synth(a, sr, m) {
