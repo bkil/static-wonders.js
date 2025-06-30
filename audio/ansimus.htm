@@ -16,12 +16,12 @@
   <meta http-equiv=x-dns-prefetch-control content=off>
   <meta name=color-scheme content='light dark'>
 <style>
-  textarea {
-    min-width: 100%;
-    max-width: 100%;
-    width: 100%;
-    min-height: 4em;
-  }
+textarea {
+  min-width: 100%;
+  max-width: 100%;
+  width: 100%;
+  min-height: 4em;
+}
 
 .a {
   padding: 8px;
@@ -274,14 +274,13 @@ function synth(a, sr, m) {
         if (ni) {
           note = (octave * 12) + ni;
         }
+      } else if (oneOf('N', c)) {
+        note = getNum(o);
       } else if (oneOf('P', c)) {
         note = 0;
         frac = getNum(o);
-      } else if (oneOf('N', c)) {
-        note = getNum(o);
       } else if (oneOf('L', c)) {
-        defFrac = getNum(o);
-        frac = defFrac;
+        frac = defFrac = getNum(o);
       } else if (oneOf('O', c)) {
         if ((octave = getNum(o)) > 6) {
           octave = 6;
@@ -363,7 +362,6 @@ function submitForm() {
 'use strict';
 submitForm();
 st.docClosed = 1;
-console.log('hi');
 </script>
 <!-- body -->
 <h2>Warning! Prepare for loud music!</h2>
