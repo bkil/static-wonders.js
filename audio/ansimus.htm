@@ -340,7 +340,7 @@ function submit(m) {
     t = escapeHtm(m);
     h = h + "<form name=f action='javascript:submitForm()'><textarea rows=6 cols=32 name=t>" + t + '</textarea><input type=submit></form>';
   }
-  h = h + '<embed autostart="true" loop="true" src="data:audio/x-wav;base64,';
+  h = h + '<embed src="data:audio/x-wav;base64,';
   t = base64(getWav(m));
   h = h + t + '">';
   writeHtm(h);
@@ -375,7 +375,7 @@ console.log('hi');
 <h2>Introduction</h2>
 <p>This is a simple square wave based monophonic synthesizer for playing short snippets of musical ANSI escapes. It inlines the music sheet as an uncompressed wave file for maximal retro-compatibility.</p>
 <ul>
-<li><a href='http://artscene.textfiles.com/ansimusic/' target='_blank' rel=noopener>Further more music samples and information</a></li>
+<li><a href='http://artscene.textfiles.com/ansimusic/' target='_blank' rel=noopener>Further music samples and some format information</a></li>
 <li><a href='https://www.syncterm.net/cterm.html#_ansi_music' target='_blank' rel=noopener>CTerm escape sequence specification</a></li>
 </ul>
 <p>You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:</p>
