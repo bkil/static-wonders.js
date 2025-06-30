@@ -208,23 +208,23 @@ function getNum(o) {
   return x;
 }
 
-function playNote(a, sr, f, l) {
+function playNote(a, rate, freq, len) {
   var i = a.length - 1;
-  l = l + i;
-  var limit = sr << 15;
-  var step = f >>> 2;
-  var b = 0;
+  len = len + i;
+  var limit = rate << 15;
+  var step = freq >>> 2;
+  var v = 0;
   var phase = 0;
-  while (l > (i = i + 1)) {
-    a[i] = b;
+  while (len > (i = i + 1)) {
+    a[i] = v;
     if ((phase = phase + step) >= limit) {
       phase = phase - limit;
-      b = 255 - b;
+      v = 255 - v;
     }
   }
 }
 
-function synth(a, sr, m) {
+function synth(a, rate, s) {
   var notef = [1097337155,1162588217,1231719310,1304961152,1382558180,1464769368,1551869087,1644148025,1741914154,1845493760,1955232529,2071496705]; // 1.13.18f
   var notes = 'CCDDEFFGGAAB';
 
@@ -237,11 +237,10 @@ function synth(a, sr, m) {
   var note = -1;
   var o = new Object;
   o.i = -1;
-  o.s = m;
+  o.s = s;
 
   var c;
-  var ni;
-  var fq;
+  var x;
   while (c = getChar(o)) {
     if (oneOf('#+', c)) {
       if (84 > note) {
@@ -253,24 +252,24 @@ function synth(a, sr, m) {
       }
     } else if (oneOf('.', c)) {
       duration = 1;
-    } else if (((o.i = o.i - 1) || 1) && ((ni = getNum(o)) || ((o.i = o.i + 1) && 0))) {
-      frac = ni;
+    } else if (((o.i = o.i - 1) || 1) && ((x = getNum(o)) || ((o.i = o.i + 1) && 0))) {
+      frac = x;
     } else {
       if (note >= 0) {
         if (note) {
-          fq = notef[(note - 1) % 12] >> (7 - (((note - 1) / 12) | 0));
+          x = notef[(note - 1) % 12] >> (7 - (((note - 1) / 12) | 0));
         } else {
-          fq = 0;
+          x = 0;
         }
-        playNote(a, sr, fq, ((((15 * sr * (duration + 2) * duty) / frac) | 0) / tempo) | 0);
-        playNote(a, sr, 0, ((((15 * sr * (duration + 2) * (8 - duty)) / frac) | 0) / tempo) | 0);
+        playNote(a, rate, x, ((((15 * rate * (duration + 2) * duty) / frac) | 0) / tempo) | 0);
+        playNote(a, rate, 0, ((((15 * rate * (duration + 2) * (8 - duty)) / frac) | 0) / tempo) | 0);
         duration = 0;
         frac = defFrac;
         note = -1;
       }
 
-      if (ni = oneOf(notes, c)) {
-        note = (octave * 12) + ni;
+      if (x = oneOf(notes, c)) {
+        note = (octave * 12) + x;
       } else if (oneOf('N', c)) {
         note = getNum(o);
       } else if (oneOf('P', c)) {
@@ -297,8 +296,8 @@ function synth(a, sr, m) {
           tempo = 32;
         }
       } else if (oneOf('M', c)) {
-        if (ni = oneOf('SNL', getChar(o))) {
-          duty = ni + 5;
+        if (x = oneOf('SNL', getChar(o))) {
+          duty = x + 5;
         }
       }
     }
@@ -312,28 +311,28 @@ function write4(a, ofs, d) {
   a[ofs + 3] = d >> 24;
 }
 
-function getWav(m) {
-  var sr = 8000;
+function getWav(s) {
+  var rate = 8000;
   var a = [82, 73, 70, 70, 0, 0, 0, 0, 87, 65, 86, 69, 102, 109, 116, 32,
-    16, 0, 0, 0, 1, 0, 1, 0, sr & 255, sr >> 8, 0, 0, sr & 255, sr >> 8, 0, 0, 1, 0, 8, 0,
+    16, 0, 0, 0, 1, 0, 1, 0, rate & 255, rate >> 8, 0, 0, rate & 255, rate >> 8, 0, 0, 1, 0, 8, 0,
     100, 97, 116, 97, 0, 0, 0, 0];
   var headers = a.length;
-  synth(a, sr, m);
+  synth(a, rate, s);
   var n = a.length;
   write4(a, 4, n - 8);
   write4(a, headers - 4, n - headers);
   return a;
 }
 
-function submit(m) {
+function submit(s) {
   var h = '';
   var t;
   if (st.docClosed) {
-    t = escapeHtm(m);
+    t = escapeHtm(s);
     h = h + "<form name=f action='javascript:submitForm()'><textarea rows=6 cols=32 name=t>" + t + '</textarea><input type=submit></form>';
   }
   h = h + '<embed src="data:audio/x-wav;base64,';
-  t = base64(getWav(m));
+  t = base64(getWav(s));
   h = h + t + '">';
   writeHtm(h);
 }
