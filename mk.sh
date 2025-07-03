@@ -20,6 +20,9 @@ main() {
 
     cat index.tail.html.tpl
   } > index.html
+
+  find . -type f -regex '.*\.\(htm\|html\|txt\|text\|js\|css\|json\|dz\|index\|csv\)$\|.*/LICENSE$' -exec gzip -9 -f -k {} \;
+  find . -type f -regex '.*\.\(htm\|html\|txt\|text\|js\|css\|json\|dz\|index\|csv\)$\|.*/LICENSE$' -exec brotli -f -k {} \;
 }
 
 main "$@"

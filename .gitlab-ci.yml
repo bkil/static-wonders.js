@@ -5,8 +5,6 @@ pages:
   - apk update && apk add brotli git gawk
   script:
   - ./mk.sh
-  - find . -type f -regex '.*\.\(htm\|html\|txt\|text\|js\|css\|json\|dz\|index\|csv\)$\|.*/LICENSE$' -exec gzip -9 -f -k {} \;
-  - find . -type f -regex '.*\.\(htm\|html\|txt\|text\|js\|css\|json\|dz\|index\|csv\)$\|.*/LICENSE$' -exec brotli -f -k {} \;
   - mkdir -p .public
   - mv -t .public *
   - mv .public public
