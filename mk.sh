@@ -1,6 +1,45 @@
 #!/bin/sh
 set -e
 
+get_zip_size() {
+  local ZIP
+  ZIP="$1.br"
+  if ! [ -f "$ZIP" ]; then
+    ZIP="$1.gz"
+    if ! [ -f "$ZIP" ]; then
+      ZIP="$1"
+    fi
+  fi
+  du -b "$ZIP" |
+  cut -f 1
+}
+
+index_csv() {
+  git ls-tree -l -r master |
+  tr -s " " |
+  cut -d " " -f 4- |
+  while read S F; do
+    printf -- "%s %s %s " "$F" "$S" "`get_zip_size "$F"`"
+    git log --follow --date=short --format='%ct %cd' -- "$F" |
+    awk '
+      {
+        e=$0;
+        if (s=="") {
+          s=e;
+        }
+      }
+      END {
+        printf("%s", s);
+        if (s!=e) {
+          printf(" %s", e);
+        }
+      }'
+    echo
+  done > files.csv
+  gzip -9 -f -k files.csv
+  brotli -9 -f -k files.csv
+}
+
 main() {
   crypto/mk.sh
   jump/mk.sh
@@ -23,6 +62,8 @@ main() {
 
   find . -type f -regex '.*\.\(htm\|html\|txt\|text\|js\|css\|json\|dz\|index\|csv\)$\|.*/LICENSE$' -exec gzip -9 -f -k {} \;
   find . -type f -regex '.*\.\(htm\|html\|txt\|text\|js\|css\|json\|dz\|index\|csv\)$\|.*/LICENSE$' -exec brotli -f -k {} \;
+
+  index_csv
 }
 
 main "$@"
