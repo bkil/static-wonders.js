@@ -1,21 +1,25 @@
 #!/bin/sh
 set -e
 
-crypto/mk.sh
-jump/mk.sh
-userjs/mk.sh
-
-{
-  cat index.head.html.tpl
+main() {
+  crypto/mk.sh
+  jump/mk.sh
+  userjs/mk.sh
 
   {
-    git ls-files | grep -E "\.html?$"
-    for DIR in crypto jump userjs; do
-      find "$DIR" -mtime -1 -type f -iname '*.html'
-    done
-  } |
-  sort -u |
-  sed -r "s~^(.*)$~<li><a href=\"\1\" target=_blank>\1</a></li>~"
+    cat index.head.html.tpl
 
-  cat index.tail.html.tpl
-} > index.html
+    {
+      git ls-files | grep -E "\.html?$"
+      for DIR in crypto jump userjs; do
+        find "$DIR" -mtime -1 -type f -iname '*.html'
+      done
+    } |
+    sort -u |
+    sed -r "s~^(.*)$~<li><a href=\"\1\" target=_blank>\1</a></li>~"
+
+    cat index.tail.html.tpl
+  } > index.html
+}
+
+main "$@"
