@@ -15,7 +15,7 @@ get_zip_size() {
 }
 
 index_csv() {
-  git ls-tree -l -r master |
+  git ls-tree -l -r HEAD |
   tr -s " " |
   cut -d " " -f 4- |
   while read S F; do
