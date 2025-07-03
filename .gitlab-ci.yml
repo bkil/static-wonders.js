@@ -1,4 +1,6 @@
 image: alpine:latest
+variables:
+  GIT_DEPTH: 1000
 pages:
   stage: deploy
   before_script:
