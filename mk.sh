@@ -64,7 +64,7 @@ index_csv() {
       }'
     echo
 
-    get_html_meta "$F"
+    get_htm_meta "$F"
   done > files.csv
   gzip -9 -f -k files.csv
   brotli -9 -f -k files.csv
