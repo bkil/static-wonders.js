@@ -14,7 +14,35 @@ get_zip_size() {
   cut -f 1
 }
 
+get_htm_meta() {
+  local MF
+  readonly MF="$1"
+  printf "%s\n" $MF
+  case "$MF" in
+  *.htm|*.html)
+    {
+      grep -m1 -i -o '<title>.*</title>' "$MF" || echo
+    } | sed "s~<[^>]*>~~g"
+    {
+      grep -m1 -i -o -E "<meta (name|property)=['\"]?(og:)?description['\" ][^>]*>" "$MF" ||
+      grep -m1 -i -o -E "<meta [^>]*\b(name|property)=['\"]?(og:)?description['\" ][^>]*>" "$MF" || echo
+    } | sed -r "
+      s~.* content='([^']+)'.*~\1~
+      t e
+      s~.* content=\"([^\"]+)\".*~\1~
+      :e
+      "
+    ;;
+  *)
+    echo
+    echo
+    ;;
+  esac
+}
+
 index_csv() {
+  local S F
+
   git ls-tree -l -r HEAD |
   tr -s " " |
   cut -d " " -f 4- |
@@ -35,6 +63,8 @@ index_csv() {
         }
       }'
     echo
+
+    get_html_meta "$F"
   done > files.csv
   gzip -9 -f -k files.csv
   brotli -9 -f -k files.csv
