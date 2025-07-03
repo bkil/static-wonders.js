@@ -17,7 +17,6 @@ get_zip_size() {
 get_htm_meta() {
   local MF
   readonly MF="$1"
-  printf "%s\n" $MF
   case "$MF" in
   *.htm|*.html)
     {
