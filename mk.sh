@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-get_zip_size() {
+get_zip_size0() {
   local ZIP
   ZIP="$1.br"
   if ! [ -f "$ZIP" ]; then
@@ -10,8 +10,38 @@ get_zip_size() {
       ZIP="$1"
     fi
   fi
-  du -b "$ZIP" |
-  cut -f 1
+  if [ -f "$ZIP" ]; then
+    du -b "$ZIP" |
+    cut -f 1
+  else
+    echo 0
+  fi
+}
+
+get_zip_size() {
+  local SIZE JS DIR
+  SIZE="`get_zip_size0 "$@"`"
+  DIR="`dirname "$1"`"
+  {
+    case "$1" in
+    *.htm|*.html)
+      grep -oiE "<script\b[^>]*\bsrc=[^>]*>" "$1" |
+      sed -r "
+        s~.* src='([^']+)'.*~\1~
+        t e
+        s~.* src=\"([^\"]+)\".*~\1~
+        t e
+        s~.* src=([^ >]+)[ >].*~\1~
+        :e
+        " |
+      while read JS; do
+        get_zip_size0 "$DIR/$JS"
+      done
+      ;;
+    esac
+    printf -- "%s\n" "$SIZE"
+  } |
+  awk '{s += $1} END {print s}'
 }
 
 get_htm_meta() {
