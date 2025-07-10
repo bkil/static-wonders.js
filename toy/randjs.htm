@@ -156,7 +156,7 @@ function pick(y, g, r, t, l) {
   }
 }
 
-function grammar() {
+function generate() {
   var g = {
     'string': [0, newQString, newAString],
     'op': [
@@ -310,7 +310,7 @@ function init() {
   st.vars = 1;
   st.funs = 1;
   st.h = '';
-  grammar();
+  generate();
   document.write(st.h);
   document.close();
 }
