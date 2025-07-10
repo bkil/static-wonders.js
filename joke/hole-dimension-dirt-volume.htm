@@ -4,7 +4,7 @@
   <meta charset=utf-8>
   <title>Calculate metric dirt in a hole of given enclosing dimensions</title>
   <link rel='shortcut icon' type=image/x-icon href=data:image/x-icon;,>
-  <meta property='og:description' content='Try an example calculator JavaScript0 for GemiWeb0' name='description'>
+  <meta property='og:description' content='Try an example calculator in JavaScript0 for GemiWeb0' name='description'>
   <meta name=viewport content='width=device-width, initial-scale=1'>
   <meta http-equiv=x-dns-prefetch-control content=off>
   <meta http-equiv='Content-Security-Policy' content="default-src 'none'; img-src data: 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
@@ -13,7 +13,7 @@
 >Introduction</h2
 >This is a calculator that will answer the question of how much dirt is inside a hole with given enclosing dimensions provided in meters. Its base can be either rectangular or elliptic (circular).<h2
 >Requirements</h2
->You can install a web browser that supports at least JavaScript 1.0 (1995) to use this tool or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
+>You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<p
 ><a target=_blank rel=noopener href=https://bkil.gitlab.io/gemiweb0
 >bkil.gitlab.io/gemiweb0</a
 ><h2
@@ -70,11 +70,11 @@ function writeHtm(text) {
 }
 
 function ask(dim) {
-  writeHtm('<form action="javascript:have_' + dim + '()" name=f >What is the ' + dim + ' of the hole?<input name=t><input type=submit></form>');
+  writeHtm('<form name=f action="javascript:have_' + dim + '()" >What is the ' + dim + ' of the hole?<input name=t><input type=submit></form>');
 }
 
 function have_length() {
-  writeHtm("The volume of dirt is 0 m3 and its weight is 0 kg, because there is no dirt in an empty hole. And sorry, but doesn't matter what dimensions you type in, this logic statement will still hold.");
+  writeHtm("The volume of dirt is 0 m3 and its weight is 0 kg, because there is no dirt in an empty hole. And sorry, but it doesn't matter what dimensions you type in, this logic statement will still hold.");
 }
 
 function have_width() {
