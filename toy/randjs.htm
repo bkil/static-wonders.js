@@ -39,25 +39,6 @@ function strEqual(u, v) {
 }
 
 // JS1
-function String_substring(th, from, to) {
-  if (th.substring) {
-    return th.substring(from, to);
-  }
-  var o = '';
-  var c;
-  if (to > th.length) {
-    to = th.length;
-  }
-  from = from - 1;
-  to = to - 1;
-  while (to > from) {
-    c = th.charAt(from = from + 1);
-    o = o + c;
-  }
-  return o;
-}
-
-// JS1
 function getRandomBits(n) {
   var x = st.random;
   var i = n + 1;
