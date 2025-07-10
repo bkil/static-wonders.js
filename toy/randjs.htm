@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang=en prefix="og: http://ogp.me/ns#">
+<head>
+  <meta charset=utf-8>
+  <meta http-equiv=content-type content='text/html; charset=UTF-8'>
+  <meta http-equiv=x-content-type-options content=nosniff>
+  <title>Random JavaScript source</title>
+  <link rel='shortcut icon' type='image/x-icon' href='data:image/x-icon;,'>
+  <meta name=description property='og:description' content='Generate syntactically correct code from non-deterministic context-free recursive formal grammar in JSON using JavaScript0 on GemiWeb0'>
+  <meta property='og:title' content='Random JavaScript source'>
+  <meta property='og:type' content=article>
+  <meta property='og:url' content='https://bkil.gitlab.io/static-wonders.js/toy/randjs.htm'>
+  <meta property='og:image' content='https://bkil.gitlab.io/gemiweb0/gemiweb0-avatar.png'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=unsafe-url>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta name=color-scheme content='light dark'>
+  <meta http-equiv=content-security-policy content="default-src 'none'; img-src data: 'self'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; navigate-to 'none';">
+</head>
+<body>
+Generate syntactically correct code from non-deterministic context-free recursive formal grammar in JSON
+<ul>
+<li><a href='https://en.wikipedia.org/wiki/Dissociated_press' target='_blank' rel=noopener>Dissociated press</a></li>
+</ul>
+<p>You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:</p>
+<ul><li><a href='https://bkil.gitlab.io/gemiweb0' target='_blank' rel=noopener>bkil.gitlab.io/gemiweb0</a></li></ul>
+var v1;<br>
+function f1() {}<br>
+<script>
+// Copyright (c) 2025 bkil.hu
+// SPDX-License-Identifier: MIT
+
+'use strict';
+var st = new Object;
+
+// JS1
+function strEqual(u, v) {
+  return !(u.length - v.length) && !u.indexOf(v);
+}
+
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  }
+  var o = '';
+  var c;
+  if (to > th.length) {
+    to = th.length;
+  }
+  from = from - 1;
+  to = to - 1;
+  while (to > from) {
+    c = th.charAt(from = from + 1);
+    o = o + c;
+  }
+  return o;
+}
+
+// JS1
+function getRandomBits(n) {
+  var x = st.random;
+  var i = n + 1;
+  while (i = i - 1) {
+    x = (((x >> 30) ^ (x >> 27)) & 1) ^ ((x & 1073741823) << 1);
+  }
+  st.random = x;
+  if (n > 31) {
+    n = 31;
+  }
+  return x & ((1 << n) - 1);
+}
+
+function getRandom(m) {
+  return getRandomBits(16) % m;
+}
+
+function indent() {
+  st.indent = st.indent + 1;
+}
+
+function outdent() {
+  if (st.indent) {
+    st.indent = st.indent - 1;
+  }
+}
+
+function wrap() {
+  st.wrap = 1;
+}
+
+function showWithWrap(s) {
+  if (st.wrap && (!strEqual(typeof s, 'string') || s)) {
+    st.wrap = 0;
+    var i = st.indent + 1;
+    st.h = st.h + '<br>';
+    while ((i = i - 1)) {
+      st.h = st.h + '&' + 'nbsp; ';
+    }
+    st.rows = st.rows + 1;
+  }
+  st.h = st.h + s;
+}
+
+function newVar() {
+  showWithWrap('v' + (st.vars = st.vars + 1));
+}
+
+function oldVar() {
+  showWithWrap('v' + (1 + getRandom(st.vars)));
+}
+
+function newFun() {
+  showWithWrap('f' + (st.funs = st.funs + 1));
+}
+
+function oldFun() {
+  showWithWrap('f' + (1 + getRandom(st.funs)));
+}
+
+function newInt() {
+  showWithWrap(getRandomBits(8) - 128);
+}
+
+function newQString() {
+  showWithWrap('"s' + getRandomBits(8) + '"');
+}
+
+function newAString() {
+  showWithWrap("'s" + getRandomBits(8) + "'");
+}
+
+function pick(y, g, r, t, l) {
+  if ((l = l + 1) > 256) {
+    throw 'grammar error: stack overflow in ' + r + ', ' + t;
+  }
+  if (strEqual(typeof r, 'undefined')) {
+    throw 'grammar error: rule undefined:' + t;
+  }
+  if (strEqual(typeof r, 'string')) {
+    showWithWrap(r);
+    return undefined;
+  }
+  if (strEqual(typeof r, 'function')) {
+    r();
+    return undefined;
+  }
+  var n;
+  if (!strEqual(typeof r, 'object') || !(n = r.length) || !strEqual(typeof n, 'number')) {
+    throw 'grammar error: expected non-empty array in rule "' + rs + '", ' + t;
+  }
+  var k = r[0];
+  if (!(n - 1)) {
+    if (!(r = g[k])) {
+      throw 'grammar error: not found rule "' + k + '", ' + t;
+    }
+    return y(y, g, r, t + ' ' + k, l);
+  }
+  var i = -1;
+  if (strEqual(typeof k, 'number')) {
+    if (l > 32) {
+      i = 0;
+      while ((n > (i = i + 1)) && r[i]) {
+      }
+      if ((i = i - 1) >= (n - 1)) {
+        i = getRandom(n - 1);
+      }
+    } else {
+      i = getRandom(n - 1);
+    }
+    return y(y, g, r[i + 1], t + '|' + i, l);
+  }
+  while (n > (i = i + 1)) {
+    y(y, g, r[i], t + '&' + i, l);
+  }
+}
+
+function grammar() {
+  var g = {
+    'string': [0, newQString, newAString],
+    'op': [
+      0,
+      ' + ',
+      ' - ',
+      ' * ',
+      ' / ',
+      ' % ',
+      ' &' + 'lt; ',
+      ' &' + 'gt; ',
+      ' &' + 'lt;= ',
+      ' &' + 'gt;= ',
+      ' ^ ',
+      ' | ',
+      ' &' + 'amp; ',
+      ' &' + 'lt;&' + 'lt; ',
+      ' &' + 'gt;&' + 'gt; ',
+      ' &' + 'gt;&' + 'gt;&' + 'gt; ',
+      ' || ',
+      ' &' + 'amp;&' + 'amp; ',
+      ' === ',
+      ' !== '
+      ],
+    'idx': [
+      0,
+      '',
+      [0,
+        ['[', ['expr'], ']'],
+        ['.', oldVar]
+        ],
+      ['idx']
+      ],
+    'args1': [
+      0,
+      '',
+      [', ', ['expr'], ['args1']]
+      ],
+    'args': [
+      '(',
+      [0, '', [['expr'], ['args1']]],
+      ')'
+      ],
+    'rhs': [
+      ' = ',
+      ['expr']
+      ],
+    'sTerm': [
+      ['idx'],
+      [0, '', ['rhs']]
+      ],
+    'iTerm': [
+      0,
+      'undefined',
+      'null',
+      'NaN',
+      'new Object',
+      'new Array',
+      'new Date',
+      ['typeof ', ['expr']],
+      [oldVar, ['sTerm']],
+      [oldFun, ['args']]
+      ],
+    'lTerm': [
+      0,
+      newInt,
+      ['string'],
+      [[0, '!', '~', '-'], ['term']],
+      ['(', ['expr'], ')']
+      ],
+    'term': [
+      0,
+      ['iTerm'],
+      ['lTerm']
+      ],
+    'eExpr': [
+      0,
+      '',
+      [['op'], ['term'], ['eExpr']]
+      ],
+    'pars': [
+      0,
+      '',
+      'x',
+      'x, y'
+      ],
+    'function': [
+      '(',
+      ['pars'],
+      ') {',
+      indent,
+      wrap,
+      ['stms'],
+      [0, '', ['return ', ['expr'], ';', wrap]],
+      outdent,
+      '}',
+      wrap
+      ],
+    'expr': [
+      0,
+      [['iTerm'], ['eExpr']],
+      [['lTerm'], ['eExpr']]
+      ],
+    'stm': [
+      0,
+      ['if (', ['expr'], ')', ['stmBody'],
+        [0, '', ['else ', ['stmBody']]]],
+      ['while (', ['expr'], ')', ['stmBody']],
+      ['for (i in ', ['expr'], ')', ['stmBody']],
+      ['var ', newVar,
+        [0, '', [' = ', ['expr']]],
+        ';', wrap],
+      ['try ', ['stmBrace'], ' catch (e)', ['stmBrace']],
+      ['throw ', ['expr'], ';', wrap],
+      [['expr'], ';', wrap]
+      ],
+    'stms': [
+      ['stm'],
+      [0, '', ['stms']]
+      ],
+    'topStm': [
+      0,
+      ['function ', newFun, ['function']],
+      ['stm'],
+      ],
+    'stmBrace': [' {', indent, wrap, ['stms'], outdent, '}', wrap],
+    'stmBody': [0, ['stmBrace'], [indent, wrap, ['stm'], outdent]],
+    'topStms': [
+      ['topStm'],
+      [0, '', ['topStms']]
+      ],
+    '_': ['topStms']
+    };
+
+  while ((99999 > st.h.length) && (999 > st.rows)) {
+    st.indent = 0;
+    st.wrap = 0;
+    pick(pick, g, g['_'], '', 0);
+    st.h = st.h + '<p>';
+  }
+}
+
+function init() {
+  st.random = (new Date) % 2147483648;
+  if (1|!st.random) {
+    st.random = 1;
+  }
+  getRandomBits(128);
+
+  st.rows = 0;
+  st.vars = 1;
+  st.funs = 1;
+  st.h = '';
+  grammar();
+  document.write(st.h);
+  document.close();
+}
+
+init();
+</script>
+</body>
+</html>
