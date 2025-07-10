@@ -8,9 +8,11 @@
   <meta name=viewport content='width=device-width, initial-scale=1'>
   <meta http-equiv=x-dns-prefetch-control content=off>
   <meta name=color-scheme content='light dark'>
+<!-- -->
   <meta http-equiv='Content-Security-Policy' content="default-src 'none'; img-src data: 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
 </head>
-<body><h2
+<body
+><h2
 >Introduction</h2
 >This is a calculator that will answer the question of how much dirt is inside a hole with given enclosing dimensions provided in meters. Its base can be either rectangular or elliptic (circular).<h2
 >Requirements</h2
@@ -46,23 +48,18 @@ function String_substring(th, from, to) {
 function removeAfter(s, t) {
   var i = s.indexOf(t);
   if (i >= 0) {
-    s = String_substring(s, 0, i);
+    s = String_substring(s, 0, i + t.length);
   }
   return s;
 }
 
 function writeHtm(text) {
-  var h = '<!DOCTYPE ';
-  if (document.doctype && document.doctype.name) {
-    h = h + document.doctype.name;
-  } else {
-    h = h + 'html';
-  }
-  h = h + '><html lang=en>';
+  var h = '';
   if (document.documentElement && document.documentElement.innerHTML) {
-    h = h + removeAfter(document.documentElement.innerHTML, '<body>');
+    h = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
+    h = h + '</head>';
   }
-  h = '<body>' + text + '<' + '/body></html>';
+  h = '<!DOCTYPE html><html lang=en>' + h + '<body>' + text + '<' + '/body><' + '/html>';
   document.write(h);
   document.close();
   if (window.f && window.f.t && window.f.t.focus) {
