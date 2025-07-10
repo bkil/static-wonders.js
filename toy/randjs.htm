@@ -301,7 +301,7 @@ function grammar() {
 
 function init() {
   st.random = (new Date) % 2147483648;
-  if (1|!st.random) {
+  if (!st.random) {
     st.random = 1;
   }
   getRandomBits(128);
