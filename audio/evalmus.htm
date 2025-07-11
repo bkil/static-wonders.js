@@ -387,7 +387,7 @@ function submit(s) {
       s +
       '</textarea><input type=submit></form>';
   }
-  var t = '<embed src="data:audio/x-wav;base64,' + base64(getWav(s)) + '">';
+  var t = '<embed type="audio/x-wav" autostart=true autoload=true autoplay=true src="data:audio/x-wav;base64,' + base64(getWav(s)) + '">';
   if (st.err) {
     if (!st.err.length && st.err.stack) {
       t = '' + st.err.stack;
