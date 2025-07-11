@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang=en prefix="og: http://ogp.me/ns#">
+<head>
+  <meta charset=utf-8>
+  <meta http-equiv=content-type content='text/html; charset=UTF-8'>
+  <meta http-equiv=x-content-type-options content=nosniff>
+  <title>Evaluate expressions as music</title>
+  <link rel='shortcut icon' type='image/x-icon' href='data:image/x-icon;,'>
+  <meta name=description property='og:description' content='Simple musical synthesizer for evaluating short snippets of code which produces momentary amplitude using JavaScript0 on GemiWeb0. Inlines sound as uncompressed wave file in data: embed.'>
+  <meta property='og:title' content='Evaluate expressions as music'>
+  <meta property='og:type' content=article>
+  <meta property='og:url' content='https://bkil.gitlab.io/static-wonders.js/audio/evalmus.htm'>
+  <meta property='og:image' content='https://bkil.gitlab.io/gemiweb0/gemiweb0-avatar.png'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=unsafe-url>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta name=color-scheme content='light dark'>
+<style>
+textarea {
+  min-width: 100%;
+  max-width: 100%;
+  width: 100%;
+  min-height: 4em;
+}
+
+blockquote {
+  border-left-style: solid;
+  padding-left: 1em;
+}
+
+.a {
+  padding: 8px;
+  display: block;
+  display: inline-block;
+  text-decoration: none;
+  border-style: solid;
+}
+
+.p {
+  margin: 0;
+}
+</style>
+<!-- -->
+  <meta http-equiv=content-security-policy content="default-src 'none'; img-src data: 'self'; script-src 'unsafe-inline' 'unsafe-eval'; style-src 'unsafe-inline'; object-src data:; frame-src data:; media-src data:; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+</head>
+<body>
+<script>
+function nonStrictEval(javascriptSource, state) {
+  return eval(javascriptSource);
+}
+</script>
+<script>
+'use strict';
+var st = new Object;
+var nl = String.fromCharCode(10);
+
+// JS1
+function strEqual(u, v) {
+  return !(u.length - v.length) && !u.indexOf(v);
+}
+
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  }
+  var c;
+  from = from - 1;
+  var o = '';
+  while ((th.length > (from = from + 1)) && (to > from)) {
+    c = th.charAt(from);
+    o = o + c;
+  }
+  return o;
+}
+
+// ES5
+function String_trim(th) {
+  if (th.trim) {
+    return th.trim();
+  }
+  var n = th.length;
+  var c;
+  var i = 0;
+  while ((n > i) && !(((c = th.charCodeAt(i)) - 32) && (c - 9) && (c - 10))) {
+    i = i + 1;
+  }
+  var j = n - 1;
+  while ((j >= i) && !(((c = th.charCodeAt(j)) - 32) && (c - 9) && (c - 10))) {
+    j = j - 1;
+  }
+  return String_substring(th, i, j + 1);
+}
+
+// ES1, NS3
+function String_split(th, d) {
+  if (th.split) {
+    return th.split(d);
+  }
+  var a = new Array;
+  var j = 0;
+  var from = 0;
+  var i = th.indexOf(d, from);
+  while (i >= 0) {
+    a[j] = String_substring(th, from, i);
+    j = j + 1;
+    from = i + d.length;
+    i = th.indexOf(d, from);
+  }
+  a[j] = String_substring(th, from, th.length);
+  return a;
+}
+
+function fillSafeUri() {
+  if (st.safeUri) {
+    return undefined;
+  }
+  var zero = String.fromCharCode(0);
+  var i = 0;
+  var safeList = "!'()*-._~0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  var safe = zero;
+  while (127 > (i = i + 1)) {
+    if (0 > safeList.indexOf(String.fromCharCode(i))) {
+      safe = safe + zero;
+    } else {
+      safe = safe + '1';
+    }
+  }
+  st.safeUri = safe;
+}
+
+// ES3, NS5?
+function encodeURIComponent_(s) {
+  if (!strEqual(typeof encodeURIComponent, 'undefined')) {
+    return encodeURIComponent(s);
+  }
+  fillSafeUri();
+  var safe = st.safeUri;
+  var hex = '0123456789abcdef';
+  var o = '';
+  var i = -1;
+  var n;
+  var c;
+  while (1) {
+    c = s.charAt(i = i + 1);
+    while (safe.charCodeAt(n = c.charCodeAt(0))) {
+      o = o + c;
+      c = s.charAt(i = i + 1);
+    }
+    if (isNaN(n)) {
+      return o;
+    }
+    if (128 > n) {
+      c = hex[n >> 4] + hex[n & 15];
+      o = o + '%';
+    }
+    o = o + c;
+  }
+}
+
+function getHexDigit(n) {
+  if ((n > 47) && (58 > n)) {
+    return n - 48;
+  } else if ((n > 96) && (103 > n)) {
+    return n - 87;
+  } else if ((n > 64) && (71 > n)) {
+    return n - 55;
+  } else {
+    return -1;
+  }
+}
+
+// web API: Chrome 38, Firefox 20
+function TextDecoder_decode(a) {
+  if (!strEqual(typeof TextDecoder, 'undefined') &&
+    !strEqual(typeof Uint8Array, 'undefined')) {
+    return eval('(new TextDecoder).decode(new Uint8Array(a))');
+  }
+  var s = '';
+  var i = -1;
+  var n = a.length;
+  var c;
+  while (n > (i = i + 1)) {
+    c = a[i];
+    // FIXME
+    if (128 > c) {
+      c = String.fromCharCode(c);
+      s = s + c;
+    }
+  }
+  return s;
+}
+
+// ES3, NS5?
+function decodeURIComponent_(s) {
+  if (!strEqual(typeof decodeURIComponent, 'undefined')) {
+    try {
+      return decodeURIComponent(s);
+    } catch (e) {
+    }
+  }
+  var a = new Array;
+  var j = -1;
+  var i = -1;
+  var n;
+  var u;
+  var v;
+  while (s.length > (i = i + 1)) {
+    n = s.charCodeAt(i);
+    if (!(n - 37) && (s.length > (i + 2))) {
+      u = getHexDigit(s.charCodeAt(i + 1));
+      v = getHexDigit(s.charCodeAt(i + 2));
+      if ((u >= 0) && (v >= 0)) {
+        n = (u << 4) | v;
+        i = i + 2;
+      }
+    }
+    a[j = j + 1] = n;
+  }
+  return TextDecoder_decode(a);
+}
+
+function decodeURIQ(s){
+  if (!strEqual(typeof decodeURIComponent, 'undefined')) {
+    return decodeURIComponent(s);
+  }
+  return s;
+}
+
+function removeBefore(s, t) {
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, i, s.length);
+  }
+  return s;
+}
+
+function removeAfter(s, t) {
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, 0, i + t.length);
+  }
+  return s;
+}
+
+function writeHtm(body) {
+  if (st.docClosed) {
+    var h = '<head>';
+    var tail = '<' + '/body>';
+    if (document.documentElement && document.documentElement.innerHTML) {
+      h = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
+      tail = removeBefore(document.documentElement.innerHTML, '<' + '!-- body --' + '>');
+      tail = removeAfter(tail, '<' + '!-- end --' + '>');
+    }
+    h = '<!DOCTYPE html><html lang=en>' + h + '</head><body>' + body + tail + '<' + '/html>';
+    document.write(h);
+    document.close();
+  } else {
+    document.write(body);
+  }
+}
+
+function fillSafeHtm() {
+  if (st.safeHtm) {
+    return undefined;
+  }
+  var zero = String.fromCharCode(0);
+  var enc = new Array;
+  enc[0] = zero;
+  enc[34] = '&' + 'quot;';
+  enc[38] = '&' + 'amp;';
+  enc[39] = '&' + 'apos;';
+  enc[60] = '&' + 'lt;';
+  enc[62] = '&' + 'gt;';
+  st.encHtm = enc;
+
+  var safe = '';
+  var i = -1;
+  while (128 > (i = i + 1)) {
+    if (enc[i]) {
+      safe = safe + zero;
+    } else {
+      safe = safe + '1';
+    }
+  }
+  st.safeHtm = safe;
+}
+
+function escapeHtm(h) {
+  fillSafeHtm();
+  var s = st.safeHtm;
+  var enc = st.encHtm;
+  var o = '';
+  var i = -1;
+  var n;
+  var c;
+  while (1) {
+    c = h.charAt(i = i + 1);
+    while (s.charCodeAt(n = c.charCodeAt(0))) {
+      o = o + c;
+      c = h.charAt(i = i + 1);
+    }
+    if (isNaN(n)) {
+      return o;
+    }
+    if (128 > n) {
+      c = enc[n];
+    }
+    o = o + c;
+  }
+}
+
+function base64(a) {
+  var t = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  var s = '';
+  var n = a.length;
+  var i = -1;
+  var j = 0;
+  var b = 0;
+  var c;
+  while (n > (i = i + 1)) {
+    b = (b << 8) | a[i];
+    j = j + 8;
+    while (j > 5) {
+      c = t.charAt(b >> ((j = j - 6)));
+      b = b & ((1 << j) - 1);
+      s = s + c;
+    }
+  }
+  if (j) {
+    c = t.charAt(b << (6 - j));
+    s = s + c;
+  }
+  while (s.length % 4) {
+    s = s + '=';
+  }
+  return s;
+}
+
+function synth(a, s) {
+  s =
+    'var t = -1;' +
+    'while (200000 > (t = t + 1)) {' +
+    'state.a[state.i = state.i + 1] = (' + s + nl +
+    ') & 255;' +
+    '}';
+  var state = new Object;
+  state.a = a;
+  state.i = a.length - 1;
+  st.err = undefined;
+  try {
+    nonStrictEval(s, state);
+  } catch (e) {
+    st.err = e;
+  }
+}
+
+function write4(a, ofs, d) {
+  a[ofs] = d & 255;
+  a[ofs + 1] = (d >> 8) & 255;
+  a[ofs + 2] = (d >> 16) & 255;
+  a[ofs + 3] = d >> 24;
+}
+
+function getWav(s) {
+  var rate = 8000;
+  var a = [82, 73, 70, 70, 0, 0, 0, 0, 87, 65, 86, 69, 102, 109, 116, 32,
+    16, 0, 0, 0, 1, 0, 1, 0, rate & 255, rate >> 8, 0, 0, rate & 255, rate >> 8, 0, 0, 1, 0, 8, 0,
+    100, 97, 116, 97, 0, 0, 0, 0];
+  var headers = a.length;
+  synth(a, s);
+  var n = a.length;
+  write4(a, 4, n - 8);
+  write4(a, headers - 4, n - headers);
+  return a;
+}
+
+function submit(s) {
+  var h = '';
+  if (st.docClosed) {
+    h = h + "<form name=f action='javascript:submitForm()'><textarea rows=6 cols=32 name=t>" +
+      s +
+      '</textarea><input type=submit></form>';
+  }
+  var t = '<embed src="data:audio/x-wav;base64,' + base64(getWav(s)) + '">';
+  if (st.err) {
+    if (!st.err.length && st.err.stack) {
+      t = '' + st.err.stack;
+    } else {
+      t = '' + st.err;
+    }
+    t = escapeHtm('' + t);
+    h = h + '<h2>Error</h2><pre>' + t + '</pre>';
+  } else {
+    h = h + t;
+  }
+  h = h + st.songHtm;
+  writeHtm(h);
+}
+
+function submitForm() {
+  submit(window.f.t.value);
+}
+
+function init() {
+  var h = '<h2>Warning! Prepare for loud music!</h2>';
+  var lines = String_split(String_trim(window.f.t.value), nl);
+  var n = lines.length;
+  var line;
+  var code;
+  var name;
+  var i = -1;
+  while (n > (i = i + 1)) {
+    line = String_trim(lines[i]);
+    if (line) {
+      name = String_split(line, '//');
+      code = name[0];
+      name = name[1];
+      if (!name) {
+        code = '';
+        name = line;
+      }
+      line = encodeURIComponent_('submit(decodeURIComponent_("' + encodeURIComponent_(line) + '"))');
+      name = escapeHtm(String_trim(name));
+      h = h + '<p class=p><a href=' + "'" +
+        'javascript:' + line +
+        "'" + ' class=a>' + name + '</a></p>';
+      if (code) {
+        code = escapeHtm(code);
+        h = h + '<blockquote>' + code + '</blockquote>';
+      }
+    }
+  }
+  st.songHtm = h;
+  window.f.t.value = lines[0];
+  submitForm();
+  st.docClosed = 1;
+}
+</script>
+<form name=f action='javascript:submitForm()'><textarea rows=6 cols=32 name=t>
+
+(function(T){return (function(x,y){return ((((3e3/y)&1)*35)|0) + x*y/4e4 + ((T>>8^T>>10|T>>14|x)&63)})(T*("6689"[T>>16&3]&15)/24&127,T&16383)})(t<<2) // drum, bass and lead for C on 32kHz by Mu6k
+(function(x){return ((x*("36364689"[x>>13&7]&15))/12&128)+(((((x>>12)^(x>>12)-2)%11*x)/4|x>>13)&127)})((6*t)|0) // bass pattern and self-similar melody by Ryg 2011-10-10
+(t>>9&t>>8)*(t>>3) // Ready for a horror trip? Just add some LSD by h0uz3
+(t|t>>17)>>(t>>7)|(t<<2|t<<8)>>(t>>11)|(t<<2|t<<11)>>(t>>17) // cool morse blips after a while by h0uz3
+(t&(t>>6)+(t<<((t>>11)^((t>>13)+3))|((t>>14%64)+(t>>14)))&(-t>>5)) // Track Crafty by Paul Hayes
+(-1-t|t+t/256)-(-(t-(t>>8))|t+(t>>8))
+((t>>5&t)-(t>>5)+(t>>5&t))+(t*((t>>14)&14))
+(t*((3+(1^t>>10&5))*(5+(3&t>>14))))>>(t>>8&3)
+(~t>>2)*((127&t*(7&t>>10))<(245&t*(2+(5&t>>14))))
+t*(t>>((t&4096)?((t*t)/4096):(t/4096)))|(t<<(t/256))|(t>>4)
+t * ((t>>12|t>>8)&63&t>>4) // from bemmu
+((t<<1)^((t<<1)+(t>>7)&t>>12))|t>>(4-(1^7&(t>>19)))|t>>7
+t*(42&t>>10) // Forty-Two Melody
+t*((42&t>>10)%14) // tuned Forty-Two Melody
+t*(5+((t>>11)&5)) // E3, G3, C4, D4
+t*(t>>9|t>>13)&16 // square wave filtering by Niklas Roy
+t&t>>8 // Sierpinski Harmony
+(t&t>>4)-5 // Sierpinski Harmony with drum
+(t*9&t>>4|t*5&t>>7|t*3&t/1024)-1 // complex Sierpinski Harmony with drum
+t&48&t>>8 // bitonal
+(t*3)&t>>8
+(t*5)&t>>8
+t*5&(t>>7)|t*3&(t*4>>10) // by miiro
+(t*5&t>>7)|(t*3&t>>10) // by viznut
+t*9&t>>4|t*5&t>>7|t*3&t/1024 // by stephth
+t&t%255
+t*(0xCA98>>(t>>9&14)&15)|t>>8 // by Rrrola
+t>>4|t&((t>>5)/(t>>7-(t>>15)&-t>>7-(t>>15))) // modular wrap-around by droid
+((t/1e7*t*t+t)|0)%127|t>>4|t>>5|t%127+(t>>16)|t // modular wrap-around by bst
+t>>6&1?t>>5:-t>>4 // modular wrap-around by droid
+t>>6^t>>8|t>>12|t&63 // lead
+((t>>1%128)+20)*3*t>>14*t>>18 // by harism
+t*(((t>>9)&10)|((t>>11)&24)^((t>>10)&15&(t>>15))) // by tangent128
+t*5&(t>>7)|t*3&(t*4>>10) // by miiro
+((t*(t>>8|t>>9)&46&t>>8))^(t&t>>13|t>>6) // by xpansive
+(t*(t>>5|t>>8))>>(t>>16) // by tejeez
+(t*t/256)&(t>>((t/1024)%16))^t%64*(0xC0D3DE4D69>>(t>>9&30)&t%32)*t>>18 // by ultrageranium 2011-10-12
+(t|t>>8)>>(t>>7)|(t<<6|t<<8)>>(t>>11)|(t<<7|t<<11)>>(t>>11) // by hadez
+(t>>8|t-2)&(2-t|8<<t) // Symmetries are for pussies by h0uz3
+((t>>8|t-2)&(2-t|8<<t))<<((t>>8|t-2)&(2-t|8<<t))>>((t>>8|t-2)&(2-t|8<<t)) // Downward spiral by h0uz3
+((((t>>3|t<<7)|t>>11)|t>>16)&23) // 23 makes everything a little more sane by h0uz3
+((t>>4)|(t<<4)&0x11111+t/1000) // Baby-Kübelwagen-Alarm-Therapist #x1 [pre] by tv
+((t>>7)* 0xff) * (t & 0xff)/32 & ~(t / 127) // Almost pac-man by bdwheele
+((t>>10)<<((t>>4)%([8,9,10,11][(t>>11)%4]-(t>>15)%4))) // Boss level by tito
+</textarea><input type=submit></form>
+<script>
+'use strict';
+init();
+</script>
+<!-- body -->
+<h2>Introduction</h2>
+<p>A simple musical synthesizer for evaluating short snippets of code which produces momentary amplitude. It inlines the sound as an uncompressed wave file in a data: embed for maximal retro-compatibility of playback. The input is not sanitized and the runtime is not sandboxed, so only paste in expressions that you trust!</p>
+<ul>
+<li><a href='https://countercomplex.blogspot.com/2011/10/algorithmic-symphonies-from-one-line-of.html' target='_blank' rel=noopener>Algorithmic symphonies from one line of code -- how and why?</a></li>
+</ul>
+<p>You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:</p>
+<ul><li><a href='https://bkil.gitlab.io/gemiweb0' target='_blank' rel=noopener>bkil.gitlab.io/gemiweb0</a></li></ul>
+<h2>Copyright</h2>
+I have received some of the examples from archives which lacked author information. Feel free to contact me if you know of a more precise attribution at any given entry.
+<ul><li><a href='../LICENSE' target='_blank' rel=noopener>SPDX-License-Identifier: MIT</a></li></ul>
+Copyright (c) 2025 bkil.hu
+<!-- end -->
+</body>
+</html>
