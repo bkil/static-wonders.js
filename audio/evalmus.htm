@@ -443,9 +443,8 @@ function init() {
 }
 </script>
 <form name=f action='javascript:submitForm()'><textarea rows=6 cols=32 name=t>
-
-(function(T){return (function(x,y){return ((((3e3/y)&1)*35)|0) + x*y/4e4 + ((T>>8^T>>10|T>>14|x)&63)})(T*("6689"[T>>16&3]&15)/24&127,T&16383)})(t<<2) // drum, bass and lead for C on 32kHz by Mu6k
-(function(x){return ((x*("36364689"[x>>13&7]&15))/12&128)+(((((x>>12)^(x>>12)-2)%11*x)/4|x>>13)&127)})((6*t)|0) // bass pattern and self-similar melody by Ryg 2011-10-10
+(function(t){return (function(x,y){return ((((3e3/y)&1)*35)|0) + x*y/4e4 + ((t>>8^t>>10|t>>14|x)&63)})(t*("6689"[t>>16&3]&15)/24&127,t&16383)})(t<<2) // drum, bass and lead for C on 32kHz by Mu6k
+(function(t){return ((t*("36364689"[t>>13&7]&15))/12&128)+(((((t>>12)^(t>>12)-2)%11*t)/4|t>>13)&127)})(6*t) // bass pattern and self-similar melody by Ryg 2011-10-10
 (t>>9&t>>8)*(t>>3) // Ready for a horror trip? Just add some LSD by h0uz3
 (t|t>>17)>>(t>>7)|(t<<2|t<<8)>>(t>>11)|(t<<2|t<<11)>>(t>>17) // cool morse blips after a while by h0uz3
 (t&(t>>6)+(t<<((t>>11)^((t>>13)+3))|((t>>14%64)+(t>>14)))&(-t>>5)) // Track Crafty by Paul Hayes
