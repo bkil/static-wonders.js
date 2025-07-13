@@ -422,9 +422,9 @@ function updateFragment() {
     o = st.save[k];
     t = '';
     if (h) {
-      t = '&';
+      t = '?';
     }
-    t = t + k + '&' + ifs(o.s) + '&' + ifs(o.q) + '&' + ifs(o.a);
+    t = t + k + '?' + ifs(o.s) + '?' + ifs(o.q) + '?' + ifs(o.a);
     h = h + t;
   }
   setFragment(h);
@@ -1078,7 +1078,7 @@ function loadUri() {
   }
   st.base = String_substring(h, 0, i);
   h = String_substring(h, i + 1, h.length);
-  var a = String_split(h, '&');
+  var a = String_split(h, '?');
   var n = a.length;
   i = -1;
   var s;
