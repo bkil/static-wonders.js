@@ -879,36 +879,40 @@ function sliceBegTail(h) {
   return h;
 }
 
+function loadCardStats(card, s, id, load) {
+  card.id = id;
+  if (!s || !(s = String_trim(s))) {
+    return 0;
+  }
+  var a = String_split(s, ',');
+  return updateCard(card, 'grade', parseIntPlus(a[0]), load) |
+    updateCard(card, 'next_rep', parseIntPlus(a[1]), load) |
+    updateCard(card, 'last_rep', parseIntPlus(a[2]), load) |
+    updateCard(card, 'easiness', parseIntPlus(a[3]), load) |
+    updateCard(card, 'acq_reps', parseIntPlus(a[4]), load) |
+    updateCard(card, 'ret_reps', parseIntPlus(a[5]), load) |
+    updateCard(card, 'lapses', parseIntPlus(a[6]), load) |
+    updateCard(card, 'acq_reps_since_lapse', parseIntPlus(a[7]), load) |
+    updateCard(card, 'ret_reps_since_lapse', parseIntPlus(a[8]), load)
+}
+
 function loadHtm(h) {
   h = sliceBegTail(h);
   var j = -1;
   var card;
   var a;
-  var n;
   var cards = new Array;
   var cs = String_split(h, '<' + 'h2>');
+  var n = cs.length;
   var i = 0;
-  while (cs.length > (i = i + 1)) {
+  while (n > (i = i + 1)) {
     card = new Object;
-    card.id = i - 1;
     a = String_trim(cs[i]);
     a = String_split(a, '</' + 'h2>');
     card.q = String_trim(a[0]);
     a = String_split(String_trim(a[1]), '<br>');
     card.a = String_trim(a[0]);
-    if (a[1] && (a = String_trim(a[1]))) {
-      a = String_split(a, ',');
-      n = a.length;
-      card.grade = parseIntPlus(a[0]);
-      card.next_rep = parseIntPlus(a[1]);
-      card.last_rep = parseIntPlus(a[2]);
-      card.easiness = parseIntPlus(a[3]);
-      card.acq_reps = parseIntPlus(a[4]);
-      card.ret_reps = parseIntPlus(a[5]);
-      card.lapses = parseIntPlus(a[6]);
-      card.acq_reps_since_lapse = parseIntPlus(a[7]);
-      card.ret_reps_since_lapse = parseIntPlus(a[8]);
-    }
+    loadCardStats(card, a[1], i-1, 1);
     cards[j = j + 1] = card;
   }
   st.card = cards;
