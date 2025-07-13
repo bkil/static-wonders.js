@@ -311,6 +311,7 @@ function refreshUnsaved() {
 }
 
 function setUnsaved() {
+  st.fragmentChanged = 1;
   if (!st.unsaved) {
     st.unsaved = 1;
     refreshUnsaved();
@@ -320,6 +321,44 @@ function setUnsaved() {
 function clearUnsaved() {
   st.unsaved = 0;
   window.onbeforeunload = undefined;
+}
+
+function setFragment(h) {
+  h = st.base + '#' + h;
+  if (strEqual(h, window.location.href)) {
+  } else if (window.location.replace) {
+    window.location.replace(h);
+  } else {
+    window.location.assign(h);
+  }
+}
+
+function ifs(s) {
+  if (s) {
+    return s;
+  }
+  return '';
+}
+
+function updateFragment() {
+  if (!st.fragmentChanged) {
+    return 0;
+  }
+  var o;
+  var t;
+  var h = '';
+  var k;
+  for (k in st.save) {
+    o = st.save[k];
+    t = '';
+    if (h) {
+      t = '&';
+    }
+    t = t + k + '&' + ifs(o.s) + '&' + ifs(o.q) + '&' + ifs(o.a);
+    h = h + t;
+  }
+  setFragment(h);
+  st.fragmentChanged = 0;
 }
 
 function writeHtmBody(body, cls) {
@@ -342,6 +381,7 @@ function writeHtmBody(body, cls) {
     window.f.t.focus();
   }
   refreshUnsaved();
+  updateFragment();
 }
 
 function writeHtm(body) {
@@ -612,6 +652,32 @@ function perturbedInterval(interval) {
   return interval + d;
 }
 
+function getSave(id) {
+  var o = st.save[id = '' + id];
+  if (!o) {
+    st.save[id] = o = new Object;
+  }
+  return o;
+}
+
+function setSaveS(c) {
+  var o = getSave(c.id);
+  o.s = savedCardStats(c);
+  setUnsaved();
+}
+
+function setSaveQ(c) {
+  var o = getSave(c.id);
+  o.q = encodeURIComponent_(c.q);
+  setUnsaved();
+}
+
+function setSaveA(c) {
+  var o = getSave(c.id);
+  o.a = encodeURIComponent_(c.a);
+  setUnsaved();
+}
+
 function updateCard(card, k, v, load) {
   var o = card[k];
   if (strEqual(typeof o, typeof v) && strEqual('' + o, '' + v)) {
@@ -620,6 +686,13 @@ function updateCard(card, k, v, load) {
   card[k] = v;
   if (!load) {
     setUnsaved();
+  }
+  if (strEqual(k, 'q')) {
+    setSaveQ(card);
+    return 0;
+  } else if (strEqual(k, 'a')) {
+    setSaveA(card);
+    return 0;
   }
   return 1;
 }
@@ -718,7 +791,7 @@ function screenGrade(g) {
   } else {
     q.next_rep = q.last_rep;
   }
-  setUnsaved();
+  setSaveS(q);
   st.queueI = st.queueI + 1;
   screenQuestion(screenQuestion);
 }
@@ -751,6 +824,8 @@ function screenEdit(i, b) {
 function screenDeleteCard(i, b) {
   var q = st.card[i];
   q.del = 1;
+  var o = getSave(q.id);
+  o.s = o.q = o.a = '';
   setUnsaved();
   screenEdit(i, b);
 }
@@ -758,7 +833,9 @@ function screenDeleteCard(i, b) {
 function screenUndeleteCard(i, b) {
   var q = st.card[i];
   q.del = 0;
-  setUnsaved();
+  setSaveS(q);
+  setSaveQ(q);
+  setSaveA(q);
   screenEdit(i, b);
 }
 
@@ -777,8 +854,9 @@ function screenNewCard(b) {
   var q = new Object;
   var j = st.card.length;
   q.id = j;
-  q.q = '';
-  q.a = '';
+  q.q = q.a = '';
+  setSaveQ(q);
+  setSaveA(q);
   st.card[j] = q;
   setUnsaved();
   screenEdit(j, b);
@@ -823,6 +901,8 @@ function screenMenu() {
 
 function screenPurgeConfirmed() {
   st.card = new Array;
+  st.save = new Object;
+  st.fragmentChanged = 1;
   clearUnsaved();
   makeQueue();
   screenMenu();
