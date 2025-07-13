@@ -1088,7 +1088,7 @@ function loadUri() {
   while (n > (i = i + 4)) {
     if (!isNaN(j = parseIntPlus(a[i-3]))) {
       if (!(card = st.card[j])) {
-        s.card[j] = card = new Object;
+        st.card[j] = card = new Object;
       }
       if (loadCardStats(card, h = a[i-2], j, 0)) {
         o = getSave(j);
