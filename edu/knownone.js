@@ -16,6 +16,9 @@ function parseIntPlus(s) {
     return parseInt(s);
   }
   var k = NaN;
+  if (!strEqual(typeof s, 'string')) {
+    return k;
+  }
   var i = -1;
   var c;
   while (s.length > (i = i + 1)) {
