@@ -169,16 +169,14 @@ function Array_sort_top(v, compare, m) {
   return o;
 }
 
-// ES3, NS5?
-function encodeURIComponent_(s) {
-  if (!strEqual(typeof encodeURIComponent, 'undefined')) {
-    return encodeURIComponent(s);
+function fillSafeUri() {
+  if (st.safeUri) {
+    return undefined;
   }
   var zero = String.fromCharCode(0);
   var i = 0;
   var safeList = "!'()*-._~0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
   var safe = zero;
-  var hex = '0123456789abcdef';
   while (127 > (i = i + 1)) {
     if (0 > safeList.indexOf(String.fromCharCode(i))) {
       safe = safe + zero;
@@ -186,9 +184,19 @@ function encodeURIComponent_(s) {
       safe = safe + '1';
     }
   }
+  st.safeUri = safe;
+}
 
+// ES3, NS5?
+function encodeURIComponent_(s) {
+  if (!strEqual(typeof encodeURIComponent, 'undefined')) {
+    return encodeURIComponent(s);
+  }
+  fillSafeUri();
+  var safe = st.safeUri;
+  var hex = '0123456789abcdef';
   var o = '';
-  i = -1;
+  var i = -1;
   var n;
   var c;
   while (1) {
