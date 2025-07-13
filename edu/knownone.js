@@ -612,6 +612,18 @@ function perturbedInterval(interval) {
   return interval + d;
 }
 
+function updateCard(card, k, v, load) {
+  var o = card[k];
+  if (strEqual(typeof o, typeof v) && strEqual('' + o, '' + v)) {
+    return 0;
+  }
+  card[k] = v;
+  if (!load) {
+    setUnsaved();
+  }
+  return 1;
+}
+
 function screenGrade(g) {
   var q = st.queue[st.queueI];
   if (!q) {
@@ -755,10 +767,9 @@ function screenCloneCard(i, b) {
   var q = new Object;
   var j = st.card.length;
   q.id = j;
-  q.q = p.q + ' ' + j;
-  q.a = p.a;
+  updateCard(q, 'q', p.q + ' ' + j, 0);
+  updateCard(q, 'a', p.a, 0);
   st.card[j] = q;
-  setUnsaved();
   screenEdit(j, b);
 }
 
@@ -775,8 +786,7 @@ function screenNewCard(b) {
 
 function screenEditedQuestion(i, b) {
   var q = st.card[i];
-  q.q = escapeHtm(String_trim(window.f.t.value));
-  setUnsaved();
+  updateCard(q, 'q', escapeHtm(String_trim(window.f.t.value)), 0);
   screenEdit(i, b);
 }
 
@@ -789,8 +799,7 @@ function screenEditQuestion(i, b) {
 
 function screenEditedAnswer(i, b) {
   var q = st.card[i];
-  q.a = escapeHtm(String_trim(window.f.t.value));
-  setUnsaved();
+  updateCard(q, 'a', escapeHtm(String_trim(window.f.t.value)), 0);
   screenEdit(i, b);
 }
 
