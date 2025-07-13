@@ -208,6 +208,68 @@ function encodeURIComponent_(s) {
   }
 }
 
+function getHexDigit(n) {
+  if ((n > 47) && (58 > n)) {
+    return n - 48;
+  } else if ((n > 96) && (103 > n)) {
+    return n - 87;
+  } else if ((n > 64) && (71 > n)) {
+    return n - 55;
+  } else {
+    return -1;
+  }
+}
+
+// web API: Chrome 38, Firefox 20
+function TextDecoder_decode(a) {
+  if (!strEqual(typeof TextDecoder, 'undefined') &&
+    !strEqual(typeof Uint8Array, 'undefined')) {
+    return eval('(new TextDecoder).decode(new Uint8Array(a))');
+  }
+  var s = '';
+  var i = -1;
+  var n = a.length;
+  var c;
+  while (n > (i = i + 1)) {
+    c = a[i];
+    // FIXME
+    if (128 > c) {
+      c = String.fromCharCode(c);
+      s = s + c;
+    }
+  }
+  return s;
+}
+
+// ES3, NS5?
+function decodeURIComponent_(s) {
+  if (!strEqual(typeof decodeURIComponent, 'undefined')) {
+    try {
+      return decodeURIComponent(s);
+    } catch (e) {
+    }
+  }
+  var a = new Array;
+  var j = -1;
+  var i = -1;
+  var n;
+  var u;
+  var v;
+  while (s.length > (i = i + 1)) {
+    n = s.charCodeAt(i);
+    if (!(n - 37) && (s.length > (i + 2))) {
+      u = getHexDigit(s.charCodeAt(i + 1));
+      v = getHexDigit(s.charCodeAt(i + 2));
+      if ((u >= 0) && (v >= 0)) {
+        n = (u << 4) | v;
+        i = i + 2;
+      }
+    }
+    a[j = j + 1] = n;
+  }
+  return TextDecoder_decode(a);
+}
+
 function shuffle(v) {
   var n = v.length;
   var m = n - 1;
@@ -998,12 +1060,54 @@ function loadHtm(h) {
   st.card = cards;
 }
 
+function loadUri() {
+  st.save = new Object;
+  var h = window.location.href;
+  var i = h.indexOf('#');
+  if (0 > i) {
+    st.base = h;
+    return 0;
+  }
+  st.base = String_substring(h, 0, i);
+  h = String_substring(h, i + 1, h.length);
+  var a = String_split(h, '&');
+  var n = a.length;
+  i = -1;
+  var s;
+  var j;
+  var o;
+  var card;
+  while (n > (i = i + 4)) {
+    if (!isNaN(j = parseIntPlus(a[i-3]))) {
+      if (!(card = st.card[j])) {
+        s.card[j] = card = new Object;
+      }
+      if (loadCardStats(card, h = a[i-2], j, 0)) {
+        o = getSave(j);
+        o.s = h;
+      }
+      if ((s = decodeURIComponent_(h = a[i-1])) && updateCard(card, 'q', s, 0)) {
+        o = getSave(j);
+        o.q = h;
+      }
+      if ((s = decodeURIComponent_(h = a[i])) && updateCard(card, 'a', s, 0)) {
+        o = getSave(j);
+        o.a = h;
+      }
+    }
+  }
+  st.fragmentChanged = 1;
+  return 1;
+}
+
 function loaded() {
   if (!st.doc) {
     st.doc = document.documentElement.innerHTML;
   }
   loadHtm(st.doc);
-  if (st.inHead) {
+  if (loadUri()) {
+    screenMenu();
+  } else if (st.inHead) {
     screenOrderedOverview();
   }
 }
