@@ -348,9 +348,22 @@ function writeHtm(body) {
   writeHtmBody(body, '');
 }
 
+function savedCardStats(c) {
+  var a = new Array;
+  a[0] = c.grade;
+  a[1] = c.next_rep;
+  a[2] = c.last_rep;
+  a[3] = c.easiness;
+  a[4] = c.acq_reps;
+  a[5] = c.ret_reps;
+  a[6] = c.lapses;
+  a[7] = c.acq_reps_since_lapse;
+  a[8] = c.ret_reps_since_lapse;
+  return Array_toString(a);
+}
+
 function getSaveHtm() {
   var s = st.beg;
-  var a = new Array;
   var c;
   var t;
   var i = -1;
@@ -360,16 +373,7 @@ function getSaveHtm() {
     if (!c.del) {
       s = s + '<' + 'h2>' + c.q + '</h2>' + c.a;
       if (!strEqual(typeof c.grade, 'undefined')) {
-        a[0] = c.grade;
-        a[1] = c.next_rep;
-        a[2] = c.last_rep;
-        a[3] = c.easiness;
-        a[4] = c.acq_reps;
-        a[5] = c.ret_reps;
-        a[6] = c.lapses;
-        a[7] = c.acq_reps_since_lapse;
-        a[8] = c.ret_reps_since_lapse;
-        t = Array_toString(a);
+        t = savedCardStats(c);
         s = s + '<br>' + t;
       }
       s = s + nl;
