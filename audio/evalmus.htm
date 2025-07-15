@@ -451,8 +451,8 @@ function init() {
 }
 </script>
 <form name=f action='javascript:submitForm()'><textarea rows=6 cols=32 name=t>
-(function(t){return (function(x,y){return ((((3e3/y)&1)*35)|0) + x*y/4e4 + ((t>>8^t>>10|t>>14|x)&63)})(t*("6689"[t>>16&3]&15)/24&127,t&16383)})(t<<2) // drum, bass and lead for C on 32kHz by Mu6k
-(function(t){return ((t*("36364689"[t>>13&7]&15))/12&128)+(((((t>>12)^(t>>12)-2)%11*t)/4|t>>13)&127)})(6*t) // bass pattern and self-similar melody by Ryg 2011-10-10
+(((750/(t&4095))&1)*35)|0) + (t*(39014>>(t>>12&12)&15)/6&127)*(t&4095)/10000 + ((t>>6^t>>8|t>>12|(t*(39014>>(t>>12&12)&15)/6&127))&63 // drum, bass and lead by Mu6k
+(t*(909526665>>(28-3*t>>10&28)&15)/2&128)+(((((3*t>>11)^(3*t>>11)-2)%11*3*t)/2|3*t>>12)&127) // bass pattern and self-similar melody by Ryg 2011-10-10
 (t>>9&t>>8)*(t>>3) // Ready for a horror trip? Just add some LSD by h0uz3
 (t|t>>17)>>(t>>7)|(t<<2|t<<8)>>(t>>11)|(t<<2|t<<11)>>(t>>17) // cool morse blips after a while by h0uz3
 (t&(t>>6)+(t<<((t>>11)^((t>>13)+3))|((t>>14%64)+(t>>14)))&(-t>>5)) // Track Crafty by Paul Hayes
@@ -461,9 +461,9 @@ function init() {
 (t*((3+(1^t>>10&5))*(5+(3&t>>14))))>>(t>>8&3)
 (~t>>2)*((127&t*(7&t>>10))<(245&t*(2+(5&t>>14))))
 t*(t>>((t&4096)?((t*t)/4096):(t/4096)))|(t<<(t/256))|(t>>4)
-t * ((t>>12|t>>8)&63&t>>4) // from bemmu
+t*((t>>12|t>>8)&63&t>>4) // from bemmu
 ((t<<1)^((t<<1)+(t>>7)&t>>12))|t>>(4-(1^7&(t>>19)))|t>>7
-t*(42&t>>10) // Forty-Two Melody
+t*(42&t>>10) // The Forty-Two Melody
 t*((42&t>>10)%14) // tuned Forty-Two Melody
 t*(5+((t>>11)&5)) // E3, G3, C4, D4
 t*(t>>9|t>>13)&16 // square wave filtering by Niklas Roy
@@ -477,7 +477,7 @@ t*5&(t>>7)|t*3&(t*4>>10) // by miiro
 (t*5&t>>7)|(t*3&t>>10) // by viznut
 t*9&t>>4|t*5&t>>7|t*3&t/1024 // by stephth
 t&t%255
-t*(0xCA98>>(t>>9&14)&15)|t>>8 // by Rrrola
+t*(51864>>(t>>9&14)&15)|t>>8 // by Rrrola
 t>>4|t&((t>>5)/(t>>7-(t>>15)&-t>>7-(t>>15))) // modular wrap-around by droid
 ((t/1e7*t*t+t)|0)%127|t>>4|t>>5|t%127+(t>>16)|t // modular wrap-around by bst
 t>>6&1?t>>5:-t>>4 // modular wrap-around by droid
@@ -492,9 +492,9 @@ t*5&(t>>7)|t*3&(t*4>>10) // by miiro
 (t>>8|t-2)&(2-t|8<<t) // Symmetries are for pussies by h0uz3
 ((t>>8|t-2)&(2-t|8<<t))<<((t>>8|t-2)&(2-t|8<<t))>>((t>>8|t-2)&(2-t|8<<t)) // Downward spiral by h0uz3
 ((((t>>3|t<<7)|t>>11)|t>>16)&23) // 23 makes everything a little more sane by h0uz3
-((t>>4)|(t<<4)&0x11111+t/1000) // Baby-Kübelwagen-Alarm-Therapist #x1 [pre] by tv
-((t>>7)* 0xff) * (t & 0xff)/32 & ~(t / 127) // Almost pac-man by bdwheele
-((t>>10)<<((t>>4)%([8,9,10,11][(t>>11)%4]-(t>>15)%4))) // Boss level by tito
+((t>>4)|(t<<4)&69905+t/1000) // Baby-Kübelwagen-Alarm-Therapist #x1 [pre] by tv
+((t>>7)*255) * (t&255)/32 & ~(t/127) // Almost pac-man by bdwheele
+(t>>10)<<((t>>4)%(((47768>>((t>>9)&12))&15)-(t>>15)%4)) // Boss level by tito
 </textarea><input type=submit></form>
 <script>
 'use strict';
