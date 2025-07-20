@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang=en prefix="og: http://ogp.me/ns#">
+<head>
+  <meta charset=utf-8>
+  <meta http-equiv=content-type content='text/html; charset=UTF-8'>
+  <meta http-equiv=x-content-type-options content=nosniff>
+  <title>Graphics evaluated from expressions</title>
+  <link rel='shortcut icon' type='image/x-icon' href='data:image/x-icon;,'>
+  <meta name=description property='og:description' content='Run short snippets of code to plot each pixel in a binary picture using JavaScript0 on GemiWeb0. Inlines result as ASCII art characters.'>
+  <meta property='og:title' content='Graphics evaluated from expressions'>
+  <meta property='og:type' content=article>
+  <meta property='og:url' content='https://bkil.gitlab.io/static-wonders.js/toy/ploteval.htm'>
+  <meta property='og:image' content='https://bkil.gitlab.io/gemiweb0/gemiweb0-avatar.png'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=unsafe-url>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta name=color-scheme content='light dark'>
+<style>
+textarea {
+  min-width: 100%;
+  max-width: 100%;
+  width: 100%;
+  min-height: 4em;
+}
+
+pre {
+  border-left-style: solid;
+}
+</style>
+<!-- -->
+  <meta http-equiv=content-security-policy content="default-src 'none'; img-src data: 'self'; script-src 'unsafe-inline' 'unsafe-eval'; style-src 'unsafe-inline'; object-src data:; frame-src data:; media-src data:; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+</head>
+<body>
+<h2>Introduction</h2>
+<p>Run short snippets of code to plot each pixel in a binary picture using JavaScript0 on GemiWeb0. Inlines result as ASCII art characters for maximal retro-compatibility of viewing. The input is not sanitized and the runtime is not sandboxed, so only paste in expressions that you trust!</p>
+<ul>
+<li><a href='https://en.wikipedia.org/wiki/Parametric_surface' target='_blank' rel=noopener>en.wikipedia.org/wiki/Parametric_surface</a></li>
+<li><a href='https://en.wikipedia.org/wiki/Algorithmic_art' target='_blank' rel=noopener>en.wikipedia.org/wiki/Algorithmic_art</a></li>
+</ul>
+<p>You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:</p>
+<ul><li><a href='https://bkil.gitlab.io/gemiweb0' target='_blank' rel=noopener>bkil.gitlab.io/gemiweb0</a></li></ul>
+<h2>Copyright</h2>
+<ul><li><a href='../LICENSE' target='_blank' rel=noopener>SPDX-License-Identifier: MIT</a></li></ul>
+Copyright (c) 2025 bkil.hu
+<script>
+function nonStrictEval(javascriptSource) {
+  var st;
+  var nl;
+  return eval(javascriptSource);
+}
+</script>
+<script>
+'use strict';
+var st = new Object;
+var nl = String.fromCharCode(10);
+
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  }
+  var c;
+  from = from - 1;
+  var o = '';
+  while ((th.length > (from = from + 1)) && (to > from)) {
+    c = th.charAt(from);
+    o = o + c;
+  }
+  return o;
+}
+
+// ES1, NS3
+function String_split(th, d) {
+  if (th.split) {
+    return th.split(d);
+  }
+  var a = new Array;
+  var j = 0;
+  var from = 0;
+  var i = th.indexOf(d, from);
+  while (i >= 0) {
+    a[j] = String_substring(th, from, i);
+    j = j + 1;
+    from = i + d.length;
+    i = th.indexOf(d, from);
+  }
+  a[j] = String_substring(th, from, th.length);
+  return a;
+}
+
+function fillSafeUri() {
+  if (st.safeUri) {
+    return undefined;
+  }
+  var zero = String.fromCharCode(0);
+  var i = 0;
+  var safeList = "!'()*-._~0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  var safe = zero;
+  while (127 > (i = i + 1)) {
+    if (0 > safeList.indexOf(String.fromCharCode(i))) {
+      safe = safe + zero;
+    } else {
+      safe = safe + '1';
+    }
+  }
+  st.safeUri = safe;
+}
+
+function removeAfter(s, t) {
+  var i = s.indexOf(t);
+  if (i >= 0) {
+    s = String_substring(s, 0, i + t.length);
+  }
+  return s;
+}
+
+function writeHtm(body) {
+  if (st.docClosed) {
+    var h = '<head>';
+    if (document.documentElement && document.documentElement.innerHTML) {
+      h = removeAfter(document.documentElement.innerHTML, '<' + '!-- --' + '>');
+    }
+    h = '<!DOCTYPE html><html lang=en>' + h + '</head><body>' + body + '<' + '/body><' + '/html>';
+    document.write(h);
+    document.close();
+  } else {
+    document.write(body);
+  }
+}
+
+function fillSafeHtm() {
+  if (st.safeHtm) {
+    return undefined;
+  }
+  var zero = String.fromCharCode(0);
+  var enc = new Array;
+  enc[0] = zero;
+  enc[34] = '&' + 'quot;';
+  enc[38] = '&' + 'amp;';
+  enc[39] = '&' + 'apos;';
+  enc[60] = '&' + 'lt;';
+  enc[62] = '&' + 'gt;';
+  st.encHtm = enc;
+
+  var safe = '';
+  var i = -1;
+  while (128 > (i = i + 1)) {
+    if (enc[i]) {
+      safe = safe + zero;
+    } else {
+      safe = safe + '1';
+    }
+  }
+  st.safeHtm = safe;
+}
+
+function escapeHtm(h) {
+  fillSafeHtm();
+  var s = st.safeHtm;
+  var enc = st.encHtm;
+  var o = '';
+  var i = -1;
+  var n;
+  var c;
+  while (1) {
+    c = h.charAt(i = i + 1);
+    while (s.charCodeAt(n = c.charCodeAt(0))) {
+      o = o + c;
+      c = h.charAt(i = i + 1);
+    }
+    if (isNaN(n)) {
+      return o;
+    }
+    if (128 > n) {
+      c = enc[n];
+    }
+    o = o + c;
+  }
+}
+
+function render(s, height, width) {
+  s =
+    'var newline = String.fromCharCode(10);' +
+    'var screen = "";' +
+    'var pixel;' +
+    'var y = -1;' +
+    'var x;' +
+    'while (' + height + ' > (y = y + 1)) {' +
+    'x = -1;' +
+    'while (' + width + ' > (x = x + 1)) {' +
+    'pixel = "X";' +
+    'if (' + s + nl +
+    ') {' +
+    'pixel = " ";' +
+    '}' +
+    'screen = screen + pixel;' +
+    '}' +
+    'screen = screen + newline;' +
+    '}' +
+    'screen;';
+  var h;
+  try {
+    h = '<pre role=img>' + nonStrictEval(s) + '</pre>';
+  } catch (e) {
+    if (!e.length && e.stack) {
+      h = '' + e.stack;
+    } else {
+      h = '' + e;
+    }
+    h = '<h2>Error</h2><pre>' + escapeHtm(h) + '</pre>';
+  }
+  return h;
+}
+
+function submit() {
+  var s = window.f.t.value;
+  var h = '';
+  if (st.docClosed) {
+    h = h + "<form name=f action='javascript:submit()'><textarea rows=6 cols=32 name=t>" +
+      s +
+      '</textarea><input type=submit></form>';
+  }
+  writeHtm(h = h + render(s, 256, 256) + st.sampleHtm);
+}
+
+function init() {
+  var h = '<h2>Examples</h2>';
+  var lines = String_split(window.f.t.value, nl);
+  var n = lines.length;
+  var line;
+  var name;
+  var i = -1;
+  while (n > (i = i + 1)) {
+    if (line = lines[i]) {
+      name = escapeHtm(line);
+      h = h + '<h3>' + name + '</h3>' + render(line, 128, 128);
+    }
+  }
+  st.sampleHtm = h;
+  window.f.t.value = lines[0];
+  writeHtm(h);
+  st.docClosed = 1;
+}
+</script>
+<form name=f action='javascript:submit()'><textarea rows=6 cols=32 name=t>
+x&y
+8>((x&1)+((x>>1)&1)+((x>>2)&1)+((x>>3)&1)+((x>>4)&1)+((x>>5)&1)+((x>>6)&1)+((x>>7)&1)+(y&1)+((y>>1)&1)+((y>>2)&1)+((y>>3)&1)+((y>>4)&1)+((y>>5)&1)+((y>>6)&1)+((y>>7)&1))
+(x*y)&64
+(x+y)&2
+(((x-32)*(x-32))+((y-32)*(y-32)))&1024
+((y*y)>(64*x))|((64*x)>((y+1)*(y+1)))
+((32>x)&(32>y)&(32>(x+y))) | ((32>x)&(y>=32)&(y>(x+32))) | ((x>=32)&(32>y)&(x>(y+32))) | ((x>=32)&(y>=32)&((x+y)>96))
+(function(f){return (f(y-10,4)<(10*x))|(f(10-y,3)>(42*x));})(function(x,k){return ((-x*x*x)>>(2*k))+((3*x*x)>>(k))+666})
+(x^y)%7 // berlin.social/@jack/114881562543640794
+</textarea><input type=submit></form>
+<script>
+'use strict';
+init();
+</script>
+</body>
+</html>
