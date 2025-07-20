@@ -233,13 +233,6 @@ function decodeURIComponent_(s) {
   return TextDecoder_decode(a);
 }
 
-function decodeURIQ(s){
-  if (!strEqual(typeof decodeURIComponent, 'undefined')) {
-    return decodeURIComponent(s);
-  }
-  return s;
-}
-
 function removeBefore(s, t) {
   var i = s.indexOf(t);
   if (i >= 0) {
