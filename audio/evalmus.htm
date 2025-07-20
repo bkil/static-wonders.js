@@ -449,6 +449,9 @@ function init() {
 (t>>9&t>>8)*(t>>3) // Ready for a horror trip? Just add some LSD by h0uz3
 (t|t>>17)>>(t>>7)|(t<<2|t<<8)>>(t>>11)|(t<<2|t<<11)>>(t>>17) // cool morse blips after a while by h0uz3
 (t&(t>>6)+(t<<((t>>11)^((t>>13)+3))|((t>>14%64)+(t>>14)))&(-t>>5)) // Track Crafty by Paul Hayes
+u=t>>10,8*t*t*(t>>u%3+15)/(3+(u&(u>>5&3|4)))|t>>4 // No 2 by yehar.com, 2012
+t>>4|t*t*(t>>6&8^8)*(t>>11^t/3>>12)/(7+(t>>10&t>>14&3)) // No 3 bare-bones version by yehar.com, 2012
+(4096&t?400000:42000)/(t&4095)|24000/(t*((16384&t?(32768&t?315:300):100)/100)&t>>3&204) // Straightforward by Greaserpirate, 2022
 (-1-t|t+t/256)-(-(t-(t>>8))|t+(t>>8))
 ((t>>5&t)-(t>>5)+(t>>5&t))+(t*((t>>14)&14))
 (t*((3+(1^t>>10&5))*(5+(3&t>>14))))>>(t>>8&3)
