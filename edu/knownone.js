@@ -38,14 +38,15 @@ function parseIntPlus(s) {
 function String_substring(th, from, to) {
   if (th.substring) {
     return th.substring(from, to);
-  } else {
-    var o = '';
-    while ((from < th.length) && (from < to)) {
-      o = o + th.charAt(from);
-      from = from + 1;
-    }
-    return o;
   }
+  var c;
+  from = from - 1;
+  var o = '';
+  while ((th.length > (from = from + 1)) && (to > from)) {
+    c = th.charAt(from);
+    o = o + c;
+  }
+  return o;
 }
 
 // JS1
@@ -65,20 +66,19 @@ function String_lastIndexOf(s, c) {
 function String_split(th, d) {
   if (th.split) {
     return th.split(d);
-  } else {
-    var a = new Array;
-    var j = 0;
-    var from = 0;
-    var i = th.indexOf(d, from);
-    while (i >= 0) {
-      a[j] = String_substring(th, from, i);
-      j = j + 1;
-      from = i + d.length;
-      i = th.indexOf(d, from);
-    }
-    a[j] = String_substring(th, from, th.length);
-    return a;
   }
+  var a = new Array;
+  var j = 0;
+  var from = 0;
+  var i = th.indexOf(d, from);
+  while (i >= 0) {
+    a[j] = String_substring(th, from, i);
+    j = j + 1;
+    from = i + d.length;
+    i = th.indexOf(d, from);
+  }
+  a[j] = String_substring(th, from, th.length);
+  return a;
 }
 
 // ES5
@@ -1068,9 +1068,7 @@ function loadHtm(h) {
   st.card = cards;
 }
 
-function loadUri() {
-  st.save = new Object;
-  var h = window.location.href;
+function loadUri(h) {
   var i = h.indexOf('#');
   if (0 > i) {
     st.base = h;
@@ -1113,7 +1111,7 @@ function loaded() {
     st.doc = document.documentElement.innerHTML;
   }
   loadHtm(st.doc);
-  if (loadUri()) {
+  if (loadUri(window.location.href)) {
     screenMenu();
   } else if (st.inHead) {
     screenOrderedOverview();
@@ -1159,6 +1157,7 @@ function init() {
   st.initialInterval = a;
   st.queue = new Array;
   st.queueI = 0;
+  st.save = new Object;
   screenInitialMenu();
   setTimeout(loaded, 0);
   st.docClosed = 1;
