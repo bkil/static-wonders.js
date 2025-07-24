@@ -88,24 +88,6 @@ function String_split(th, d) {
   return a;
 }
 
-function fillSafeUri() {
-  if (st.safeUri) {
-    return undefined;
-  }
-  var zero = String.fromCharCode(0);
-  var i = 0;
-  var safeList = "!'()*-._~0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  var safe = zero;
-  while (127 > (i = i + 1)) {
-    if (0 > safeList.indexOf(String.fromCharCode(i))) {
-      safe = safe + zero;
-    } else {
-      safe = safe + '1';
-    }
-  }
-  st.safeUri = safe;
-}
-
 function removeAfter(s, t) {
   var i = s.indexOf(t);
   if (i >= 0) {
