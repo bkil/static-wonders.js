@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang=en prefix="og: http://ogp.me/ns#">
+<head>
+  <meta charset=utf-8>
+  <meta http-equiv=content-type content='text/html; charset=UTF-8'>
+  <meta http-equiv=x-content-type-options content=nosniff>
+  <title>Mandelbrot set viewer</title>
+  <link rel='shortcut icon' type='image/x-icon' href='data:image/x-icon;,'>
+  <meta property='og:description' content='Plot in ASCII-art the zooming and panning visualization of the fractal using fixed point math in JavaScript0 on GemiWeb0' name='description'>
+  <meta property='og:title' content='Mandelbrot set visualization'>
+  <meta property='og:type' content=article>
+  <meta property='og:url' content='https://bkil.gitlab.io/static-wonders.js/toy/mandbrot.htm'>
+  <meta property='og:image' content='https://bkil.gitlab.io/gemiweb0/gemiweb0-avatar.png'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=unsafe-url>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta name=color-scheme content='light dark'>
+<style>
+textarea {
+  display: block;
+  font-family: monospace;
+}
+
+input {
+  padding: 8px;
+}
+
+.a {
+  padding: 8px;
+  display: block;
+  display: inline-block;
+  border-style: solid;
+  text-decoration: none;
+}
+
+.p {
+  margin: 0;
+  display: inline-block;
+}
+</style>
+  <meta http-equiv=content-security-policy content="default-src 'none'; img-src data: 'self'; script-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+</head>
+<body>
+<script>
+'use strict';
+var st = new Object;
+
+function iterate(x0, y0) {
+  y0 = y0 >> 13;
+  var x = 0;
+  var y = 0;
+  var z;
+  var color = '@#*+;,. ';
+  var lim = 4 << 26;
+  var i = (color.length << st.zoom) + 1;
+  while ((i = i - 1) && (lim >= ((x*x) + (y*y)))) {
+    z = (((x*x) - (y*y)) + x0) >> 13;
+    y = ((x*y) >> 12) + y0;
+    x = z;
+  }
+  return color.charAt(i >> st.zoom);
+}
+
+function render() {
+  var t = '';
+  var nl = String.fromCharCode(10);
+  var x;
+  var xd = st.w >> 4;
+  var y = st.y - st.h;
+  var yd = (st.h / 12) | 0;
+  var j;
+  var i = 25;
+  while (i) {
+    x = st.x - st.w;
+    j = 34;
+    while (j = j - 1) {
+      t = t + iterate(x, y);
+      x = x + xd;
+    }
+    y = y + yd;
+    if (i = i - 1) {
+      t = t + nl;
+    }
+  }
+  window.f.t.value = t;
+}
+
+function updateWh() {
+  st.w = (st.right - st.left) >> (st.zoom + 1);
+  st.h = (st.bottom - st.top) >> (st.zoom + 1);
+}
+
+function closer() {
+  if (10 > st.zoom) {
+    st.zoom = st.zoom + 1;
+    updateWh();
+    render();
+  }
+}
+
+function away() {
+  if (st.zoom) {
+    st.zoom = st.zoom - 1;
+    updateWh();
+    render();
+  }
+}
+
+function left() {
+  if (st.x > st.left) {
+    st.x = st.x - st.w;
+    render();
+  }
+}
+
+function right() {
+  if (st.right > st.x) {
+    st.x = st.x + st.w;
+    render();
+  }
+}
+
+function up() {
+  if (st.y > st.top) {
+    st.y = st.y - st.h;
+    render();
+  }
+}
+
+function down() {
+  if (st.bottom > st.y) {
+    st.y = st.y + st.h;
+    render();
+  }
+}
+
+function init() {
+  st.left = -134217728;
+  st.right = 31541166;
+  st.top = -75161928;
+  st.bottom = 75161927;
+  st.zoom = 0;
+  updateWh();
+  st.x = st.left + st.w;
+  st.y = 0;
+}
+
+init();
+</script>
+<form name=f action='javascript:closer()'>
+<textarea name=t role=img rows=26 cols=34 readonly disabled></textarea>
+<input type=submit accesskey=c value=Closer>
+<p class=p><a class=a accesskey=a href='javascript:away()'>Away</a></p>
+<p class=p><a class=a accesskey=l href='javascript:left()'>Left</a></p>
+<p class=p><a class=a accesskey=r href='javascript:right()'>Right</a></p>
+<p class=p><a class=a accesskey=u href='javascript:up()'>Up</a></p>
+<p class=p><a class=a accesskey=o href='javascript:down()'>dOwn</a></p>
+</form>
+<h2>Explanation</h2>
+Using only fixed point math, plot in ASCII-art the zooming and panning visualization of the fractal, defined by those "c" where the following function on complex numbers does not diverge upon iteration on z starting from 0:
+<pre>f(c,z) = z*z + c</pre>
+<ul><li><a target=_blank href='https://en.wikipedia.org/wiki/Mandelbrot_set' target='_blank' rel=noopener>en.wikipedia.org/wiki/Mandelbrot set</a></li></ul>
+<h2>Requirements</h2>
+<p>You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:</p>
+<ul><li><a href='https://bkil.gitlab.io/gemiweb0' target='_blank' rel=noopener>bkil.gitlab.io/gemiweb0</a></li></ul>
+<script>
+'use strict';
+render();
+</script>
+</body></html>
