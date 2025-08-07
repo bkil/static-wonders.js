@@ -28,7 +28,7 @@ blockquote {
   padding-left: 1em;
 }
 
-embed {
+audio, embed {
   position: sticky;
   top: 0;
 }
@@ -382,13 +382,15 @@ function getWav(s) {
 }
 
 function submit(s) {
+  window.f.t.value = s;
   var h = '';
   if (st.docClosed) {
     h = h + "<form name=f action='javascript:submitForm()'><textarea rows=6 cols=32 name=t>" +
       s +
       '</textarea><input type=submit></form>';
   }
-  var t = '<embed type="audio/x-wav" autostart=true autoload=true autoplay=true src="data:audio/x-wav;base64,' + base64(getWav(s)) + '">';
+  var t = base64(getWav(s));
+
   if (st.err) {
     if (!st.err.length && st.err.stack) {
       t = '' + st.err.stack;
@@ -398,7 +400,13 @@ function submit(s) {
     t = escapeHtm('' + t);
     h = h + '<h2>Error</h2><pre>' + t + '</pre>';
   } else {
-    h = h + t;
+    if (!st.api) {
+      h = h + '<embed autostart=true autoload=true autoplay=true src="data:audio/x-wav;base64,' + t + '">';
+    } else if (!(st.api-1)) {
+      h = h + '<audio autoplay=1 src="data:audio/x-wav;base64,' + t + '" controls=1>HTML5 audio not supported by this browser</audio>';
+    } else {
+      h = h + '<a class=a download="sound.wav" target="_blank" href="data:audio/x-wav;base64,' + t + '#/sound.wav">Download output as wave sound file</a>';
+    }
   }
   h = h + st.songHtm;
   writeHtm(h);
@@ -406,6 +414,21 @@ function submit(s) {
 
 function submitForm() {
   submit(window.f.t.value);
+}
+
+function outEmbed() {
+  st.api = 0;
+  submitForm();
+}
+
+function outAudio() {
+  st.api = 1;
+  submitForm();
+}
+
+function outDownload() {
+  st.api = 2;
+  submitForm();
 }
 
 function init() {
@@ -439,7 +462,12 @@ function init() {
   }
   st.songHtm = h;
   window.f.t.value = lines[0];
-  submitForm();
+
+  if (!strEqual(typeof Audio, 'undefined')) {
+    outAudio();
+  } else {
+    outEmbed();
+  }
   st.docClosed = 1;
 }
 </script>
@@ -504,6 +532,10 @@ init();
 </ul>
 <p>You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:</p>
 <ul><li><a href='https://bkil.gitlab.io/gemiweb0' target='_blank' rel=noopener>bkil.gitlab.io/gemiweb0</a></li></ul>
+<h2>Settings</h2>
+<p class=p><a href='javascript:outEmbed()' class=a>Output &lt;embed&gt;</a></p>
+<p class=p><a href='javascript:outAudio()' class=a>Output HTML5 &lt;audio&gt;</a></p>
+<p class=p><a href='javascript:outDownload()' class=a>Output &lt;a&gt; download link</a></p>
 <h2>Copyright</h2>
 I have received some of the examples from archives which lacked author information. Feel free to contact me if you know of a more precise attribution at any given entry.
 <ul><li><a href='../LICENSE' target='_blank' rel=noopener>SPDX-License-Identifier: MIT</a></li></ul>

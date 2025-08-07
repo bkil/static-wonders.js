@@ -43,6 +43,11 @@ textarea {
 'use strict';
 var st = new Object;
 
+// JS1
+function strEqual(u, v) {
+  return !(u.length - v.length) && !u.indexOf(v);
+}
+
 function oneOf(hay, needle) {
   return hay.indexOf(needle) + 1;
 }
@@ -325,20 +330,50 @@ function getWav(s) {
 }
 
 function submit(s) {
+  window.f.t.value = s;
   var h = '';
   var t;
   if (st.docClosed) {
     t = escapeHtm(s);
     h = h + "<form name=f action='javascript:submitForm()'><textarea rows=6 cols=32 name=t>" + t + '</textarea><input type=submit></form>';
   }
-  h = h + '<embed src="data:audio/x-wav;base64,';
   t = base64(getWav(s));
-  h = h + t + '">';
+  if (!st.api) {
+    h = h + '<embed src="data:audio/x-wav;base64,' + t + '">';
+  } else if (!(st.api-1)) {
+    h = h + '<audio src="data:audio/x-wav;base64,' + t + '" controls=1>HTML5 audio not supported by this browser</audio>';
+  } else {
+    h = h + '<a class=a download="sound.wav" target="_blank" href="data:audio/x-wav;base64,' + t + '#/sound.wav">Download output as wave sound file</a>';
+  }
   writeHtm(h);
 }
 
 function submitForm() {
   submit(window.f.t.value);
+}
+
+function outEmbed() {
+  st.api = 0;
+  submitForm();
+}
+
+function outAudio() {
+  st.api = 1;
+  submitForm();
+}
+
+function outDownload() {
+  st.api = 2;
+  submitForm();
+}
+
+function init() {
+  if (!strEqual(typeof Audio, 'undefined')) {
+    outAudio();
+  } else {
+    outEmbed();
+  }
+  st.docClosed = 1;
 }
 </script>
 <form name=f action='javascript:submitForm()'><textarea rows=6 cols=32 name=t>
@@ -352,8 +387,7 @@ function submitForm() {
 </textarea><input type=submit></form>
 <script>
 'use strict';
-submitForm();
-st.docClosed = 1;
+init();
 </script>
 <!-- body -->
 <h2>Warning! Prepare for loud music!</h2>
@@ -370,6 +404,10 @@ st.docClosed = 1;
 </ul>
 <p>You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:</p>
 <ul><li><a href='https://bkil.gitlab.io/gemiweb0' target='_blank' rel=noopener>bkil.gitlab.io/gemiweb0</a></li></ul>
+<h2>Settings</h2>
+<p class=p><a href='javascript:outEmbed()' class=a>Output &lt;embed&gt;</a></p>
+<p class=p><a href='javascript:outAudio()' class=a>Output HTML5 &lt;audio&gt;</a></p>
+<p class=p><a href='javascript:outDownload()' class=a>Output &lt;a&gt; download link</a></p>
 <h2>News</h2>
 <ul><li><a href='https://codeberg.org/tplasdio/ansimus' target='_blank' rel=noopener>A third party port of these algorithms to gawk if you want to enjoy it from the command line</a></li></ul>
 <h2>Copyright</h2>
