@@ -20,6 +20,7 @@
 textarea {
   display: block;
   font-family: monospace;
+  font-size: xx-large;
 }
 
 input {
@@ -31,6 +32,7 @@ input {
   display: block;
   display: inline-block;
   border-style: solid;
+  border-width: 1px;
   text-decoration: none;
 }
 
@@ -279,7 +281,8 @@ function init() {
 </script>
 <form name=f action='javascript:next()'>
 <input type=submit accesskey=n value=Next>
-<textarea name=t role=img rows=9 cols=12 readonly>
+<p class=p><a class=a accesskey=a href='javascript:restart()'>Again</a></p>
+<textarea name=t accesskey=t role=img rows=9 cols=12 readonly>
    o       
 H##o# ####H
 H  o #    H
@@ -482,10 +485,9 @@ H ## # #  #
 <p class=p><a class=a accesskey=o href='javascript:down()'>dOwn</a></p>
 <p class=p><a class=a accesskey=l href='javascript:left()'>Left</a></p>
 <p class=p><a class=a accesskey=r href='javascript:right()'>Right</a></p>
-<p class=p><a class=a accesskey=a href='javascript:restart()'>Again</a></p>
 </form>
 <h2>Explanation</h2>
-Collect gems ($) and push boulders (o) that obey gravity, destroy crates (.), climb on ladders (H) and walk on platforms (#) to play the game. You can also use the arrow keys on the keyboard after you click on the textarea of the map. The original levels are Copyright (c) 1985 Yutaka Isokawa
+Collect gems ($) and push boulders (o) that obey gravity, destroy crates (.), climb ladders (H) and walk on platforms (#) to play the game. You can also use the arrow keys on the keyboard after you activate the Textarea of the map. The original levels are Copyright (c) 1985 Yutaka Isokawa
 <ul><li><a target=_blank href='https://en.wikipedia.org/wiki/Catrap' target='_blank' rel=noopener>en.wikipedia.org/wiki/Catrap</a></li></ul>
 <h2>Requirements</h2>
 <p>You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:</p>
