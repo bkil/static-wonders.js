@@ -29,12 +29,7 @@ pre, textarea {
   font-family: monospace;
 }
 
-input {
-  padding: 8px;
-}
-
 .a {
-  padding: 8px;
   display: block;
   display: inline-block;
   border-style: solid;
@@ -165,9 +160,15 @@ function getFontStyle() {
     st.font = 320 >= (window.innerWidth || (!strEqual(typeof screen, 'undefined') && screen.width) || 0);
   }
   if (st.font) {
-    return '';
+    return '<style>' +
+      'html, body, pre { margin: 0; padding: 0; }' +
+      '.P { margin: 0; display: inline-block; }' +
+      '</style>';
   }
-  return '<style>pre, textarea { font-size: xx-large; }</style>';
+  return '<style>' +
+    'pre, textarea { font-size: xx-large; }' +
+    'input, .a { padding: 8px; }' +
+    '</style>';
 }
 
 function getFontToggle() {
@@ -191,7 +192,7 @@ function getFormBottom() {
     '<p class=p><a class=a accesskey=l href="javascript:left()">Left</a></p>' +
     '<p class=p><a class=a accesskey=r href="javascript:right()">Right</a></p>' +
     '</form>' +
-    '<p><a class=a accesskey=s href="javascript:enableTouch()">Switch to touch links</a></p>';
+    '<p class=P><a class=a accesskey=s href="javascript:enableTouch()">Switch to touch links</a></p>';
 }
 
 function cell(st, x, y) {
@@ -390,7 +391,7 @@ function render() {
       '<p class=p><a class=a accesskey=n href="javascript:next()">Next</a></p>' +
       '<p class=p><a class=a accesskey=a href="javascript:restart()">Again</a></p>' +
       getFontToggle() +
-      '<p><a class=a accesskey=s href="javascript:disableTouch()">Switch to textarea</a></p>';
+      '<p class=P><a class=a accesskey=s href="javascript:disableTouch()">Switch to textarea</a></p>';
     writeHtm(h);
   } else {
     window.f.t.value = h;
