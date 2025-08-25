@@ -134,7 +134,9 @@ function setListener() {
 }
 
 function writeHtm(body) {
-  if (st.docClosed) {
+  if (document.body && document.body.innerHTML) {
+    document.body.innerHTML = body;
+  } else if (st.docClosed) {
     st.listen = 0;
     var h = '<head>';
     if (document.documentElement && document.documentElement.innerHTML) {
