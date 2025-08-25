@@ -152,6 +152,9 @@ function writeHtm(body) {
 }
 
 function getFontStyle() {
+  if (strEqual(typeof st.font, 'undefined')) {
+    st.font = 320 >= (window.innerWidth || (!strEqual(typeof screen, 'undefined') && screen.width) || 0);
+  }
   if (st.font) {
     return '';
   }
