@@ -47,6 +47,15 @@ input {
   display: inline-block;
 }
 
+.s {
+  margin: 1px;
+}
+
+.c {
+  border-style: solid;
+  border-width: 1px;
+}
+
 .c35 {
   color: #888;
 }
@@ -368,9 +377,9 @@ function render() {
         t = ln[i];
         t = t[j];
         if (t.length > 1) {
-          c = '<a href="javascript' + t + 'moved();" class=c' + u + '>' + c + '</a>';
-        } else if (u - 32) {
-          c = '<span class=c' + u + '>' + c + '</span>';
+          c = '<a href="javascript' + t + 'moved();" class="c c' + u + '">' + c + '</a>';
+        } else {
+          c = '<span class="s c' + u + '">' + c + '</span>';
         }
       }
       h = h + c;
