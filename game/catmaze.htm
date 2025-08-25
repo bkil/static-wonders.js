@@ -4,11 +4,11 @@
   <meta charset=utf-8>
   <meta http-equiv=content-type content='text/html; charset=UTF-8'>
   <meta http-equiv=x-content-type-options content=nosniff>
-  <title>Cat maze</title>
+  <title>Cat maze in textbox</title>
   <meta http-equiv=content-security-policy content="default-src 'none'; img-src data: 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
   <link rel='shortcut icon' type='image/x-icon' href='data:image/x-icon;,'>
   <meta property='og:description' content='Collect gems and push boulders that obey gravity, destroy crates, climb on ladders and walk on platforms to play the original levels of the catrap puzzle game in JavaScript0 on GemiWeb0' name='description'>
-  <meta property='og:title' content='Cat maze'>
+  <meta property='og:title' content='Cat maze in textbox'>
   <meta property='og:type' content=article>
   <meta property='og:url' content='https://bkil.gitlab.io/static-wonders.js/game/catmaze.htm'>
   <meta property='og:image' content='https://bkil.gitlab.io/gemiweb0/gemiweb0-avatar.png'>
@@ -81,76 +81,6 @@ function String_split(th, d) {
   return a;
 }
 
-function render() {
-  var t = '';
-  var map = st.map;
-  var n = map.length;
-  var row;
-  var j;
-  var c;
-  var i = -1;
-  while (n > (i = i + 1)) {
-    if (i) {
-      t = t + nl;
-    }
-    row = map[i];
-    j = -1;
-    while (row.length > (j = j + 1)) {
-      c = row.charAt(j);
-      if (!(st.x - j) && !(st.y - i)) {
-        if (c.charCodeAt(0) - 72) {
-          c = '@';
-        } else {
-          c = '^';
-        }
-      }
-      t = t + c;
-    }
-  }
-  window.f.t.value = t;
-}
-
-function startLevel() {
-  var map = st.maps[st.level];
-  var n = map.length;
-  var map2 = new Array;
-  var row;
-  var row2;
-  var u;
-  var c;
-  var j;
-  st.gems = 0;
-  var i = -1;
-  while (n > (i = i + 1)) {
-    row = map[i];
-    row2 = '';
-    j = -1;
-    while (row.length > (j = j + 1)) {
-      c = row.charAt(j);
-      if (!((u = row.charCodeAt(j)) - 64)) {
-        st.x = j;
-        st.y = i;
-        c = ' ';
-      } else if (!(u - 36)) {
-        st.gems = st.gems + 1;
-      }
-      row2 = row2 + c;
-    }
-    map2[i] = row2;
-  }
-  st.map = map2;
-}
-
-function restart() {
-  startLevel();
-  render();
-}
-
-function next() {
-  st.level = (st.level + 1) % st.maps.length;
-  restart();
-}
-
 function cell(x, y) {
   if ((0 > y) || (y >= st.map.length)) {
     return 0;
@@ -208,6 +138,76 @@ function walk(dx, dy) {
   } else {
     next();
   }
+}
+
+function render() {
+  var h = '';
+  var map = st.map;
+  var n = map.length;
+  var row;
+  var j;
+  var c;
+  var i = -1;
+  while (n > (i = i + 1)) {
+    if (i) {
+      h = h + nl;
+    }
+    row = map[i];
+    j = -1;
+    while (row.length > (j = j + 1)) {
+      c = row.charAt(j);
+      if (!(st.x - j) && !(st.y - i)) {
+        if (c.charCodeAt(0) - 72) {
+          c = '@';
+        } else {
+          c = '^';
+        }
+      }
+      h = h + c;
+    }
+  }
+  window.f.t.value = h;
+}
+
+function startLevel() {
+  var map = st.maps[st.level];
+  var n = map.length;
+  var map2 = new Array;
+  var row;
+  var row2;
+  var u;
+  var c;
+  var j;
+  st.gems = 0;
+  var i = -1;
+  while (n > (i = i + 1)) {
+    row = map[i];
+    row2 = '';
+    j = -1;
+    while (row.length > (j = j + 1)) {
+      c = row.charAt(j);
+      if (!((u = row.charCodeAt(j)) - 64)) {
+        st.x = j;
+        st.y = i;
+        c = ' ';
+      } else if (!(u - 36)) {
+        st.gems = st.gems + 1;
+      }
+      row2 = row2 + c;
+    }
+    map2[i] = row2;
+  }
+  st.map = map2;
+}
+
+function restart() {
+  startLevel();
+  render();
+}
+
+function next() {
+  st.level = (st.level + 1) % st.maps.length;
+  restart();
 }
 
 function left() {
