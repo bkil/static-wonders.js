@@ -290,7 +290,7 @@ function addTodo(v, ln, dx, dy, p, stf) {
   }
   if (!(t.length - 1)) {
     ln[o.x] = p;
-    o.alter = (o.gems - stf.gems) || !Map_equal(o.map, stf.map);
+    o.alter = !Map_equal(o.map, stf.map);
     if (o.gems) {
       v[v.length] = o;
     }
@@ -558,9 +558,9 @@ function init() {
   load();
   st.level = 0;
   startLevel();
-  render();
   st.listen = 0;
   setListener();
+  render();
   st.docClosed = 1;
 }
 
