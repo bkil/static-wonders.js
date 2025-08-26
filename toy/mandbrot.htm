@@ -45,17 +45,30 @@ input {
 'use strict';
 var st = new Object;
 
+function abs(x) {
+  if (0 > x) {
+    x = 0 - x;
+  }
+  return x;
+}
+
 function iterate(x0, y0) {
-  y0 = y0 >> 13;
+  x0 = x0 << 2;
+  y0 = y0 << 1;
   var x = 0;
   var y = 0;
+  var ax;
+  var ay;
+  var xs;
+  var ys;
   var z;
   var color = '@#*+;,. ';
-  var lim = 4 << 26;
+  var lim1 = 2 << 14;
+  var lim2 = lim1 * lim1;
   var i = (color.length << st.zoom) + 1;
-  while ((i = i - 1) && (lim >= ((x*x) + (y*y)))) {
-    z = (((x*x) - (y*y)) + x0) >> 13;
-    y = ((x*y) >> 12) + y0;
+  while ((i = i - 1) && (lim1 >= ((ax = abs(x)) + (ay = abs(y)))) && (lim2 >= ((xs = ax*ax) + (ys = ay*ay)))) {
+    z = ((xs - ys) + x0) >> 14;
+    y = ((x * y) + y0) >> 13;
     x = z;
   }
   return color.charAt(i >> st.zoom);
