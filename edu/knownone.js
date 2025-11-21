@@ -472,6 +472,19 @@ function savedCardStats(c) {
   return Array_toString(a);
 }
 
+function printCardStats(c) {
+  var d = ((new Date)/ 86400000) | 0;
+  return '<h3>Stats</h3><ul><li>graded ' + c.grade + '</li>' +
+    '<li>repeated ' + (d - ((c.last_rep / 86400) | 0)) + ' days ago</li>' +
+    '<li>scheduled for ' + (d - ((c.next_rep / 86400) | 0)) + ' days ago</li>' +
+    '<li>easiness ' + ((c.easiness / 100) | 0) + '.' + (c.easiness % 100) + '</li>' +
+    '<li>acquisition repetitions ' + c.acq_reps + '</li>' +
+    '<li>retraining repetitions ' + c.ret_reps + '</li>' +
+    '<li>lapses ' + c.lapses + '</li>' +
+    '<li>acquisitions since lapse ' + c.acq_reps_since_lapse + '</li>' +
+    '<li>retrained since lapse ' + c.ret_reps_since_lapse + '</ul>';
+}
+
 function getSaveHtm() {
   var s = st.beg;
   var c;
@@ -705,7 +718,8 @@ function screenAnswer() {
     '<a href=javascript:screenGrade(4) class=a accesskey=y>grade 4 [Y]</a><p class=p>' +
     '<a href=javascript:screenGrade(5) class=a accesskey=z>grade 5 [Z]</a><p class=p>' +
     '<a href=javascript:screenEdit(' + q.id +',"screenQuestion(screenQuestion)") class=a accesskey=i>edIt</a><p class=p>' +
-    getReturnToMenu());
+    getReturnToMenu() +
+    printCardStats(q));
 }
 
 function perturbedInterval(interval) {
@@ -887,7 +901,8 @@ function screenEdit(i, b) {
   h = h +
     '<a href=javascript:screenCloneCard(' + i + ',"' + b + '") class=a accesskey=c>Clone</a><p class=p>' +
     '<a href=javascript:screenNewCard("' + b + '") class=a accesskey=n>New</a><p class=p>' +
-    '<a href=javascript:' + b + ' class=a accesskey=o>dOne</a>';
+    '<a href=javascript:' + b + ' class=a accesskey=o>dOne</a>' +
+    printCardStats(q);
   writeHtm(h);
 }
 
