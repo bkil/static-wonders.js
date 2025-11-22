@@ -473,8 +473,12 @@ function savedCardStats(c) {
 }
 
 function printCardStats(c) {
+  var h = '<h3>Stats</h3>';
+  if (strEqual(typeof c.grade, 'undefined')) {
+    return h + 'unseen';
+  }
   var d = ((new Date)/ 86400000) | 0;
-  return '<h3>Stats</h3><ul><li>graded ' + c.grade + '</li>' +
+  return h + '<ul><li>graded ' + c.grade + '</li>' +
     '<li>repeated ' + (d - ((c.last_rep / 86400) | 0)) + ' days ago</li>' +
     '<li>scheduled for ' + (d - ((c.next_rep / 86400) | 0)) + ' days ago</li>' +
     '<li>easiness ' + ((c.easiness / 100) | 0) + '.' + (c.easiness % 100) + '</li>' +
