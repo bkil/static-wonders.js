@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang=en prefix="og: http://ogp.me/ns#">
+<head>
+  <meta charset=utf-8>
+  <meta http-equiv=content-type content='text/html; charset=UTF-8'>
+  <meta http-equiv=x-content-type-options content=nosniff>
+  <title>Days until Newton day</title>
+  <link rel='shortcut icon' type='image/x-icon' href='data:image/x-icon;,'>
+  <meta name=description property='og:description' content='Calendar date calculator in JavaScript0 on GemiWeb0'>
+  <meta property='og:title' content='Days until Newton day'>
+  <meta property='og:type' content=article>
+  <meta property='og:url' content='https://bkil.gitlab.io/static-wonders.js/toy/daystill.htm'>
+  <meta property='og:image' content='https://bkil.gitlab.io/gemiweb0/gemiweb0-avatar.png'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=unsafe-url>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta name=color-scheme content='light dark'>
+  <meta http-equiv=content-security-policy content="default-src 'none'; img-src data: 'self'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; navigate-to 'none';">
+</head>
+<body>
+<h2>References</h2>
+You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<br>
+<a href='https://bkil.gitlab.io/gemiweb0' target='_blank' rel=noopener>bkil.gitlab.io/gemiweb0</a>
+<h2>Calculated calendar days until Newton day</h2>
+<script>
+'use strict';
+
+function dayFromYear(y){
+  return (365*(y-1970)) + (((y-1969)/4)|0) + (((1901-y)/100)|0) + (((y-1601)/400)|0);
+}
+
+function isLeapYear(y) {
+  return !(y%4) && !(!(y%100) && (y%400));
+}
+
+function newDate(y, m, d) {
+  d = (d - 1) + dayFromYear(y = y + ((m / 12) | 0));
+  if ((m = m % 12) > 1) {
+    d = (d - 2) + isLeapYear(y);
+  }
+  return (d + (m * 30) + ((m + 1 + ((m/7)|0)) >> 1)) * 3600 * 24;
+}
+
+function getYear(s) {
+  var y = 1970 + ((s / (366 * 3600 * 24)) | 0);
+  while (s >= newDate(y + 1, 0, 1)) {
+    y = y + 1;
+  }
+  return y;
+}
+
+function init() {
+  var s = (new Date / 1000) | 0;
+  s = s - (s % (3600 * 24));
+  var y = getYear(s);
+  var x = newDate(y, 11, 25);
+  if (s > x) {
+    x = newDate(y + 1, 11, 25);
+  }
+  document.write(((x - s) / (3600 * 24)) | 0);
+}
+
+init();
+</script>
+</body>
+</html>
