@@ -835,8 +835,8 @@ function screenGrade(g) {
           } else if (!(g-5)) {
             q.easiness = q.easiness + 10;
           }
-          if (13 > q.easiness) {
-            q.easiness = 13;
+          if (130 > q.easiness) {
+            q.easiness = 130;
           }
         }
         if (q.ret_reps_since_lapse) {
