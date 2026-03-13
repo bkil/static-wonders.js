@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang=en prefix="og: http://ogp.me/ns#">
+<head>
+  <meta charset=utf-8>
+  <meta http-equiv=content-type content='text/html; charset=UTF-8'>
+  <meta http-equiv=x-content-type-options content=nosniff>
+  <title>Suffix tree from dictionary</title>
+  <meta name=tdm-reservation content=1>
+  <link rel='shortcut icon' type='image/x-icon' href='data:image/x-icon;,'>
+  <meta name=description property='og:description' content='Compute storage-efficient radix tree regexp from dictionary words or reverse the compression in JavaScript0 on GemiWeb0'>
+  <meta property='og:title' content='Suffix tree from dictionary'>
+  <meta property='og:type' content=article>
+  <meta property='og:url' content='https://bkil.gitlab.io/static-wonders.js/compress/treedict.htm'>
+  <meta property='og:image' content='https://bkil.gitlab.io/gemiweb0/gemiweb0-avatar.png'>
+  <meta name=viewport content='width=device-width, initial-scale=1'>
+  <meta name=referrer content=unsafe-url>
+  <meta http-equiv=x-dns-prefetch-control content=off>
+  <meta name=color-scheme content='light dark'>
+  <style>
+textarea {
+  max-height: 90vh;
+  min-height: 3em;
+  height: 8em;
+  width: 90%;
+  width: calc(100% - 24px);
+  min-width: 90%;
+  min-width: calc(100% - 24px);
+  max-width: 90%;
+  max-width: calc(100% - 24px);
+  display: block;
+}
+  </style>
+<!-- -->
+  <meta http-equiv=content-security-policy content="default-src 'none'; img-src data: 'self'; script-src 'unsafe-inline' 'unsafe-eval'; style-src 'unsafe-inline'; base-uri 'none'; form-action javascript:; navigate-to 'none';">
+</head>
+<body>
+<script>
+'use strict';
+
+/* Copyright (C) 2026 bkil.hu
+Refer to the GNU GPL v2 in LICENSE for terms */
+
+var nl = String.fromCharCode(10);
+
+// JS1
+function String_substring(th, from, to) {
+  if (th.substring) {
+    return th.substring(from, to);
+  }
+  var c;
+  from = from - 1;
+  var o = '';
+  while ((th.length > (from = from + 1)) && (to > from)) {
+    c = th.charAt(from);
+    o = o + c;
+  }
+  return o;
+}
+
+// ES1, NS3
+function String_split(th, d) {
+  if (th.split) {
+    return th.split(d);
+  }
+  var a = new Array;
+  var j = 0;
+  var from = 0;
+  var i = th.indexOf(d, from);
+  while (i >= 0) {
+    a[j] = String_substring(th, from, i);
+    j = j + 1;
+    from = i + d.length;
+    i = th.indexOf(d, from);
+  }
+  a[j] = String_substring(th, from, th.length);
+  return a;
+}
+
+// ES5
+function String_trim(th) {
+  function isWs(i) {
+    var n = th.charCodeAt(i);
+    return !(n - 32) || !(n - 9) || !(n - 10);
+  }
+  if (th.trim) {
+    return th.trim();
+  } else {
+    var i = 0;
+    while ((i < th.length) && isWs(i)) {
+      i = i + 1;
+    }
+    var j = th.length - 1;
+    while ((j >= i) && isWs(j)) {
+      j = j - 1;
+    }
+    return String_substring(th, i, j + 1);
+  }
+}
+
+// ES1?
+function Array_push(a, e) {
+  a[a.length] = e;
+}
+
+function longestMatch(u, v) {
+  var n = u.length;
+  if (n > v.length) {
+    n = v.length;
+  }
+  var i = -1;
+  while ((n > (i = i + 1)) && !(u.charCodeAt(i) - v.charCodeAt(i))) {
+  }
+  return i;
+}
+
+function getTreeShape(y, t) {
+  var n = t.length;
+  if (!n) {
+    return '';
+  }
+  if (!(n - 2)) {
+    if (t[0] - 10) {
+      return String.fromCharCode(t[0]) + y(y, t[1]);
+    }
+    return '';
+  }
+  var o = '(';
+  var i = -2;
+  while (n > (i = i + 2)) {
+    if (i) {
+      o = o + '|';
+    }
+    if (t[i] - 10) {
+      o = o + String.fromCharCode(t[i]) + y(y, t[i + 1]);
+    }
+  }
+  return o + ')';
+}
+
+function wordsToSuffix(buf) {
+  var h = '';
+  var lines = String_split(buf, nl);
+  var n = lines.length;
+  var last = '';
+  var line;
+  var tree = new Array;
+  var it;
+  var el;
+  var j;
+  var k;
+  var i = -1;
+  while (n > (i = i + 1)) {
+    line = lines[i] + nl;
+    j = longestMatch(line, last);
+
+    it = tree;
+    k = -1;
+    while (j > (k = k + 1)) {
+      it = it[it.length - 1];
+    }
+    j = j - 1;
+    while (line.length > (j = j + 1)) {
+      el = new Array;
+      Array_push(it, line.charCodeAt(j));
+      Array_push(it, el);
+      it = el;
+    }
+    last = line;
+  }
+  return getTreeShape(getTreeShape, tree);
+}
+
+function visitTreePaths0(y, s, t, r, c) {
+  var n = t.length;
+  if (c) {
+    r = r + String.fromCharCode(c);
+  }
+  if (!n) {
+    if (s.paths) {
+      s.paths = s.paths + nl;
+    }
+    s.paths = s.paths + r;
+    return 0;
+  }
+  var i = -2;
+  while (n > (i = i + 2)) {
+    y(y, s, t[i + 1], r, t[i]);
+  }
+}
+
+function visitTreePaths(t) {
+  var s = new Object;
+  s.paths = '';
+  visitTreePaths0(visitTreePaths0, s, t, '', 0);
+  return s.paths;
+}
+
+function parseLiteral(s) {
+  var c;
+  if ((s.i >= s.s.length) ||
+    !((c = s.s.charCodeAt(s.i)) - 40) ||
+    !(c - 41) ||
+    !(c - 124)) {
+    return 0;
+  }
+  s.i = s.i + 1;
+  if (2 > s.node.length) {
+    throw 'internal error: literal missing predecessor at position ' + s.i;
+  }
+  s.node[s.node.length - 2] = c;
+  s.node = s.node[s.node.length - 1];
+  Array_push(s.node, 0);
+  Array_push(s.node, new Array);
+  return 1;
+}
+
+function parseToken(s, c) {
+  if ((s.i >= s.s.length) || (s.s.charCodeAt(s.i) - c)) {
+    return 0;
+  }
+  s.i = s.i + 1;
+  return 1;
+}
+
+function parseSequence(s, pg) {
+  var saved = s.node;
+  while (pg(s, pg) || parseLiteral(s)) {
+  }
+  s.node = saved;
+}
+
+function parseGroup(s, pg) {
+  if (!parseToken(s, 40)) {
+    return 0;
+  }
+  parseSequence(s, pg);
+  while (parseToken(s, 124)) {
+    Array_push(s.node, 0);
+    Array_push(s.node, new Array);
+    parseSequence(s, pg);
+  }
+  if (!parseToken(s, 41)) {
+    throw 'syntax error: expecting ")" at position ' + s.i;
+  }
+  return 1;
+}
+
+function suffixToWords(buf) {
+  var s = new Object;
+  s.s = buf;
+  s.i = 0;
+  s.tree = new Array;
+  Array_push(s.tree, 0);
+  Array_push(s.tree, new Array);
+  s.node = s.tree;
+  parseSequence(s, parseGroup);
+  if (s.s.length > s.i) {
+    throw 'syntax error: expecting end at position ' + s.i;
+  }
+  return visitTreePaths(s.tree);
+}
+
+function submit() {
+  var t = window.f.t;
+  var s = String_trim(t.value);
+  if (s.indexOf('(') >= 0) {
+    t.value = suffixToWords(s);
+  } else {
+    t.value = wordsToSuffix(s);
+  }
+}
+</script>
+<form name=f action="javascript:submit()" autocomplete=off spellcheck=off><textarea name=t>
+foo
+for
+wack
+wad
+wadded
+wade
+wader
+waders
+wadge
+</textarea><input type=submit value=Compute></form>
+<h2>Introduction</h2>
+Compute a storage-efficient radix tree representation from a given ordered list of dictionary words. The suffix graph is serialized to regexp syntax. Also supports reversing the transformation. The end result will be even smaller when compressed with common general purpose algorithms such as gzip. This will reduce the package size of software wishing to bundle a lexicon.
+<p>
+<a href='https://en.wikipedia.org/wiki/Radix_tree' target='_blank' rel=noopener>Radix tree</a>
+<p>
+You can install a web browser that supports at least JavaScript 1.0 (1995) to run this application or you may consider implementing a GemiWeb0 browser with JavaScript0 yourself according to the following specification:<br>
+<a href='https://bkil.gitlab.io/gemiweb0' target='_blank' rel=noopener>bkil.gitlab.io/gemiweb0</a>
+<script>
+'use strict';
+submit();
+submit();
+</script>
+</body>
+</html>
